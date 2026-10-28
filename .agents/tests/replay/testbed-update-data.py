@@ -97,8 +97,17 @@ def snapshot(project, phase):
     tree = Path(str(project) + '.update-tree')
     subprocess.run(['git', '-C', str(project), 'worktree', 'add', '-q', '--detach', str(tree), branch], check=True)
     try:
-        if (project / 'node_modules').exists():
-            (tree / 'node_modules').symlink_to(project / 'node_modules')
+        # Next.js refuses packages reached through a link outside the folder,
+        # so give the checkout its own copy; on macOS the copy is a clone.
+        if (project / 'node_modules').is_dir():
+            clone = ['cp', '-cR'] if sys.platform == 'darwin' else ['cp', '-R']
+            subprocess.run(clone + [str(project / 'node_modules'), str(tree / 'node_modules')], check=True)
+        # The helper records this computer's path to the kit. A second checkout
+        # sits elsewhere, so point a copy that names the project at the checkout.
+        marker = tree / '.agents/tools/codex-setup-path'
+        setup = '.agents/skills/setup-ai-build-kit'
+        if marker.is_file() and marker.read_text() == os.path.realpath(project / setup) + '\n':
+            marker.write_text(os.path.realpath(tree / setup) + '\n')
         return snapshot_tree(project, tree, phase, branch)
     finally:
         subprocess.run(['git', '-C', str(project), 'worktree', 'remove', '--force', str(tree)], check=True)
