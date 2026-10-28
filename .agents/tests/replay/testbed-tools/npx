@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+"""Keep a test-bed visit's skills installation on its assembled kit."""
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+args = sys.argv[1:]
+if args[:1] != ['skills']:
+    os.execv(os.environ['REPLAY_TESTBED_REAL_NPX'], ['npx', *args])
+if args[:3] != ['skills', 'add', 'gwpicard/ai-build-kit']:
+    sys.exit('npx (test-bed stand-in): unsupported skills command')
+project = Path(subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip())
+kit = Path(os.environ['REPLAY_TESTBED_KIT'])
+if not Path(str(project) + '.update-kit').is_file():
+    sys.exit('npx (test-bed stand-in): not a seeded update project')
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from importlib import util
+spec = util.spec_from_file_location('update_data', Path(__file__).resolve().parents[1] / 'testbed-update-data.py')
+module = util.module_from_spec(spec)
+spec.loader.exec_module(module)
+module.install_skills(project, kit)
+with open(os.environ['FAKE_GH_LOG'], 'a') as log:
+    log.write('INSTALL\tassembled current skills\tturn=' + os.environ.get('REPLAY_TURN', '') + '\n')
+print('Installed skills from the replay assembly; no external installer was called.')
