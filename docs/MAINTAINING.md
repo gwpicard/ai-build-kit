@@ -652,6 +652,15 @@ release, so nothing sends a project through an older one first.
 If a breaking change has neither, it is not ready to ship. A release that only
 adds behaviour still gets this check, and answers it with "nothing to do".
 
+Before checking an upgrade, rebuild the older-release test bed with
+`.agents/tests/replay/testbed.sh`; `--list` previews the four default projects
+without running a model, and `--replace` rebuilds existing copies while keeping
+them in the run archive. The [replay guide](../.agents/tests/replay/README.md#projects-founded-by-older-releases)
+explains the cases, records and retained evidence. A real project the maintainer
+works in is never part of this test bed. Use one only when the maintainer points
+to it for a specific migration test, and then only as a copy with no credentials
+and no remote.
+
 Run PHILOSOPHY.md's four questions over everything already here, including what
 is being added. Anything that now fails a question it used to pass has drifted
 (PHILOSOPHY.md explains how), and that is the list of work for the next pass.

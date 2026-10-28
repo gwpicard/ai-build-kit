@@ -24,7 +24,7 @@ it as a flake and move on.
 ## Running it
 
 ```sh
-./run.sh                    # every case, five runs each
+./run.sh                    # default cases, five runs each
 ./run.sh 5 8                # only these scenarios
 REPEATS=1 ./run.sh 5        # one run, for a quick look
 JOBS=8 ./run.sh             # more at once
@@ -61,6 +61,51 @@ the roll-up lists it apart from the counts.
 
 A whole conversation takes around twenty minutes, so runs overlap. `JOBS` sets
 how many at a time and defaults to four.
+
+## Projects founded by older releases
+
+`testbed.sh` builds projects whose records were written by older kits. Cases
+83 (Vercel) and 84 (Coolify) found the same private reading list for five team
+members. They stay outside the behaviour set; `# selection: explicit` also
+excludes them from `run.sh` without case numbers.
+
+From the repository root:
+
+```sh
+.agents/tests/replay/testbed.sh --list
+.agents/tests/replay/testbed.sh
+.agents/tests/replay/testbed.sh --replace v1.0.0 v1.1.2
+```
+
+The default builds `tb-v1.0.0-vercel`, `tb-v1.0.0-coolify`,
+`tb-v1.1.2-vercel` and `tb-v1.1.2-coolify` under `~/PROJECTS/abk-testbeds`.
+Pass other locally available release tags to extend the set, or
+`--output <folder>` to move it. Provider and model settings match `run.sh`.
+Listing writes nothing and calls no model. Building runs paid replays with
+`REPEATS=1`, using only the stand-in GitHub and host.
+
+Each tag gets a temporary detached Git worktree, used as `KIT_SRC` by the
+current harness with its normal preflight, permission checks and confirmation
+stand-in. The old release is never patched. An assembly or preflight failure
+stops at that tag and names the run log. Blank projects receive their helper
+from that release's own bootstrap, rather than the prepared-project helper.
+
+Only a held replay with passing disk checks is exported: a saved masterplan,
+shaped issues in the GitHub stand-in, the selected recipe and menu, and a
+checkpoint with a usable masterplan mark. The transcript must also report the
+release's required start command and passing check. Inspect it before relying
+on the project as migration evidence.
+
+The exported folder holds the project and Git history with its remote removed.
+`<name>.founding.md` beside it records the tag, recipe, case, verdicts,
+transcript path and date. `.runs/` retains the full run and stand-in state.
+Failed runs leave a report there and export no project. Existing outputs are
+refused unless `--replace` is given, which keeps the previous copies in the
+new run folder.
+
+A real project the maintainer works in is never part of this test bed. Use one
+only when the maintainer points to it for a specific migration test, and then
+only as a copy with no credentials and no remote.
 
 ## Surviving a long pass
 

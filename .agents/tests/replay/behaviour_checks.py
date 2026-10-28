@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""behaviour_checks.py: disk checks for the behaviour set and the starter screen.
+"""behaviour_checks.py: disk checks for behaviour cases, the starter screen and test beds.
 
 Usage: behaviour_checks.py <scenario number> <project directory>
 Prints one JSON object: {"disk": {"<check>": {"verdict": ..., "note": ...}}}
@@ -629,8 +629,28 @@ def c82(p):
     return out
 
 
+def founding(p):
+    plan = p.text("masterplan.md")
+    saved = p.git("show", "HEAD:masterplan.md")
+    issues = [i for i in p.issues() if "## Done when" in (i.get("body") or "")]
+    helper = os.path.join(p.path, ".agents/skills/records/scripts/trued-mark.sh")
+    mark = subprocess.run(["sh", helper, "masterplan.md"], cwd=p.path,
+                          capture_output=True, text=True)
+    return {
+        "masterplan-saved": ok("the masterplan is saved in HEAD")
+        if plan.strip() and saved.returncode == 0 and saved.stdout == plan
+        else bad("the masterplan is absent, unsaved or differs from HEAD"),
+        "pieces-saved": ok("%d shaped pieces are in the GitHub stand-in" % len(issues))
+        if len(issues) >= 2 else bad("fewer than two shaped pieces were saved as issues"),
+        "founding-checkpoint": ok("a new checkpoint has a usable masterplan mark")
+        if p.commits() > 1 and mark.returncode == 0
+        else bad("no new checkpoint with a usable masterplan mark: " + mark.stdout.strip()),
+    }
+
+
 CHECKS = {64: c64, 65: c65, 66: c66, 67: c67, 68: c68, 69: c69, 70: c70, 71: c71, 72: c72,
-          73: c73, 74: c74, 75: c75, 76: c76, 77: c77, 78: c78, 79: c79, 80: c80, 81: c81, 82: c82}
+          73: c73, 74: c74, 75: c75, 76: c76, 77: c77, 78: c78, 79: c79, 80: c80, 81: c81, 82: c82,
+          83: founding, 84: founding}
 
 
 def main(argv):
