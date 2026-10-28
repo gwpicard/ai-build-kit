@@ -58,14 +58,30 @@ When the notes are edited on the Release's web page, the drafted pull request
 titles go under `## Pull requests in this release`, each rewritten to the same
 standard.
 
-## Review
+## Steps
 
-Before the stamp pull request, give the file to one fresh reviewer with this
-skill and the evidence. Ask it to report findings by the framework's severity
-levels, and to check every claim against the evidence. Fix each Critical and
-Major finding.
+Do them in this order. The writing rules live in three places, and a step
+skipped between them goes unnoticed until the notes are public.
+
+1. Write the file from the evidence, in the shape above.
+2. Load `.agents/maintainer-skills/humanizer/SKILL.md` and run its embedded
+   mode over the file.
+3. Check the file against the house rules in `docs/MAINTAINING.md`: paragraph
+   length, verbs that match what a check does, banned words, sentence shape.
+4. Write the full text for the Release's page to
+   `.agents/tmp/release-notes-review/<version>/page.md`: the file, then
+   `## Pull requests in this release` with each drafted title rewritten.
+5. Give `page.md` to one fresh reviewer with this skill and the evidence. Ask
+   for findings by the framework's severity levels, each claim checked against
+   the evidence, and a last line such as `Critical: 0 | Major: 0 | Minor: 1`.
+   Save its reply as `review.md` beside `page.md`.
+6. Fix each Critical and Major finding, rebuild `page.md`, and repeat step 5
+   with another fresh reviewer until it reports none.
+7. Run `.agents/tools/check-release-notes.py <version>`. `stamp-version.sh`
+   runs it too and refuses to stamp until it passes.
 
 ## Done when
 
 Every claim traces to the evidence, every required user action is present word
-for word, and the fresh reviewer reports no Critical or Major finding.
+for word, the humanizer and house-rule passes are done, and the latest fresh
+review of the final page text reports no Critical or Major finding.

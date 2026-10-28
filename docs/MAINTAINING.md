@@ -779,8 +779,11 @@ visit that finishes the update. The folder never ships.
 
 Write each release's notes file with
 `.agents/maintainer-skills/release-notes/SKILL.md`. It holds the writing
-standard, the shape of the file, and the fresh review the file gets before the
-stamp pull request.
+standard, the shape of the file, and the steps in order, from the humanizer
+pass to a fresh review of the final page text. `stamp-version.sh` runs
+`.agents/tools/check-release-notes.py` before it writes a version, and refuses
+until the notes pass the rules a machine can test and the latest review records
+no Critical or Major finding.
 
 After a release is published, run `.agents/tools/record-released-copies.py`
 with its archive on the next branch. It adds the release's whole-copy files to

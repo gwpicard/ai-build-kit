@@ -39,7 +39,8 @@ DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start sec
 PUBLISH_CHECKS="release-builder release-publication validate-kit"
 MODE_CHECKS="validate-kit fake-github"
 
-MUTATIONS="released-docs-unrecorded
+MUTATIONS="release-notes-unchecked
+released-docs-unrecorded
 reach-wide-threshold
 reach-route-groups
 reach-alias-imports
@@ -192,6 +193,7 @@ backbone-api-merge-unbound"
 
 describe() {
   case "$1" in
+    release-notes-unchecked) echo "a version is stamped without checking its notes" ;;
     released-docs-unrecorded) echo "released documents are omitted from the whole-copy record" ;;
     reach-wide-threshold) echo "the route threshold rises so a broad route reach is no longer reported as wide" ;;
     reach-route-groups) echo "Next route groups remain in the reported address" ;;
@@ -348,6 +350,7 @@ describe() {
 
 checks_for() {
   case "$1" in
+    release-notes-unchecked) echo "version-stamp" ;;
     released-docs-unrecorded) echo "whole-copy-leftovers" ;;
     reach-wide-threshold|reach-route-groups|reach-alias-imports|reach-tables-types|reach-wide-dependents|reach-deleted-paths|reach-wide-tables) echo "reach-rehearsal" ;;
     publish-writes-a-tree) echo "$PUBLISH_CHECKS" ;;
@@ -449,6 +452,15 @@ apply() {
   name=$1
   tree=$2
   case "$name" in
+    release-notes-unchecked)
+      edit "$tree/.agents/tools/stamp-version.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "\"$NOTES_CHECK\" \"$VERSION\" || fail"
+assert old in s, "notes check call not found"
+open(p, "w").write(s.replace(old, "true || fail", 1))'
+      ;;
     released-docs-unrecorded)
       edit "$tree/.agents/tools/record-released-copies.py" '
 import os
