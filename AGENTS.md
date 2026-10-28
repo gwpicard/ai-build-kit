@@ -43,8 +43,6 @@ before editing.
 - `.claude/settings.json` here is the maintainer's own. A project's copy comes
   from `templates/foundation/claude-settings.json`.
 
-Never edit the released starter repository directly. A release generates it.
-
 ## How changes are made
 
 One agreed, visible slice at a time, on a short-lived branch, through a pull
@@ -107,8 +105,8 @@ Prose about Claude, Cursor or Gemini is fine. Only the attribution line goes.
 ## Secrets and external changes
 
 Keys, passwords and tokens never go in a tracked file, and are never printed.
-Publishing a release, renaming a repository, changing the public starter, or
-changing online access needs the person's explicit approval at that step.
+Publishing a release, renaming a repository, or changing online access needs
+the person's explicit approval at that step.
 
 Before a technical confirmation box appears, say what the person will notice,
 why it is needed now, whether anything leaves this computer, and what remains

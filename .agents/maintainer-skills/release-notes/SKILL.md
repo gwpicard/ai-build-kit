@@ -63,7 +63,9 @@ standard.
 Do them in this order. The writing rules live in three places, and a step
 skipped between them goes unnoticed until the notes are public.
 
-1. Write the file from the evidence, in the shape above.
+1. Before drafting, delete the previous release's notes file so
+   `docs/release-notes/` holds at most one versioned notes file. Then write the
+   new file from the evidence, in the shape above.
 2. Load `.agents/maintainer-skills/humanizer/SKILL.md` and run its embedded
    mode over the file.
 3. Check the file against the house rules in `docs/MAINTAINING.md`: paragraph
