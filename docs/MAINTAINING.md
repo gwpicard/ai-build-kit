@@ -934,6 +934,10 @@ so it never enters the kit release. After `verify release` succeeds, the Pages
 workflow builds the site from `stable` and deploys it. A failed site build does
 not change release preparation or verification.
 
+For a wording fix to the site or the documentation it reads, the maintainer
+may start the Pages workflow by hand and choose `main`. Use this path only for
+wording. A change to kit behaviour reaches the site only through a release.
+
 GitHub Pages needs `pages: write` and `id-token: write` to deploy. The
 `release-publication.sh` check allows those permissions only in the deploy job
 of `pages.yml`. The maintainer must switch the Pages source to **GitHub
