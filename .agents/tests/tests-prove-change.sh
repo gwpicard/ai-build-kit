@@ -8,6 +8,7 @@
 
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+. "$ROOT/.agents/tests/lib/could-not-run.sh"
 QUALITY="$ROOT/.agents/skills/quality-checks/scripts/quality.py"
 TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh"
 WORK=$(mktemp -d)
@@ -485,6 +486,9 @@ EOF
   if printf '%s\n' "$REALPY_OUT" | grep -q '^not-checked[[:space:]]coverage[[:space:]]installed pytest-cov does not support JSON output$'; then
     if printf '%s\n' "$REALPY_OUT" | grep -q '^covered'; then echo 'FAIL: coverage was claimed without a JSON report'; exit 1; fi
     echo '  ok: real pytest with an older pytest-cov proves D1 and says coverage was not checked'
+  elif printf '%s\n' "$REALPY_OUT" | grep -q '^not-checked[[:space:]]coverage[[:space:]]pytest-cov (coverage.py provider) is not installed$'; then
+    if printf '%s\n' "$REALPY_OUT" | grep -q '^covered'; then echo 'FAIL: coverage was claimed without pytest-cov'; exit 1; fi
+    could_not_run "real pytest coverage: pytest-cov (coverage.py provider) is not installed"
   else
     printf '%s\n' "$REALPY_OUT" | grep -q '^covered[[:space:]]1$' || { printf '%s\n' "$REALPY_OUT"; echo 'FAIL: real pytest-cov coverage was not read'; exit 1; }
     [ ! -e "$REALPY/.coverage" ] || { echo 'FAIL: pytest-cov wrote .coverage into the project'; exit 1; }
@@ -574,3 +578,5 @@ printf '%s\n' "$OUT" | grep -q '^playwright[[:space:]]D1[[:space:]]passed$'
 echo '  ok: numbered Playwright specs run their D-specific before/after check'
 
 echo 'tests-prove-change.sh: Vitest report contract, per-D output and test subject guard checked'
+
+finish_rehearsal
