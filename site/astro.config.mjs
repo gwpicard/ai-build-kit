@@ -13,7 +13,16 @@ export default defineConfig({
       PageTitle: './src/components/PageTitle.astro',
       MobileTableOfContents: './src/components/MobileTableOfContents.astro',
     },
-    customCss: ['./src/styles/site.css'],
+    customCss: ['@fontsource-variable/plus-jakarta-sans/wght.css', './src/styles/palette.css', './src/styles/site.css'],
+    expressiveCode: {
+      themes: ['gruvbox-dark-medium', 'gruvbox-light-soft'],
+      styleOverrides: { borderColor: '#373228' },
+    },
+    head: [
+      { tag: 'meta', attrs: { property: 'og:image', content: 'https://gwpicard.github.io/ai-build-kit/og.jpg' } },
+      { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
+      { tag: 'meta', attrs: { name: 'twitter:image', content: 'https://gwpicard.github.io/ai-build-kit/og.jpg' } },
+    ],
     sidebar: [
       { label: 'Get started', items: ['index', 'install'] },
       { label: 'Design and workflow', items: ['design', { slug: 'how-it-works', label: 'Workflow' }, 'records', 'recipes', 'what-it-checks', 'how-it-differs'] },

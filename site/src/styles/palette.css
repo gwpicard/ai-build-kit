@@ -1,0 +1,89 @@
+/* Warm Spectrum: warm neutrals with clay as the one strong accent. Clay is
+   too dark to read as text on the dark background, so links use coral there
+   and a deeper clay on the light background. In-between neutrals are mixes of
+   two palette colours, so no cool grey appears. */
+
+:root {
+	--sl-color-white: #ece6d7;
+	--sl-color-gray-1: #d8d1c1;
+	--sl-color-gray-2: #c3bcaa;
+	--sl-color-gray-3: #9a927e;
+	--sl-color-gray-4: #5a5548;
+	--sl-color-gray-5: #373228;
+	--sl-color-gray-6: #1e1a12;
+	--sl-color-black: #0c0a06;
+
+	--sl-color-accent-low: #472417;
+	--sl-color-accent: #c34327;
+	--sl-color-accent-high: #ff6e52;
+
+	--sl-color-text: #ece6d7;
+	--sl-color-text-accent: #ff6e52;
+	--sl-color-text-invert: #faf7f0;
+	--sl-color-bg: #0c0a06;
+	--sl-color-bg-nav: #1e1a12;
+	--sl-color-bg-sidebar: #1e1a12;
+	--sl-color-bg-inline-code: #373228;
+	--sl-color-bg-accent: #c34327;
+	--sl-color-hairline-light: #373228;
+	--sl-color-hairline: #2a241a;
+	--sl-color-hairline-shade: #0c0a06;
+	--sl-color-backdrop-overlay: hsla(35, 30%, 5%, 0.66);
+}
+
+:root[data-theme='light'] {
+	--sl-color-white: #1b1813;
+	--sl-color-gray-1: #302c24;
+	--sl-color-gray-2: #444036;
+	--sl-color-gray-3: #6e6759;
+	--sl-color-gray-4: #9c9688;
+	--sl-color-gray-5: #cac4b8;
+	--sl-color-gray-6: #e9dfcf;
+	--sl-color-gray-7: #f6f2e8;
+	--sl-color-black: #faf7f0;
+
+	--sl-color-accent-low: #f3e1d8;
+	--sl-color-accent: #c34327;
+	--sl-color-accent-high: #a93a20;
+
+	--sl-color-text: #1b1813;
+	--sl-color-text-accent: #a93a20;
+	--sl-color-text-invert: #faf7f0;
+	--sl-color-bg: #faf7f0;
+	--sl-color-bg-nav: #fcfaf4;
+	--sl-color-bg-sidebar: #faf7f0;
+	--sl-color-bg-inline-code: #f1ece0;
+	--sl-color-bg-accent: #c34327;
+	--sl-color-hairline-light: #e4d8c6;
+	--sl-color-hairline: #e4d8c6;
+	--sl-color-hairline-shade: #cac4b8;
+	--sl-color-backdrop-overlay: hsla(40, 30%, 90%, 0.66);
+}
+
+body {
+	background: linear-gradient(160deg, #0c0a06 0%, #241c12 100%) fixed;
+}
+
+:root[data-theme='light'] body {
+	background: linear-gradient(160deg, #faf7f0 0%, #f1ece0 100%) fixed;
+}
+
+/* Headings in the brand typeface; body text keeps the system stack. */
+h1,
+h2,
+h3,
+h4,
+.site-title {
+	font-family: 'Plus Jakarta Sans Variable', var(--sl-font-system);
+}
+
+.sl-markdown-content img {
+	border-radius: 0.75rem;
+}
+
+/* The current page in the sidebar sits on the link colour. Coral is too light
+   behind light text, so dark mode uses clay there instead. */
+:root[data-theme='dark'] .sidebar-content a[aria-current='page'] {
+	background-color: var(--sl-color-accent);
+	color: #faf7f0;
+}
