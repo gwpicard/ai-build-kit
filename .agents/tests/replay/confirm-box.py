@@ -10,8 +10,9 @@ import sys
 
 def migration_command(command):
     """Recognise a migration and accompanying reads without running the shell."""
-    # Only the trailing status report may expand a shell variable.
-    command = re.sub(r';\s*echo "exit \$\?"\s*$', "", command)
+    # Only the status report may expand a shell variable. It reads, so it is
+    # dropped wherever it sits between the other parts.
+    command = re.sub(r';\s*echo "exit \$\?"\s*(?=;|$)', "", command)
     if any(part in command for part in ("$", "`", "\n", "\r")):
         return None
     lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|()<>")
@@ -55,6 +56,9 @@ def migration_action(words):
                 return "record the migration approval"
             if len(words) == 3 and words[1] == "use":
                 return "use the migration approval"
+        # Listing the recorded approvals reads them and spends none.
+        if words[1:] == ["list"]:
+            return "read migration context"
     if (executable == "migrate.sh" and wrapper in (None, "sh", "bash")
             and words[1:2] == ["--apply"] and len(words) in (2, 3)
             and (len(words) == 2 or re.fullmatch(r"[A-Za-z0-9_-]+", words[2]))):
