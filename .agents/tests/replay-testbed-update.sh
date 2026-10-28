@@ -80,6 +80,8 @@ with tempfile.TemporaryDirectory(prefix='testbed-update-check-') as tmp:
     call(['git', '-C', p, 'config', 'url.' + str(p) + '.git.insteadOf', address])
     assert call(['git', '-C', p, 'remote', 'get-url', 'origin']).strip() == str(p) + '.git'
     assert tree(inputs) == before
+    # Claude Code's own copy of each skill is refreshed too, as the real installer does.
+    assert (p / '.claude/skills/maintain/VERSION').read_text() == (kit / '.agents/skills/maintain/VERSION').read_text()
     call(['git', '-C', p, 'add', '.agents', 'skills-lock.json'])
     call(['git', '-C', p, 'commit', '-qm', 'Save installed skills'])
     assert all(v['verdict'] == 'hit' for v in data.checks(p).values())

@@ -431,6 +431,9 @@ run_once() {
           printf '%s\n' "${PROVIDER_SESSION:-}" > "$WORK/s${number}-r${repeat}-first-visit.session"
           provider_session_records "$WORK/s${number}-r${repeat}-first-visit" > "$WORK/s${number}-r${repeat}.extra-records"
           provider_new_session
+          # The new session has not started yet, so its first turn must not
+          # ask to resume one.
+          rm -f "$lastreply.session-started"
           ;;
       esac
     fi

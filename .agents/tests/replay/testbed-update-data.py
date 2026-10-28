@@ -29,6 +29,15 @@ def install_skills(project, kit):
             elif target.exists():
                 shutil.rmtree(target)
             shutil.copytree(skill, target, symlinks=True)
+            # The real installer also gives Claude Code its own copy of each
+            # skill, which is where the six commands come from afterwards.
+            claude = project / '.claude/skills' / skill.name
+            if claude.is_symlink():
+                claude.unlink()
+            elif claude.exists():
+                shutil.rmtree(claude)
+            claude.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(skill, claude, symlinks=True)
     lock = project / 'skills-lock.json'
     data = json.loads(lock.read_text()) if lock.is_file() else {'version': 1, 'skills': {}}
     for skill in (kit / '.agents/skills').iterdir():
