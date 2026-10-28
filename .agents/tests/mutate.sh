@@ -107,6 +107,7 @@ tests-missing-coverage-pass
 tests-after-failure-pass
 test-fix-empty-reason
 runner-fails-green
+runner-incomplete-green
 migration-misses-ready
 mark-ready-skips-done-when
 first-upload-ignores-shared-history
@@ -257,6 +258,7 @@ describe() {
     tests-after-failure-pass) echo "a failed after-run can be treated as fine" ;;
     test-fix-empty-reason) echo "an empty Test fix reason can edit a frozen test" ;;
     runner-fails-green) echo "the runner returns success after a rehearsal fails" ;;
+    runner-incomplete-green) echo "the runner accepts an incomplete rehearsal on GitHub" ;;
     migration-misses-ready) echo "the upgrade check misses open pieces that need the ready label" ;;
     mark-ready-skips-done-when) echo "a piece without Done when can be marked ready" ;;
     first-upload-ignores-shared-history) echo "a repository with unrelated work is treated as a first upload" ;;
@@ -364,6 +366,7 @@ checks_for() {
     review-boxes-never-open|review-brief-hides-missing-input|review-record-keeps-unsupported) echo "review-gate" ;;
     test-freeze-removed|tests-untested-status|tests-zero-coverage-pass|tests-missing-coverage-pass|tests-after-failure-pass|test-fix-empty-reason) echo "tests-prove-change" ;;
     runner-fails-green) echo "rehearsal-runner" ;;
+    runner-incomplete-green) echo "could-not-run" ;;
     migration-misses-ready) echo "upgrade-rehearsal" ;;
     mark-ready-skips-done-when) echo "mark-ready" ;;
     first-upload-ignores-shared-history) echo "first-upload" ;;
@@ -1086,6 +1089,16 @@ s = open(p).read()
 old = "if result.returncode == 1:"
 new = "if False and result.returncode == 1:"
 assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    runner-incomplete-green)
+      edit "$tree/.agents/tests/run-all.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if [ \"$status\" -eq 0 ]; then"
+new = "if [ \"$status\" -eq 0 ] || { [ \"${GITHUB_ACTIONS:-}\" = true ] && [ \"$status\" -eq 2 ]; }; then"
+assert old in s, "runner pass classification not found"
 open(p, "w").write(s.replace(old, new, 1))'
       ;;
     runner-fails-green)

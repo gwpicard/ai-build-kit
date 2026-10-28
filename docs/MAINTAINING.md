@@ -565,6 +565,18 @@ The runner reads the folder rather than a written-out list, so a rehearsal runs
 from the moment it is saved. Only `mutate.sh` is left out, and it audits the
 suite rather than passing or failing.
 
+A rehearsal with cases it could not run prints `could-not-run: <reason>` and
+exits 2, following the replay harness's exit code. The shared helper in
+`.agents/tests/lib/could-not-run.sh` records each reason; `finish_rehearsal`
+returns 2 after the remaining cases pass. A failure still exits 1 and takes
+precedence. Exit 2 without a reason is also a failure. The runner lists
+incomplete rehearsals and their reasons separately from failures, in both
+summaries, and does not count them as passed.
+
+Locally, only failures make the suite exit non-zero. On GitHub,
+`GITHUB_ACTIONS=true` also makes an incomplete rehearsal fail the job, including
+the `rehearsal` job above.
+
 `validate-kit.sh` checks that this workflow still has both jobs, that the
 rehearsal job is guarded to this repository, and that it runs `run-all.sh`. The
 last of those is the load-bearing one, because a rehearsal job that ran something

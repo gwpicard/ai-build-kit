@@ -3,6 +3,11 @@
 
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+. "$ROOT/.agents/tests/lib/could-not-run.sh"
+if ! docker info >/dev/null 2>&1; then
+  could_not_run "recipe database checks: Docker is unavailable or is not running (docker info failed)"
+  finish_rehearsal
+fi
 WORK=$(mktemp -d)
 trap 'rm -R "$WORK"' EXIT INT TERM
 PROJECT="$WORK/project"
