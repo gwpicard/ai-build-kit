@@ -103,6 +103,7 @@ for forbidden in \
   .agents/tests \
   .agents/tools/finish-release-draft.sh \
   .agents/tools/stamp-version.sh \
+  .agents/tools/check-release-notes.py \
   .agents/tools/rehearse-merged-tree.sh \
   .agents/tools/validate-kit.sh \
   .agents/tools/plan-refresh.sh \
