@@ -97,8 +97,12 @@ release's required start command and passing check. Inspect it before relying
 on the project as migration evidence.
 
 The exported folder holds the project and Git history with its remote removed.
-`<name>.founding.md` beside it records the tag, recipe, case, verdicts,
-transcript path and date. `.runs/` retains the full run and stand-in state.
+It keeps the files as the release left them, including any change the release
+did not save. `<name>.gh.json` beside it holds the GitHub stand-in's state, so
+a later visit finds the saved pieces: a preparation seeds a replay with it by
+writing it as the project's `.gh-start.json` neighbour. `<name>.founding.md`
+records the tag, recipe, case, verdicts, transcript path, saved-issues file
+and date. `.runs/` keeps the full run.
 Failed runs leave a report there and export no project. Existing outputs are
 refused unless `--replace` is given, which keeps the previous copies in the
 new run folder.

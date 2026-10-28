@@ -41,7 +41,7 @@ for tag in $tags; do
     if [ "$list" = yes ]; then
       printf '%s | tag %s | recipe %s | case %s | %s\n' "$name" "$tag" "$2" "$1" "$output/$name"
     elif [ "$replace" != yes ]; then
-      for target in "$output/$name" "$output/$name.founding.md"; do
+      for target in "$output/$name" "$output/$name.founding.md" "$output/$name.gh.json"; do
         [ ! -e "$target" ] && [ ! -L "$target" ] || fail "output exists: $target (use --replace)"
       done
     fi
@@ -78,7 +78,7 @@ for tag in $tags; do
     KIT_SRC="$source_tree" VERSION="$tag" REPLAY_WORK="$run/work" \
       REPLAY_RESULTS="$run/results" REPEATS=1 \
       sh "$HERE/run.sh" "$number" > "$run/run.log" 2>&1 || status=$?
-    # Export only the project. Logs and stand-in state stay in the retained run.
+    # Export the project and its saved issues. Logs stay in the retained run.
     # A failed run gets a report there, never a folder presented as founded.
     python3 "$HERE/testbed-export.py" "$run" "$output" "$name" "$tag" \
       "$recipe" "$number" "$status" "$replace" || {

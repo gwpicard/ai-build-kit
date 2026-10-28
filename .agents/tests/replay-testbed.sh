@@ -50,7 +50,7 @@ git -C "$p" -c commit.gpgsign=false commit -qm Founded
 git -C "$p" remote add origin https://github.com/rehearsal/project.git
 printf '{"held":true,"state_held":%s}\\n' "${STUB_STATE:-true}" > "$REPLAY_RESULTS/s$1-r1.json"
 printf 'transcript\\n' > "$REPLAY_RESULTS/s$1-r1.transcript"
-printf 'stand-in state\\n' > "$p.gh.json"
+[ "${STUB_NO_ISSUES:-no}" = yes ] || printf '{"issues": ["stand-in for %s"]}\\n' "$VERSION" > "$p.gh.json"
 ''')
     call(['git', 'init', '-q', repo])
     call(['git', '-C', repo, 'add', '.'])
@@ -77,10 +77,15 @@ printf 'stand-in state\\n' > "$p.gh.json"
         assert (project / 'masterplan.md').is_file()
         assert not (project / 'run.log').exists()
         assert not (project / (name + '.gh.json')).exists()
+        tag = name.split('-')[1]
+        issues = out / (name + '.gh.json')
+        assert json.loads(issues.read_text()) == {'issues': ['stand-in for ' + tag]}
         assert call(['git', '-C', project, 'remote']) == ''
         report = (out / (name + '.founding.md')).read_text()
         for field in ('Tag:', 'Recipe:', 'Case:', 'Held: True', 'State check: True', 'Transcript:', 'Date:'):
             assert field in report
+        named = report.split('Saved issues: ', 1)[1].splitlines()[0]
+        assert Path(named).samefile(issues)
         transcript = report.split('Transcript: ', 1)[1].splitlines()[0]
         assert Path(transcript).is_file()
     assert call(['git', '-C', repo, 'worktree', 'list', '--porcelain']) == before
@@ -91,12 +96,20 @@ printf 'stand-in state\\n' > "$p.gh.json"
     call(args + ['--replace', 'v1.0.0'])
     backups = list((out / '.runs').glob('*/previous-*/unfinished.txt'))
     assert len(backups) == 1 and backups[0].read_text() == 'keep my work'
+    assert len(list((out / '.runs').glob('*/previous-%s.gh.json' % names[0]))) == 1
+    # Saved issues left from an earlier build also block a plain rebuild.
+    lone = tmp / 'lone-issues'
+    lone.mkdir()
+    (lone / (names[0] + '.gh.json')).write_text('{}')
+    call([runner, '--output', lone, 'v1.0.0'], ok=2)
+    assert (lone / (names[0] + '.gh.json')).read_text() == '{}'
     assert call(['git', '-C', repo, 'worktree', 'list', '--porcelain']) == before
-    for key, value in [('STUB_FAIL', 'yes'), ('STUB_STATE', 'false')]:
+    for key, value in [('STUB_FAIL', 'yes'), ('STUB_STATE', 'false'), ('STUB_NO_ISSUES', 'yes')]:
         failed = tmp / key
         env = dict(os.environ, **{key: value})
         call([runner, '--output', failed, 'v1.0.0'], ok=2, env=env)
         assert not (failed / names[0]).exists()
+        assert not (failed / (names[0] + '.gh.json')).exists()
         assert list((failed / '.runs').glob('*/founding.md'))
         assert call(['git', '-C', repo, 'worktree', 'list', '--porcelain']) == before
     # A release without the builder fails before a replay and leaves no worktree.
@@ -163,5 +176,5 @@ printf 'stand-in state\\n' > "$p.gh.json"
     defaults = call(['sh', '-c', '. "$REPLAY_DIR/lib.sh"; default_cases'], env=env).split()
     expected = sorted(int(p.stem) for p in (harness / 'cases').glob('*.txt') if int(p.stem) < 83)
     assert sorted(map(int, defaults)) == expected
-print('replay-testbed: argument, naming, export, replacement and cleanup checks passed')
+print('replay-testbed: argument, naming, export, saved issues, replacement and cleanup checks passed')
 PY

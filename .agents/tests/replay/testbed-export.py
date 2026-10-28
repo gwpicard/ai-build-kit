@@ -14,6 +14,7 @@ def main():
     result_path = run / 'results' / ('s%s-r1.json' % number)
     transcript = run / 'results' / ('s%s-r1.transcript' % number)
     project = run / 'work' / ('s%s-r1' % number)
+    ghstate = run / 'work' / ('s%s-r1.gh.json' % number)
     try:
         result = json.loads(result_path.read_text())
     except (OSError, ValueError):
@@ -33,9 +34,15 @@ def main():
     if not (project / '.git').is_dir() or not (project / 'masterplan.md').is_file():
         print('testbed: the founded project is missing; report: %s' % (run / 'founding.md'), file=sys.stderr)
         return 2
+    # The pieces live as issues in the GitHub stand-in, and a later visit reads
+    # them, so their state travels beside the project, as the harness keeps it.
+    if not ghstate.is_file():
+        print('testbed: the saved issues are missing; report: %s' % (run / 'founding.md'), file=sys.stderr)
+        return 2
     target = output / name
     note = output / (name + '.founding.md')
-    if replace != 'yes' and any(p.exists() or p.is_symlink() for p in (target, note)):
+    issues = output / (name + '.gh.json')
+    if replace != 'yes' and any(p.exists() or p.is_symlink() for p in (target, note, issues)):
         print('testbed: output exists; use --replace', file=sys.stderr)
         return 2
     staged = run / 'export'
@@ -46,11 +53,12 @@ def main():
     for remote in remotes:
         subprocess.run(['git', '-C', str(staged), 'remote', 'remove', remote], check=True)
     # Replacement preserves the previous project and note beside the new run.
-    for old in (target, note):
+    for old in (target, note, issues):
         if old.exists() or old.is_symlink():
             old.rename(run / ('previous-' + old.name))
     staged.rename(target)
-    note.write_text(report)
+    shutil.copy2(ghstate, issues)
+    note.write_text(report + 'Saved issues: %s\n' % issues)
     print('Founded %s; report: %s' % (target, note))
     return 0
 
