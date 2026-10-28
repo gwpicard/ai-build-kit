@@ -30,8 +30,8 @@ real run, and its record says which parts that run covered. The person does not 
 wrong.
 
 Mechanisms make it reliable. A rule that a machine can check is a hook, a
-setting, or a script. It holds on every model and every coding agent, and it
-costs no words. Prose is kept for the judgements a machine cannot make.
+setting, or a script. It applies where that hook, setting or script runs.
+Prose is kept for the judgements a machine cannot make.
 
 Risk boundaries keep it honest. At the start, and again when the project
 changes, the kit names anything that could hurt people: personal data, money,
@@ -139,11 +139,12 @@ back, or the rule moves into a mechanism.
 ## The kit builds deployable, shared tools
 
 Every project is a tool that can go live and that a team can share. The kit has
-no private-only mode and no throwaway track. A repository, issues switched on,
-an agent session that can read and write those issues, and access to the host
-and the database are conditions of starting, and a script checks them. If one
-is missing, setup stops and says which step to take. The person creates the
-accounts. The kit never does.
+no private-only mode and no throwaway track. A repository with issues switched
+on, an agent session that can read and write those issues, and the tools named
+by the chosen recipe are conditions of starting. A script checks them and
+stops setup when one is missing. Host and database sign-in cannot yet be
+checked, so setup reports those as unchecked. The person creates the accounts.
+The kit never does.
 
 Hosting follows the same reasoning. The kit offers it only on a proven recipe,
 because a recipe is what makes the guarantees below hold. Outside a recipe the
@@ -224,9 +225,8 @@ installs into a folder cannot run those honestly, and claiming otherwise is the
 kind of unbacked claim it exists to stop. Where a project needs one, the fit
 check names it as a caution.
 
-`/maintain` is the reset. It brings the project's kit setup back to the kit's
-defaults and gives the next session a fresh starting point. It cannot repair
-badly written code.
+`/maintain` checks the project's setup and records, and offers the upkeep that
+is due. It cannot repair badly written code.
 
 A recipe is the one place that names services somebody else runs, because the
 person's tool will run on them. The kit still runs none of them, and the person
@@ -237,5 +237,4 @@ and the README, and nowhere else.
 
 At each release, read every skill against "What earns a place". Anything that
 no longer passes comes out. The kit should get smaller as often as it gets
-bigger, and its size in words is reported with each release beside its replay
-rates.
+bigger.

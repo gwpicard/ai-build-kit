@@ -156,10 +156,10 @@ named beside it.
 |---|---|---|
 | A person approves each merge, unless they chose auto-merge with its limits. | `merge.py --approved` spends the person's recorded approval through the approval gate, `records/scripts/approval.py`; `.agents/tests/merge-gate.sh` and `.agents/tests/approval-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; the local push guard and branch protection where the plan allows it, checked by `.agents/tests/push-guard.sh` and `.agents/tests/check-tooling.sh` | A private repository on Free has no GitHub protection; a person with permission can merge by hand there. |
 | Nothing goes online without approval. | One approval gate, `approval.py`, called by `merge.py --approved` and by every recipe step that moves what is live, applies a migration, adds a secret, or changes access, sign-up or the host connection: `.agents/tests/approval-gate.sh`, `.agents/tests/merge-gate.sh`, `.agents/tests/recipe-nextjs-supabase-on-vercel.sh`. Claude Code asks before approval is recorded, checked by `.agents/tests/push-to-main-rules.sh`; `.agents/tests/first-upload.sh`. In the behaviour set, `.agents/tests/replay/backbone.py` fails a replay in which a merge, a push to main or a change to the host came before the person's approval | Closed for the kit's own scripts. A host's tool run directly, outside a kit script, is held only by Claude Code's rules. |
-| Secrets are never shown. | `.agents/tests/secrets-gates.sh` and `.agents/tests/push-guard.sh` for commits and command output; `.agents/tests/record-secrets.sh` for the saved records: the pull request body `gate.py` writes, the changelog and masterplan `run-recipe.sh` writes, and what Claude Code writes into a record file or a GitHub body. In the behaviour set, each replay project holds a planted canary secret in an untracked file, and `.agents/tests/replay/backbone.py` fails the replay if the canary or any secret-shaped value appears in what the run said or saved | Closed for the kit's scripts and Claude Code. Another agent writing a record by hand is caught when the record is pushed. |
+| Secrets are never shown. | `.agents/tests/secrets-gates.sh` and `.agents/tests/push-guard.sh` for commits and command output; `.agents/tests/record-secrets.sh` for the saved records: the pull request body `gate.py` writes, the changelog and masterplan `run-recipe.sh` writes, and what Claude Code writes into a record file or a GitHub body. In the behaviour set, each replay project holds a planted canary secret in an untracked file, and `.agents/tests/replay/backbone.py` fails the replay if the canary or any secret-shaped value appears in what the run said or saved | Closed for the kit's scripts and Claude Code. On Codex, Cursor and Gemini CLI, a secret printed by a tool reaches the agent; see COMPATIBILITY.md. Another agent writing a record by hand is caught when the record is pushed. |
 | Checks pass before a merge. | The project checks workflow, read by `merge.py`; `.agents/tests/merge-gate.sh`. When a billing limit alone stopped GitHub's check, `merge.py --approved` runs the same steps on a clean copy of the commit with `merge/scripts/local-check.py`; `.agents/tests/merge-billing.sh`. Every check reports a result from `quality-checks/scripts/results.py`; `.agents/tests/result-vocabulary.sh` | In the billing case, this computer's own tools stand in for the steps that set up tools on GitHub, so the result can differ from a run on GitHub's fresh machine. |
 | A review matches the code it read. | The review record names the commit the review read and carries a seal over itself and the stopping findings. `check-review.sh` and `merge.py` hold a record for another commit, a hand-edited one, and an older one with no commit. A review no second login approved is recorded as unverified. `.agents/tests/review-gate.sh`, `.agents/tests/merge-gate.sh`. In the behaviour set, `.agents/tests/replay/backbone.py` fails a replay whose merge landed a version the review did not read, and `.agents/tests/replay-behaviour.sh` proves it | The seal stops a hand edit, and anyone who runs the kit's code can still write a record. A review counts as verified only when a second GitHub login approved that commit. |
-| Every launch has a way back and a backup. | Each recipe must carry rollback, backup and restore sections, checked by `.agents/tools/check-recipes.sh`. `run-recipe.sh` holds a live tool whose backup is not confirmed, whose recipe names no rollback, or, on a later run, with no earlier build to go back to. Hosting is recipe-only. With no recipe, `run-recipe.sh none` gives one notice that nothing is guaranteed, records the person's words and the date, holds nothing and checks nothing. `.agents/tests/run-recipe.sh` | A first launch has no earlier build, so its way back is the recipe's rollback step, untried. Off a recipe the promise does not hold, and the kit says so. |
+| On a proven recipe, every launch requires a way back and a confirmed backup. | Each recipe must carry rollback, backup and restore sections, checked by `.agents/tools/check-recipes.sh`. `run-recipe.sh` holds the launch flow for a live address whose backup is not confirmed, whose recipe names no rollback, or, on a later run, with no earlier build to go back to. Hosting is recipe-only. With no recipe, `run-recipe.sh none` gives one notice that nothing is guaranteed, records the person's words and the date, holds nothing and checks nothing. `.agents/tests/run-recipe.sh` | A first launch has no earlier build, so its way back is the recipe's rollback step, untried. Off a recipe the promise does not hold, and the kit says so. |
 | Records say "accepted", never "done". | `.agents/tests/replay/state-check.sh` reads the end state a replay leaves and fails when an area is marked done on the date of an acceptance; `.agents/tests/replay-state.sh` proves that assertion. The project check reports an accepted area as accepted, and `.agents/tests/sensitive-area-map.sh` proves it. The move from an older path record keeps each acceptance as accepted, and `.agents/tests/risk-move-rehearsal.sh` proves it | The replay check measures the kit; it does not run in a project. Nothing stops an agent writing "done" by hand there. |
 
 Each mechanism needs a check that fails when the mechanism is removed. The
@@ -252,11 +252,12 @@ the old path fields.
 
 ### Working conditions
 
-Setup does not complete until a script confirms them: a repository with issues
-switched on, an agent session that can read and write issues, branch protection
-or a recorded private Free plan limit, and host and database access. A missing
-condition stops setup with the one step the person takes. The person creates
-the accounts.
+Setup requires a repository with issues switched on, an agent session that can
+read and write issues, branch protection or a recorded private Free plan limit,
+and the command-line tools named by the chosen recipe. A script stops setup
+when one of those conditions is missing. Host and database sign-in cannot yet
+be checked, so the script reports them as unchecked. The person creates the
+accounts.
 
 The script is `check-tooling.sh --conditions` in the setup skill, and
 `.agents/tests/check-tooling.sh` holds it. It proves issue access by opening a
@@ -839,9 +840,8 @@ which branch that is decides what a project receives. `stable` is the answer to
 that. Only a release moves it: `verify release` rebuilds the published tag,
 compares it with the reviewed archive, and a second job in the same workflow
 then points `stable` at the verified commit. A release that fails verification
-leaves `stable` where it was. That job carries the only repository write in
-this repository, and `.agents/tools/promote-stable.sh` is where its limits are
-written down.
+leaves `stable` where it was. That job is the only one that writes to a branch,
+and `.agents/tools/promote-stable.sh` is where its limits are written down.
 
 Work still merges into `main`, and `main` is still the branch a contributor
 targets. What changed is that the branch installers read is no longer the
@@ -922,8 +922,9 @@ skills came from and updates through that route, and project records, AGENTS.md,
 README.md, environment files, application code, and the project's own check stay
 project-owned either way.
 
-Only stable numbered releases update the public repository. A preview build
-stays on this computer, and the next section says how to try one.
+Only a published release moves `stable`, the branch most installation routes
+read. A preview build stays on this computer, and the next section says how to
+try one.
 
 ## The companion site
 

@@ -3,7 +3,7 @@
     "id": "found",
     "title": "Set up a project",
     "checks_anchor": "set-up-a-project",
-    "summary": "Setup checks the tools and access needed to prepare the project.",
+    "summary": "Setup reports whether the required tools and GitHub access are available before preparing the project.",
     "command": "/setup-ai-build-kit",
     "skills": [
       "clarify",
@@ -21,7 +21,7 @@
       {
         "script": "use-push-guard.sh",
         "path": ".agents/skills/setup-ai-build-kit/scripts/use-push-guard.sh",
-        "description": "The agent enables Git’s pre-push hook, which blocks direct pushes to the main branch."
+        "description": "The agent enables Git’s pre-push hook, which blocks direct pushes to the main branch. An agent can bypass it; only Claude Code settings refuse the --no-verify bypass."
       },
       {
         "script": "protect-branch.py",
@@ -44,7 +44,7 @@
         "description": "Recipe projects skip the placeholder and use the starter's recipe-check workflow for application checks."
       }
     ],
-    "person_decides": "You answer the interview questions and decide whether to use existing work.",
+    "person_decides": "You answer the setup questions and decide whether to use existing work.",
     "source": ".agents/skills/setup-ai-build-kit/SKILL.md"
   },
   {
@@ -74,7 +74,7 @@
       {
         "script": "SKILL.md",
         "path": ".agents/skills/fit-check/SKILL.md",
-        "description": "The agent gives a risk notice for work touching a risk area whose precaution has not been completed and whose risk has not been accepted, and records your decision and the date."
+        "description": "The agent gives a risk notice for work touching a risk area whose caution has not been completed and whose risk has not been accepted, and records your decision and the date."
       }
     ],
     "person_decides": "You settle the questions that need your judgement, then decide whether to ask /implement to build the ready piece.",
@@ -154,10 +154,10 @@
       {
         "script": "check-review.sh",
         "path": ".agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh",
-        "description": "The review check fails the project check while a blocking finding remains unresolved or the review record identifies a different version."
+        "description": "The review check fails the project check while a finding marked worth stopping for remains unresolved or the review record identifies a different version."
       }
     ],
-    "person_decides": "You can ask the agent to explain a finding. The reviewer agent classifies findings as blocking or non-blocking.",
+    "person_decides": "You decide which findings the agent fixes. You can ask it to explain a finding first.",
     "source": ".agents/skills/second-opinion/SKILL.md"
   },
   {
@@ -190,14 +190,14 @@
         "description": "For a live project, the settings script identifies new settings in .env.example. The agent waits for hosting setup to confirm them before requesting a merge."
       }
     ],
-    "person_decides": "By default, you approve the named pull request. Automatic merging requires your explicit decision and recorded limits.",
+    "person_decides": "By default, you approve the merge of the named pull request, and the agent records your words and the date. Automatic merging requires your explicit decision and recorded limits.",
     "source": ".agents/skills/merge/SKILL.md"
   },
   {
     "id": "live",
     "title": "Set up or check the live tool",
     "checks_anchor": "set-up-or-check-the-live-tool",
-    "summary": "On a supported recipe, a launch script checks the backup and rollback steps.",
+    "summary": "On a supported recipe, a launch script holds the launch flow if a live address is set but no backup or way back is confirmed.",
     "command": "/setup-hosting",
     "skills": [
       "fit-check",
@@ -209,7 +209,7 @@
       {
         "script": "run-recipe.sh",
         "path": ".agents/skills/setup-hosting/scripts/run-recipe.sh",
-        "description": "On a supported recipe, the launch script requires a confirmed backup. Later launches also require a confirmed earlier build for rollback; a first launch requires a defined rollback step. With no recipe, the script gives a one-time notice that it cannot run the recipe checks."
+        "description": "On a supported recipe, the launch script holds the launch flow if a live address is set but no backup is confirmed or no way back is defined. It cannot stop a host that deploys on merge. With no recipe, it gives a one-time notice that recipe checks cannot run."
       },
       {
         "script": "approval.py",
@@ -220,11 +220,6 @@
         "script": "live-check.sh",
         "path": ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh",
         "description": "The live check compares the live version with the main branch on Vercel or Coolify without changing the live tool."
-      },
-      {
-        "script": "check-recipes.sh",
-        "path": ".agents/tools/check-recipes.sh",
-        "description": "The recipe validator rejects recipes missing a rollback, backup or restore section."
       },
       {
         "script": "live-check.sh",
