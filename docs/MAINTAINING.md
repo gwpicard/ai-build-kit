@@ -15,7 +15,7 @@ produced the same mistake more than once.
   messages and release notes, not a root `CHANGELOG.md`.
 - Root `AGENTS.md` carries the source-maintainer rules.
   `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md` carries the rules that
-  start places at the root of a project.
+  `/setup-ai-build-kit` places at the root of a project.
 
 - A fresh clone runs one command before its first commit:
   `git config core.hooksPath .githooks`. The hook in that folder takes AI
@@ -58,17 +58,6 @@ Some labels are read by the release machinery and must not be renamed or removed
 `release-major`, `release-minor`, `release-patch`, `skip-release-notes`, and the
 type labels `bug`, `enhancement`, `feature`, and `documentation`, which feed the
 version bump and the release notes. Only add organising labels around them.
-
-The **Kit maintenance** user Project (`github.com/users/gwpicard/projects/3`) is
-the one dashboard across every open issue. Group its table by Parent issue for an
-epic view, or add a second view grouped by an area field. A Project groups by its
-own fields or by Parent issue, never by a label, so drive its grouping off the
-parent link rather than duplicating the area labels as Project fields.
-
-For a quick slice without the Project, bookmark an issue search:
-`is:open label:epic` for the epics, `is:open no:parent -label:epic` for
-top-level work, `is:open label:"area:tests"` for one area, and
-`is:open label:"status:blocked"` for waiting work.
 
 Milestones are not used, because they are release or date buckets and the work
 has no timeline. Issue Types, the built-in type field, need an organisation
@@ -113,28 +102,6 @@ The unchanged original body.
 
 </details>
 ```
-
-Two routines write that shape, and neither builds anything. One runs when an
-issue is opened. The other runs each morning and picks up the answers to the
-questions the first one asked. Their outputs are an issue body, an issue
-comment, and a label change, and nothing else. The first line of the body,
-`<!-- elaborated:v1 -->`, is how a run knows the work is done, and a question
-comment opens with `<!-- elaborate:questions -->` so the morning run can tell
-its own question from the answer under it.
-
-A routine asks only about a blocker, which is an unknown where two different
-answers give two different results. Everything else becomes an assumption,
-written into the body so the person can correct it. A routine asks at most
-twice on one issue. After that it takes its own defaults, lists them under
-assumptions, and writes the body, because a piece stuck behind an unanswered
-question is a piece nobody sees again.
-
-A routine skips an epic, since an epic is an initiative rather than a piece,
-and it skips a pull request. When it writes the body it also adds the one
-`area:` label and the one type label the evidence supports, and swaps
-`needs-answers` for `ready`. Those are guesses from the code, and the
-maintainer corrects them. A routine never closes an issue, never adds a
-sub-issue, and never sends a reminder.
 
 ## Adaptive process is a contract
 
@@ -342,7 +309,7 @@ for a safeguard.
 One setting says how a skill is triggered. A background skill another skill
 calls carries `user-invocable: false` in its own file. A skill without it is a
 command. The adapter builder reads that setting and nothing else, so a dropped
-or misspelt line shows up as seven commands and one background skill, and the
+or misspelt line shows up as a seventh command, and the
 count check stops the build there.
 
 The commands used to carry a second setting that stopped the agent starting one
@@ -370,8 +337,8 @@ The writing-review skill is not in that tree at all. It lives under
 `.agents/maintainer-skills/`, alongside `review-issues`, which reads the open
 issues, groups them by theme and names the next piece worth picking up, and
 `stack-research`, which reads what changed upstream for the products the
-recipes name and proposes changes in a dated note. All three belong to whoever
-works on the kit, and none belongs to anybody who installs it.
+recipes name and proposes changes in a dated note. These maintainer skills
+belong to whoever works on the kit, and none belongs to anybody who installs it.
 
 `stack-research` writes its note to `.agents/tmp/stack-research/`, which git
 ignores, so the note is never tracked and never ships. It changes no recipe,
@@ -404,8 +371,8 @@ Some skills carry a `references/` folder loaded only when it applies. Keeping
 rules that apply to a minority of sessions out of the always-loaded body is the
 pattern to follow when a skill grows.
 
-A project's Claude settings live in start's foundation template, not in this
-repository's own `.claude/settings.json`. Change the deny list in both, because
+A project's Claude settings live in `setup-ai-build-kit`'s foundation template,
+not in this repository's own `.claude/settings.json`. Change the deny list in both, because
 the validator compares each of them against `.agents/guard/blocked-commands.md`.
 Only the template carries the session-start wiring, and only `setup-ai-build-kit` places the
 session-start script into a project.
@@ -770,15 +737,11 @@ summary, and state any action an existing user must take. Use
 `skip-release-notes` only when a merged pull request has no useful place in the
 project's public history.
 
-Some releases need words no pull request title carries. Where
-`docs/release-notes/` holds a file named for the version, the published notes
-open with that file's text, word for word, above the drafted changes. Paste it
-in when you edit the notes on the Release's web page. The v0.20.0 notes must
-open with this line: "After updating, start a new session (or /reload-plugins)
-and type /maintain again." The visit that runs an update still follows the old
-release's maintain text, which reads the new release's notes and nothing else
-of it. So the notes are the one place that can send the person back for the
-visit that finishes the update. The folder never ships.
+`docs/release-notes/` holds one versioned notes file at a time. Delete the
+previous release's file when drafting the next one. The published notes begin
+with the file's text, word for word, above the drafted changes. Paste it into
+the Release's web page when you edit the notes. The folder is not part of the
+release.
 
 Write each release's notes file with
 `.agents/maintainer-skills/release-notes/SKILL.md`. It holds the writing
@@ -812,15 +775,6 @@ retargeted by hand, or a pull request that merged between preparation and
 publication, either of which would leave the tag and the reviewed archive
 describing different things. It accepts only a tag contained in reviewed `main`.
 
-A publisher that took an assembled release and made it the exact tree of a
-second repository used to run here, along with a GitHub App and its two Actions
-settings. All of it existed because a workflow token cannot write to another
-repository. There is no other repository, and that same code aimed at this one
-would replace the source with a packaged release, so it was deleted rather than
-pointed somewhere safer. The rehearsal now proves its absence: no workflow or
-tool may run a push, and only the two workflows that edit a Release may write
-at all.
-
 A fix to a release workflow cannot rescue the release being published. A
 `release` event runs the workflow from the tagged commit, not from current
 `main`, so a repair sitting on `main` takes effect only for the next version.
@@ -845,29 +799,11 @@ then points `stable` at the verified commit. A release that fails verification
 leaves `stable` where it was. That job is the only one that writes to a branch,
 and `.agents/tools/promote-stable.sh` is where its limits are written down.
 
-Work still merges into `main`, and `main` is still the branch a contributor
-targets. What changed is that the branch installers read is no longer the
-branch the work happens on.
-
-Because `stable` is the default, GitHub fills it in as the base of a new pull
-request, and so does `gh pr create`. Open one with `gh pr create --base main`.
-A version stamp once went in without `--base`, merged into `stable`, and
-stopped the next release from moving the branch until a person turned its
-force-push rule off by hand. The `pull request base` check now goes red on a
-pull request aimed at `stable` and says how to change it. It stays off the
-required list: a required check on `stable` would refuse the release job's
-update in the same way a pull-request rule does. A project installing between two releases used to
-receive the label of one release with the contents of another, and `/maintain`
-told it that it was up to date. Now it receives the release. `/maintain` reads
-the project's own version against
-`/repos/gwpicard/ai-build-kit/releases/latest`, the one endpoint that cannot
-answer with a draft or a prerelease, and says both numbers every visit, so a
-project that installed before this arrived can still see where it stands.
-
-The switch is done. `stable` exists, it points at the latest published
-release's commit, and it is the repository's default branch. What matters now
-is how the two branches are protected, because they are protected differently
-and the difference is not arbitrary.
+Because `stable` is the default, GitHub and `gh pr create` use it as the
+proposed base of a new pull request. Open one with `gh pr create --base main`.
+The `pull request base` check fails on a pull request aimed at `stable` and
+explains how to change it. It is not required: a required check on `stable`
+would block the release job's update.
 
 `main` requires a pull request and the `source-kit-validation` and `rehearsal`
 checks, and refuses a deletion or a force push. `stable` refuses a deletion or
@@ -884,14 +820,10 @@ readily as a person, with no bypass to tell the two apart. What is in place
 stops the damage that cannot be undone, a deletion or a rewrite. A stray push
 shows in the branch and is corrected by publishing again.
 
-One trap for anybody who moves the default branch again. A ruleset whose
-condition is `~DEFAULT_BRANCH` rather than a branch name follows the default
-branch when it moves, and takes its rules off the branch it used to cover.
-That happened here. Switching to `stable` left `main` with no rules on it at
-all, and nothing said so: the ruleset list read exactly as it had before,
-because the ruleset had not changed. Both rulesets now name their branch
-literally. After any change of this kind, ask each branch what applies to it
-rather than reading the list:
+A ruleset whose condition is `~DEFAULT_BRANCH` follows the default branch when
+it moves, taking its rules off the branch it used to cover. Name each branch
+literally in its ruleset. After changing the default branch, ask each branch
+what applies to it rather than relying on the ruleset list:
 
 ```
 gh api repos/<owner>/<repo>/rules/branches/main --jq '[.[].type]'
@@ -914,15 +846,6 @@ itself. The release tags are lightweight, and a lightweight tag has no `^{}`
 form, so `git ls-remote origin 'refs/tags/vX.Y.Z^{}'` prints nothing and looks
 like a mismatch. `git ls-remote origin refs/heads/stable refs/tags/vX.Y.Z`
 prints both commits, and they have to be the same.
-
-The bridge for projects installed before the shared installer is retired. Only
-v0.1.0 and v0.1.1 shipped a `/maintain` that could reach it, v0.1.0 was never
-tagged publicly, and the kit's own record says real users arrived at v0.5. A
-project older than that reinstalls with `npx skills add gwpicard/ai-build-kit`
-once and then updates like any other. Every installation now records where its
-skills came from and updates through that route, and project records, AGENTS.md,
-README.md, environment files, application code, and the project's own check stay
-project-owned either way.
 
 Only a published release moves `stable`, the branch most installation routes
 read. A preview build stays on this computer, and the next section says how to
@@ -1189,7 +1112,7 @@ name a person reads is the one that matters, and an internal name is left alone
 where changing it would churn output nobody reads for no reader benefit.
 
 A person reads "background skills"; the code identifiers and check messages say
-"disciplines". They are the same two skills.
+"disciplines". They refer to the same 13 background skills.
 
 A person reads that the agent chooses the method; `.agents/tests/scenarios.md`
 and `.agents/tests/replay/grader-prompt.md` call that field "hidden technique".
