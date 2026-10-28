@@ -64,8 +64,8 @@ Do them in this order. The writing rules live in three places, and a step
 skipped between them goes unnoticed until the notes are public.
 
 1. Write the file from the evidence, in the shape above.
-2. Load `.agents/maintainer-skills/humanizer/SKILL.md` and run its embedded
-   mode over the file.
+2. Load `.agents/maintainer-skills/writing-review/SKILL.md` and run its
+   embedded mode over the file.
 3. Check the file against the house rules in `docs/MAINTAINING.md`: paragraph
    length, verbs that match what a check does, banned words, sentence shape.
 4. Write the full text for the Release's page to
@@ -83,5 +83,5 @@ skipped between them goes unnoticed until the notes are public.
 ## Done when
 
 Every claim traces to the evidence, every required user action is present word
-for word, the humanizer and house-rule passes are done, and the latest fresh
+for word, the writing-review and house-rule passes are done, and the latest fresh
 review of the final page text reports no Critical or Major finding.

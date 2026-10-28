@@ -50,7 +50,7 @@ reach-deleted-paths
 reach-wide-tables
 manifest-drop
 manifest-drop-unpaired
-humanizer-leak
+writing-review-leak
 review-issues-leak
 bootstrap-overwrite
 bootstrap-escape
@@ -204,7 +204,7 @@ describe() {
     reach-wide-tables) echo "wide database tables stop being reported" ;;
     manifest-drop) echo "a document named in both manifests is dropped from the release allowlist" ;;
     manifest-drop-unpaired) echo "a file named only in the release allowlist is dropped, with no second manifest to cross-check it" ;;
-    humanizer-leak) echo "the maintainer's writing skill is put back beside the eleven and allowed into the release" ;;
+    writing-review-leak) echo "the maintainer's writing skill is moved into the project skills and allowed into the release" ;;
     review-issues-leak) echo "the maintainer's issue review, the skill nobody wrote a check for by name, is put beside the eleven and allowed into the release" ;;
     bootstrap-overwrite) echo "project bootstrap overwrites a file the project already had" ;;
     bootstrap-escape) echo "project bootstrap follows a link and writes outside the project" ;;
@@ -657,18 +657,18 @@ open(p, "w").write(t.replace(old, "WIDE_ROUTES = 100", 1))
       grep -v '^CONTRIBUTING\.md|' "$tree/release-manifest.txt" > "$tree/rm.tmp"
       mv "$tree/rm.tmp" "$tree/release-manifest.txt"
       ;;
-    humanizer-leak)
+    writing-review-leak)
       # The writing skill is kept out of a user's project by living outside
       # every folder an installer reads, so the mistake to rehearse is moving it
       # back into one. A project would then be offered a fifteenth skill.
-      [ -d "$tree/.agents/maintainer-skills/humanizer" ] || return 1
-      cp -R "$tree/.agents/maintainer-skills/humanizer" \
-        "$tree/.agents/skills/humanizer"
-      printf '%s\n' '.agents/skills/humanizer/|' >> "$tree/release-manifest.txt"
+      [ -d "$tree/.agents/maintainer-skills/writing-review" ] || return 1
+      cp -R "$tree/.agents/maintainer-skills/writing-review" \
+        "$tree/.agents/skills/writing-review"
+      printf '%s\n' '.agents/skills/writing-review/|' >> "$tree/release-manifest.txt"
       ;;
     review-issues-leak)
       # The same mistake with the other maintainer skill. The three checks that
-      # guard the boundary once named humanizer and nothing else, so this is
+      # guard the boundary once named writing-review and nothing else, so this is
       # the leak they would have missed. It exists so that the checks are
       # proved to read the folder rather than a name.
       [ -d "$tree/.agents/maintainer-skills/review-issues" ] || return 1

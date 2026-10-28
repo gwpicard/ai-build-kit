@@ -24,7 +24,7 @@ before editing.
   agent with its kind.
 - `.agents/maintainer-skills/`: skills only maintainers use. They sit outside
   `.agents/skills/` and `.claude/skills/` so no installer offers them, and they
-  get no adapter. Load one by its path: `humanizer/SKILL.md` for writing,
+  get no adapter. Load one by its path: `writing-review/SKILL.md` for writing,
   `review-issues/SKILL.md` to choose the next piece of work,
   `stack-research/SKILL.md` to check the recipes against their products,
   `review-public-docs/SKILL.md` before a release, and `release-notes/SKILL.md`
@@ -122,11 +122,12 @@ sweeping changes.
 
 ## Writing
 
-British spelling, no em dashes, short paragraphs. Write precisely and
-naturally, never in forced simple words. The reader does not read code, so
-define a technical term once where they would not know it, and use the
-established term where it is the right word.
+British spelling, no em dashes, short paragraphs. Write precisely and naturally,
+never in forced simple words. Public documents use plain, adult prose for people
+who do not read code; maintainer documents may be technical. Define a technical
+term once where a public reader would not know it, and use established
+terminology where it suits the reader. The writing framework replaces any
+Simplified Technical English instruction for this repository.
 
-Before saving any prose a person reads, load
-`.agents/maintainer-skills/humanizer/SKILL.md`, use its embedded mode, and
-follow the house rules in `docs/MAINTAINING.md`.
+Before saving prose, load `.agents/maintainer-skills/writing-review/SKILL.md` and
+use its embedded mode. Follow the house rules in `docs/MAINTAINING.md`.

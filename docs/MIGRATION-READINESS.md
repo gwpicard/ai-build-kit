@@ -16,7 +16,7 @@ Everything here was read on 23 August 2026 and is checkable.
 2. **Does this repository's history become public?** The audit under B3 says it
    safely could. That is not the same as deciding it should.
 3. **What becomes public that is not public now?** The tests, the maintainer
-   guide, and the Humanizer skill.
+   guide, and the writing-review skill.
 
 Nothing else about the move can be planned until these are answered. All three
 now are, and the answers with their reasoning are recorded on the migration

@@ -161,7 +161,7 @@ Gate a change on the delta against the previous released version. A regression
 that drops a step then shows as a fall on that step's assertion, compared like
 for like. Treat cross-run instability as a to-do list: a case that swings
 between runs is usually pointing at an ambiguous line in a SKILL.md to tighten,
-which ties the eval back to the Humanizer and the house style.
+which ties the eval back to the writing-review skill and the house style.
 
 Keep only assertions that pass with the current skill and fail without it. An
 assertion that passes either way proves nothing about the skill.
