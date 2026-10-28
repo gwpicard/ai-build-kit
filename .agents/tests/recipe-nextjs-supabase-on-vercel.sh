@@ -64,7 +64,7 @@ for rr_gated in "good promote.sh dpl_live $rr_main" "good roll-back-to.sh dpl_ea
   rr_case 2 $rr_gated
   RR_NO_YES=0
   rr_gated=${rr_gated#* }
-  grep -q 'No yes is recorded for' "$RR_TMP/out" ||
+  grep -q 'No approval is recorded for' "$RR_TMP/out" ||
     rr_fail "${rr_gated%% *} without a recorded yes did not say what it waits for"
   if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -Eq '^vercel (promote|rollback|project|link|git|api)|^supabase db push$'; then
     rr_fail "${rr_gated%% *} changed something online with no recorded yes"

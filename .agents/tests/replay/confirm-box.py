@@ -9,9 +9,11 @@ import sys
 
 
 def migration_command(command):
-    """Recognise a migration or its recorded yes, without running the shell."""
-    # Every part of a compound command must belong to the granted migration.
-    if any(part in command for part in ("$(", "`", "\n")):
+    """Recognise a migration and accompanying reads without running the shell."""
+    # Only the status report may expand a shell variable. It reads, so it is
+    # dropped wherever it sits between the other parts.
+    command = re.sub(r';\s*echo "exit \$\?"\s*(?=;|$)', "", command)
+    if any(part in command for part in ("$", "`", "\n", "\r")):
         return None
     lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|()<>")
     lexer.whitespace_split = True
@@ -20,40 +22,56 @@ def migration_command(command):
         words = list(lexer)
     except ValueError:
         return None
-    if words[:1] == ["cd"] and len(words) > 3 and words[2] == "&&":
-        words = words[3:]
-    # A status report after the command grants no further action.
-    if words[-3:] == [";", "echo", "exit $?"]:
-        words = words[:-3]
-    if any(word != "&&" and re.fullmatch(r"[;&|()<>]+", word) for word in words):
-        return None
     parts = [[]]
     for word in words:
-        if word == "&&":
+        if word in ("&&", ";"):
             parts.append([])
         else:
             parts[-1].append(word)
     actions = [migration_action(part) for part in parts]
-    return ", then ".join(actions) if all(actions) else None
+    if not all(actions) or all(action == "read migration context" for action in actions):
+        return None
+    return ", then ".join(actions)
 
 
 def migration_action(words):
     while words and re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*=.*", words[0]):
-        words.pop(0)
-    if words[:1] in (["python3"], ["python"], ["sh"], ["bash"]):
         words = words[1:]
+    # The observed read discards missing-file errors, without writing a file.
+    if words[:1] == ["cat"] and words[-3:] == ["2", ">", "/dev/null"]:
+        words = words[:-3]
+    if any(re.fullmatch(r"[;&|()<>]+", word) for word in words):
+        return None
+    wrapper = None
+    if words[:1] in (["python3"], ["python"], ["sh"], ["bash"]):
+        wrapper, words = words[0], words[1:]
     if not words:
         return None
     executable = Path(words[0]).name
-    if (executable == "approval.py" and len(words) == 5 and words[1] == "yes"
-            and words[3] == "--words"
-            and (re.fullmatch(r"migrate --apply(?: [A-Za-z0-9_-]+)?", words[2])
-                 or re.match(r"apply (?:the )?migration\b", words[2], re.IGNORECASE))):
-        return "record the migration yes"
-    if executable == "migrate.sh" and words[1:2] == ["--apply"] and len(words) in (2, 3):
+    if executable == "approval.py" and wrapper in (None, "python3", "python"):
+        change = words[2] if len(words) > 2 else ""
+        if (re.fullmatch(r"migrate(?:\.sh)? --apply(?: [A-Za-z0-9_.-]+)?", change)
+                or re.match(r"apply (?:the )?migration\b", change, re.IGNORECASE)):
+            if len(words) == 5 and words[1] == "yes" and words[3] == "--words":
+                return "record the migration approval"
+            if len(words) == 3 and words[1] == "use":
+                return "use the migration approval"
+        # Listing the recorded approvals reads them and spends none.
+        if words[1:] == ["list"]:
+            return "read migration context"
+    if (executable == "migrate.sh" and wrapper in (None, "sh", "bash")
+            and words[1:2] == ["--apply"] and len(words) in (2, 3)
+            and (len(words) == 2 or re.fullmatch(r"[A-Za-z0-9_-]+", words[2]))):
         return "apply the migration"
+    if wrapper is not None:
+        return None
     if executable == "supabase" and words[1:3] == ["db", "push"]:
         return "supabase db push"
+    if ((words[0] == "cd" and len(words) == 2)
+            or (words[0] == "cat" and len(words) == 2 and not words[1].startswith("-"))
+            or words[0] in ("echo", "printf", "ls")
+            or (words[0] in ("pwd", "true") and len(words) == 1)):
+        return "read migration context"
     return None
 
 

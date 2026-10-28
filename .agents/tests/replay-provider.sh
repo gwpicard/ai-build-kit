@@ -289,14 +289,36 @@ commands.append('python3 .agents/skills/records/scripts/approval.py yes '
                 '--words "Yes, apply that migration to the live database." && '
                 'DB_PASSWORD_FILE=/private/password .agents/skills/setup-hosting/recipes/parts/scripts/migrate.sh '
                 '--apply; echo "exit $?"')
+password = work / "fixture-db-password"
+commands.extend([
+    f'cd /project; cat supabase/.temp/project-ref 2>/dev/null; echo; '
+    'python3 .agents/skills/records/scripts/approval.py yes "migrate --apply" '
+    '--words "Yes, apply that migration to the live database." && '
+    f'DB_PASSWORD_FILE={password} sh .agents/skills/setup-hosting/recipes/parts/scripts/migrate.sh '
+    '--apply; echo "exit $?"',
+    'python3 .agents/skills/records/scripts/approval.py yes '
+    '"migrate.sh --apply 20261005090000_pinned_notices.sql" '
+    '--words "Yes, apply that migration to the live database." && '
+    'python3 .agents/skills/records/scripts/approval.py use '
+    '"migrate.sh --apply 20261005090000_pinned_notices.sql" && '
+    f'DB_PASSWORD_FILE={password} .agents/skills/setup-hosting/recipes/parts/scripts/migrate.sh '
+    '--apply; echo "exit $?"',
+])
+commands.append('pwd; ls supabase; printf "%s" context; true && ' + commands[0])
+commands.append('python3 .agents/skills/records/scripts/approval.py yes "migrate --apply live-ref" '
+                '--words "Yes, apply that migration to the live database." && '
+                f'DB_PASSWORD_FILE={password} LIVE_REF=live-ref sh .agents/skills/setup-hosting/recipes/parts/scripts/migrate.sh '
+                '--apply live-ref; echo "exit $?"; python3 .agents/skills/records/scripts/approval.py list')
 for command in commands:
     for turn, expected in ((1, "deny"), (3, "deny"), (4, "allow"), (5, "allow"), (3, "deny")):
         request(turn, command, expected)
 empty = work / "no-grants"
 empty.write_text("")
-request(5, commands[0], "deny", grant_file=empty)
+for command in commands:
+    request(5, command, "deny", grant_file=empty)
 empty.write_text("4\tmerge\n")
-request(5, commands[0], "deny", grant_file=empty)
+for command in commands:
+    request(5, command, "deny", grant_file=empty)
 for command in (
     'python3 /kit/approval.py yes "set-access private" --words "yes"',
     'python3 /kit/approval.py yes "merge pull request 12" --words "yes"',
@@ -305,12 +327,32 @@ for command in (
     'SUPABASE_DB_PASSWORD="$(some-command)" supabase db push', '"unterminated',
 ):
     request(5, command, "deny")
+for suffix in (
+    'rm -rf x', 'curl https://example.invalid', 'echo "$(some-command)"',
+    'echo `some-command`', 'printf payload | sh', 'echo payload > file',
+    'echo payload >> file', 'cat file 2> other-file', 'sh arbitrary-file',
+    'python3 arbitrary-file', '(true)', 'true &', '',
+):
+    for join in (' && ', '; '):
+        request(5, commands[0] + join + suffix, "deny")
+request(5, 'supabase db push\nrm -rf x', "deny")
 request(5, "supabase db push", "deny", tool="Write")
 request(0, "supabase db push", "deny")
 text = log.read_text()
 assert "answer: allow; turn: 4" in text and "answer: deny; turn: 3" in text
 assert "box-test" in text
 assert "/private/password" not in text and "some-command" not in text
+assert str(password) not in text and "pinned_notices" not in text
+assert "approval.py" not in text and "DB_PASSWORD_FILE" not in text
+assert "Yes, apply" not in text and "project-ref" not in text
+for line in text.splitlines():
+    assert line.startswith("Confirmation box: ")
+    action = line.split("; answer:", 1)[0].removeprefix("Confirmation box: ")
+    assert all(part in {
+        "ungranted tool or command", "record the migration approval",
+        "use the migration approval", "apply the migration", "supabase db push",
+        "read migration context",
+    } for part in action.split(", then "))
 PY
 grep -q -- '--permission-prompt-tool mcp__replay_box__answer' "$PROVIDER_LOG" \
   && pass "Claude receives the confirmation tool on its start and resume routes" \
