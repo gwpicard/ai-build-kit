@@ -34,6 +34,11 @@ provider_prepare() {
   # The host's stand-ins go second, for the same reason: a login shell would
   # otherwise find the person's own deploy command, which may be signed in.
   REPLAY_TOOLS="$GH_DIR${HOST_DIR:+:$HOST_DIR}"
+  if [ -n "${REPLAY_TESTBED_SOURCE:-}" ]; then
+    REPLAY_TESTBED_REAL_NPX=$(command -v npx)
+    export REPLAY_TESTBED_REAL_NPX
+    REPLAY_TOOLS="$REPLAY_DIR/testbed-tools:$REPLAY_TOOLS"
+  fi
   REPLAY_SHELL_HOME="$WORK/replay-shell"
   mkdir -p "$REPLAY_SHELL_HOME"
   printf 'export PATH="%s:$PATH"\n' "$REPLAY_TOOLS" \
@@ -95,6 +100,7 @@ provider_new_session() {
 provider_session_records() {
   prefix=$1
   session=
+  [ ! -f "$prefix.extra-records" ] || cat "$prefix.extra-records"
   [ -f "$prefix.session" ] && session=$(cat "$prefix.session")
   case "$REPLAY_PROVIDER" in
     claude)

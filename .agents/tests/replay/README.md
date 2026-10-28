@@ -111,6 +111,37 @@ A real project the maintainer works in is never part of this test bed. Use one
 only when the maintainer points to it for a specific migration test, and then
 only as a copy with no credentials and no remote.
 
+## Updating the older-release test beds
+
+Run `.agents/tests/replay/testbed-update.sh --list` from the repository root to
+preview the inputs, then `.agents/tests/replay/testbed-update.sh` to run case 85
+once per project. `--input <folder>` selects another test-bed collection;
+optional folder names select projects within it. Provider, model, `KIT_SRC`,
+`REPLAY_WORK` and `REPLAY_RESULTS` settings follow `run.sh`. The assembled
+version defaults to the source kit's `maintain/VERSION`, currently a stable
+number above the founding tags; an explicit `VERSION` must also be newer.
+
+The preparation copies the complete project and Git history, including
+unfinished and untracked files, and seeds its saved issues. It refreshes only
+installed skills, modelling the installation before `/maintain` finishes the
+project update. Project files and the older whole-copy marker stay for the
+update offer. The source test bed is never changed. The installer stand-in and
+GitHub's latest-release answer use this assembly only for these runs; the host
+stays signed out.
+
+The last turn starts a second visit in a fresh session in the same project.
+Reports retain held and state verdicts, project-check exits and output, leftovers,
+and the full statements containing the update offer and both visits. The grader
+reads whether finished work was offered again and whether each live claim had
+a read in that visit. Missing dependencies or checks are recorded, never called
+a pass. No dependency installation is part of the evidence read.
+
+Each run keeps `<name>.update.md` beside its logs, work and results under
+`~/.local/state/abk-replay/testbed-updates` by default, outside the repository
+and input folder. Failed runs are named plainly, the remaining projects still
+run, and any failure makes the command exit non-zero. These are paid model
+runs, separate from the default behaviour set.
+
 ## Surviving a long pass
 
 A full pass runs for about two hours, and two hours is long enough for the

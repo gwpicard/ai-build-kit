@@ -673,6 +673,13 @@ works in is never part of this test bed. Use one only when the maintainer points
 to it for a specific migration test, and then only as a copy with no credentials
 and no remote.
 
+Then run `.agents/tests/replay/testbed-update.sh` to check the current kit
+against copies of those founded projects. Its `--list` mode previews the inputs
+without a model. Read each retained update report for the offer, project-check
+exits, leftovers and both visits, including repeated offers and live claims
+without fresh evidence. The [replay guide](../.agents/tests/replay/README.md#updating-the-older-release-test-beds)
+gives the options and output locations. The source test beds stay unchanged.
+
 Run PHILOSOPHY.md's four questions over everything already here, including what
 is being added. Anything that now fails a question it used to pass has drifted
 (PHILOSOPHY.md explains how), and that is the list of work for the next pass.
