@@ -75,7 +75,9 @@ def clean(text):
 
 def change_name(text):
     words = clean(text).split(" ")
-    words[0] = os.path.basename(words[0]).removesuffix(".sh")
+    words[0] = os.path.basename(words[0])
+    if words[0].endswith(".sh") and len(words[0]) > 3:
+        words[0] = words[0][:-3]
     return " ".join(words)
 
 
@@ -115,7 +117,8 @@ def main(argv):
             write(path, rows)
             print("approval: recorded for %s; the step spends it when it runs" % change)
             return 0
-        found = next((row for row in rows if len(row) == 3 and row[1] == change), None)
+        # A row recorded before names were made consistent still matches.
+        found = next((row for row in rows if len(row) == 3 and change_name(row[1]) == change), None)
         if not found:
             stop('no recorded approval for "%s"; record approval.py yes "%s" '
                  '--words "<their words>" and run the step again.' % (change, change), 1)

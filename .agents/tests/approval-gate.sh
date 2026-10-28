@@ -96,6 +96,12 @@ assert "\tmigrate --apply\t" in unspent() and "migrate.sh" not in unspent()
 run("sh", str(step), "--apply")
 record("./.agents/skills/setup-hosting/recipes/parts/scripts/migrate.sh --apply")
 run("sh", str(step), "--apply")
+# A row an older gate wrote under the script's file name still matches, once.
+record_file = Path(run("git", "rev-parse", "--absolute-git-dir").strip()) / "ai-build-kit-approvals"
+with open(record_file, "a") as handle:
+    handle.write("2026-10-27\tmigrate.sh --apply\tyes, apply it\n")
+run("sh", str(step), "--apply")
+run("sh", str(step), "--apply", code=2)
 # The gate also normalises a caller's name and whitespace.
 record("migrate --apply")
 run("python3", str(gate), "use", " ./somewhere/migrate.sh   --apply ", "--step")
@@ -107,7 +113,7 @@ assert unspent() == before
 assert 'unspent "migrate --apply 20261005090000_x.sql", recorded words: "yes, apply only that file"' in out
 assert 'approval.py yes "migrate --apply" --words "<their words>"' in out
 assert "ask the person only if they do not" in out
-assert (project / "changes").read_text() == "changed\n" * 3
+assert (project / "changes").read_text() == "changed\n" * 4
 # Combining the streams preserves the step's final sentence as the last line.
 result = subprocess.run(["sh", str(step), "--apply"], cwd=project,
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
