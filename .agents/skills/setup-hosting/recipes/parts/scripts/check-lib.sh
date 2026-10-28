@@ -24,7 +24,7 @@ cl_approved() {
   [ -f "$cl_gate_script" ] ||
     cl_cannot "The approval gate is missing, so nothing was changed."
   python3 "$cl_gate_script" use "$cl_change" >&2 ||
-    cl_cannot "No yes is recorded for \"$cl_change\", so nothing was changed. Ask the person, record their words with approval.py yes, then run this again."
+    cl_cannot "No approval is recorded for \"$cl_change\", so nothing was changed. Ask the person, record their words with approval.py yes, then run this again."
 }
 
 cl_pass() { printf '%s\n' "$1"; exit 0; }

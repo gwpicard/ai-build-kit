@@ -2622,6 +2622,7 @@ project_docs="$(
         find "$path" -type f \( -name '*.md' -o -name '*.txt' -o -name '*.yml' -o -name '*.yaml' -o -name '*.json' \) -print
       fi
     done
+  printf '%s\n' "$ROOT/.agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh"
   for path in "$ROOT/README.md" "$ROOT/WORKFLOW.md" "$ROOT/llms.txt" \
     "$ROOT/CONTRIBUTING.md" "$ROOT/SECURITY.md"; do
     [ ! -f "$path" ] || printf '%s\n' "$path"
@@ -2724,6 +2725,7 @@ check_claim "first upload and each merge need a yes" "The first upload and each 
 check_claim "blocked commands merge yes claim" "Never merge without the person's yes or force a merge past a required review."
 check_claim "unattended merge always waits" "never merge or accept a risk for the person"
 
+check_claim "informal missing approval wording" "No yes is recorded for"
 check_claim "informal approval wording" "waits for a yes"
 check_claim "informal named approval wording" "named yes"
 check_claim "informal approval renewal wording" "fresh yes"
