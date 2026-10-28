@@ -365,7 +365,7 @@ commands and skip the rest. Claude Code accepts the setting, which is why that
 route works today. If the standard adopts a setting of its own, follow it and
 update the short person-facing version in `docs/COMPATIBILITY.md`.
 
-Humanizer is not in that tree at all. It lives under
+The writing-review skill is not in that tree at all. It lives under
 `.agents/maintainer-skills/`, alongside `review-issues`, which reads the open
 issues, groups them by theme and names the next piece worth picking up, and
 `stack-research`, which reads what changed upstream for the products the
@@ -393,9 +393,11 @@ Load any of them by its path when you need it. The validator checks the placemen
 rather than trusting it, and fails if a folder or command file named for a
 maintainer skill turns up anywhere an installer reads.
 
-The vendored copy is pinned to version 2.9.1 from
-[blader/humanizer](https://github.com/blader/humanizer/tree/v2.9.1) under its
-included MIT licence. Review upstream changes before replacing the local copy.
+The pattern guidance in the writing-review skill is based on version 2.9.1 of
+[the upstream writing guide](https://github.com/blader/humanizer/tree/v2.9.1),
+used under its included MIT licence. The audience-aware writing framework was
+supplied by the maintainer. Review upstream changes before replacing the copied
+pattern guidance.
 
 Some skills carry a `references/` folder loaded only when it applies. Keeping
 rules that apply to a minority of sessions out of the always-loaded body is the
@@ -779,7 +781,7 @@ visit that finishes the update. The folder never ships.
 
 Write each release's notes file with
 `.agents/maintainer-skills/release-notes/SKILL.md`. It holds the writing
-standard, the shape of the file, and the steps in order, from the humanizer
+standard, the shape of the file, and the steps in order, from the writing-review
 pass to a fresh review of the final page text. `stamp-version.sh` runs
 `.agents/tools/check-release-notes.py` before it writes a version, and refuses
 until the notes pass the rules a machine can test and the latest review records
@@ -1093,20 +1095,21 @@ wherever `N` appears.
 ## House rules for writing
 
 Anything written into this repository, by a person or an agent, follows these.
-They exist because the audience is not required to read code, so the words are the product.
-A short form of the list ships in `AGENTS.md`'s project template, so a project
-built with the kit inherits the plain-language spirit of it without carrying the
-full editorial machinery. This is the full version, and it governs the kit's own
-documents.
+Most public documents are for people who do not read code, so they use plain,
+adult prose. Maintainer documents are for people who work on the source and may
+use technical language suited to their readers. A short form ships in the
+project template, so a project built with the kit inherits its public-facing
+writing guidance without carrying the full editorial framework. These rules
+govern the kit's own documents.
 
-Before saving human-facing prose, load
-`.agents/maintainer-skills/humanizer/SKILL.md` and run its embedded mode. This
+Before saving prose, load
+`.agents/maintainer-skills/writing-review/SKILL.md` and run its embedded mode. This
 covers documentation, skills, pull request titles and descriptions, issues,
-release notes, interface copy, error messages, and reader-facing comments. The local
-skill is the shared instruction for every supported harness; the rules below
-remain the kit's own stricter house style. Release notes also follow
-`.agents/maintainer-skills/release-notes/SKILL.md`, whose framework applies the
-same standard in more detail.
+release notes, interface copy, error messages, and reader-facing comments. The
+framework replaces any Simplified Technical English instruction for this
+repository. The skill is the shared instruction for every supported coding
+agent, and the rules below remain the kit's house style. Release notes also follow
+`.agents/maintainer-skills/release-notes/SKILL.md` for their format and review.
 
 Preserve the information and intended voice rather than the draft's sentence
 shape. Never invent facts, names, figures, dates, quotations, or citations.
@@ -1124,9 +1127,11 @@ belongs only where the subject and author's voice call for it.
 - Plain does not mean elementary. Join closely related ideas into one sentence
   rather than a row of short ones, and write sentences that read naturally
   aloud rather than ones assembled from a template.
-- Give each tool the verb that matches what it does. A check detects, reports,
-  blocks or skips; it does not say, judge or decide. A person approves or
-  confirms.
+- Give each tool the verb that matches what it does. A check passes, fails,
+  detects, reports, blocks or skips. A script enforces, rejects or records. A
+  test fails on a fault and proves a mechanism works. None of them says, judges
+  or decides. A check or script blocks or rejects an action rather than holding
+  it. A person approves, confirms or declines.
 - Claim only what the evidence shows. Keep each condition and limit beside the
   claim it narrows, and do not turn a narrow fix into a general promise.
 - Banned: leverage, robust, comprehensive, seamless, crucial, foster, enhance,
@@ -1137,8 +1142,8 @@ belongs only where the subject and author's voice call for it.
 - Explain a concept where it lives, and link from everywhere else.
 - One name per thing. This is a kit, and calling it a pack somewhere else only
   makes a reader wonder whether the two are different.
-- Paragraphs stay under about 100 words. Four here had passed 140 before the
-  rule existed, and the audience is not required to read code.
+- Keep paragraphs to about 100 words. Long paragraphs hide the one sentence a
+  reader needed.
 - Vary the sentence shape. Almost every explanation wants to arrive as
   "statement: a, b, and c", and a document leaning on one device reads as a
   template however clear each instance is.

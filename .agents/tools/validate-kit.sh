@@ -82,7 +82,7 @@ expected_maintainer_skills=$(find "$MAINTAINER_SKILLS" -mindepth 1 -maxdepth 1 -
 # skill turns into an uncredited one. A skill written here has no upstream to
 # carry a licence from, so demanding one of every maintainer skill would mean
 # inventing a file to satisfy a check.
-vendored_maintainer_skills="humanizer"
+vendored_maintainer_skills="writing-review"
 
 # ---------------------------------------------------------------------------
 echo "== Issue references =="
@@ -2734,13 +2734,14 @@ check_claim "informal approval renewal wording" "fresh yes"
 # ---------------------------------------------------------------------------
 echo "== Maintainer writing contract =="
 
-if grep -qF '.agents/maintainer-skills/humanizer/SKILL.md' "$ROOT/AGENTS.md" && \
-   grep -qF '.agents/maintainer-skills/humanizer/SKILL.md' "$ROOT/docs/MAINTAINING.md" && \
-   grep -qF 'metadata:' "$MAINTAINER_SKILLS/humanizer/SKILL.md" && \
-   grep -qF 'version: "2.9.1"' "$MAINTAINER_SKILLS/humanizer/SKILL.md"; then
-  pass "maintainer prose loads the pinned local Humanizer skill"
+if grep -qF '.agents/maintainer-skills/writing-review/SKILL.md' "$ROOT/AGENTS.md" && \
+   grep -qF '.agents/maintainer-skills/writing-review/SKILL.md' "$ROOT/docs/MAINTAINING.md" && \
+   grep -qF 'name: writing-review' "$MAINTAINER_SKILLS/writing-review/SKILL.md" && \
+   grep -qF 'Writing quality framework' "$MAINTAINER_SKILLS/writing-review/SKILL.md" && \
+   grep -qF 'pattern-guide-version: "2.9.1"' "$MAINTAINER_SKILLS/writing-review/SKILL.md"; then
+  pass "maintainer prose loads the local writing-review skill"
 else
-  fail "maintainer Humanizer skill or writing instructions are incomplete"
+  fail "maintainer writing-review skill or writing instructions are incomplete"
 fi
 
 # ---------------------------------------------------------------------------
