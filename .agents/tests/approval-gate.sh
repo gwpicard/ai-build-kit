@@ -111,14 +111,15 @@ before = unspent()
 out = run("sh", str(step), "--apply", code=2)
 assert unspent() == before
 assert 'unspent "migrate --apply 20261005090000_x.sql", recorded words: "yes, apply only that file"' in out
-assert 'approval.py yes "migrate --apply" --words "<their words>"' in out
+assert 'python3 .agents/skills/records/scripts/approval.py yes "migrate --apply" --words "<their words>"' in out
 assert "ask the person only if they do not" in out
 assert (project / "changes").read_text() == "changed\n" * 4
 # Combining the streams preserves the step's final sentence as the last line.
 result = subprocess.run(["sh", str(step), "--apply"], cwd=project,
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 assert result.returncode == 2
-assert 'approval.py yes "migrate --apply"' in result.stdout.splitlines()[-1]
+assert ('python3 .agents/skills/records/scripts/approval.py yes "migrate --apply"'
+        in result.stdout.splitlines()[-1])
 assert len(result.stdout.splitlines()[-1].split(". ")) == 1
 for number in range(4):
     record("migrate --apply file%s.sql" % number, "approve file %s" % number)

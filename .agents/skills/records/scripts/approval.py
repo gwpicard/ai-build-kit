@@ -81,6 +81,13 @@ def change_name(text):
     return " ".join(words)
 
 
+def shown_path():
+    """This script's path as the agent can type it from the project folder."""
+    here = os.path.realpath(__file__)
+    relative = os.path.relpath(here, os.path.realpath(os.getcwd()))
+    return here if relative.startswith("..") else relative
+
+
 def main(argv):
     if not argv or argv[0] not in ("yes", "use", "list"):
         return stop('usage: approval.py yes "<change>" --words "<words>" | use "<change>" --step | list', 2)
@@ -120,8 +127,8 @@ def main(argv):
         # A row recorded before names were made consistent still matches.
         found = next((row for row in rows if len(row) == 3 and change_name(row[1]) == change), None)
         if not found:
-            stop('no recorded approval for "%s"; record approval.py yes "%s" '
-                 '--words "<their words>" and run the step again.' % (change, change), 1)
+            stop('no recorded approval for "%s"; record python3 %s yes "%s" '
+                 '--words "<their words>" and run the step again.' % (change, shown_path(), change), 1)
             nearby = [row for row in rows if len(row) == 3
                       and change_name(row[1]).split(" ")[0] == change.split(" ")[0]]
             if nearby:
