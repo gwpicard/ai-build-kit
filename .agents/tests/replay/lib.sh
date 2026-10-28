@@ -170,3 +170,11 @@ json_string() {
     END { printf "\"" }
   '
 }
+
+# Builders are run by number only, so the normal pass keeps its behaviour set.
+default_cases() {
+  for file in "$REPLAY_DIR"/cases/*.txt; do
+    grep -qx '# selection: explicit' "$file" && continue
+    basename "$file" .txt
+  done | sed 's/^0*//' | sort -n
+}

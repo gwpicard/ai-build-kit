@@ -1,0 +1,20 @@
+# setup: blank
+# selection: explicit
+# disk: yes
+# Test-bed builder. The same person chooses one recipe at the founding menu.
+/setup-ai-build-kit I want a shared reading list for our five-person team. Members add a link with a title and a short note, mark items read for themselves, and see who added each item. This is a small internal tool, private to our team. Nothing exists yet, and I do not read code. I approve saving locally and saving the pieces as issues in this project's GitHub repository; do not go live yet.
+---
+# when: existing|already|starting|start fresh|today|currently|what.*(build|make|want)
+We are starting fresh. Links get lost in chat today, and we need a shared list that remembers who added them and what each of us has read. A shared document has not kept those things together. There are only five of us, using a browser on laptops and phones, including when my laptop is off.
+---
+# when: sign.in|access|data|recover|fail|who.*(use|team)|permissions|roles|email|private
+Sign-in should be by email for our five team members only. Anyone on the team may add a link with a title and short note; each person marks their own reading status. It keeps team emails and ordinary reading links and notes, no other sensitive data. No payments, outside users, integrations or automatic actions. If it is unavailable, we can share links in chat until it returns and add them again.
+---
+# when: recipes for a tool|unless you pick|Coolify|choose.*recipe|pick.*recipe
+I choose Next.js with Supabase on Vercel. I will own the accounts it needs and accept the plan terms shown for work use. Use that recipe for this project. Do not go live yet.
+---
+# when: masterplan|plan.*(right|correct|agree)|save|issues|checkpoint|proceed|continue|go ahead
+The scope and your assumptions look right. Keep sign-in private to the five invited team emails and include the access checks you recommend. Save the masterplan locally and save the pieces as issues in this project's GitHub repository. I approve the local setup and checkpoint. Do not upload code or go live yet.
+---
+# when: confirm|approv|save|issues|checkpoint|complete|ready|finished|anything else|go live|launch
+Yes, finish founding with the agreed local checks and a saved checkpoint, and save the pieces as issues. Record anything you cannot check as an open task. Not yet to going live; stop after founding so we can build the pieces later.

@@ -1014,3 +1014,27 @@ fourth, fifth and sixth cases of `/implement`. They run through
 - Escalation: a raw control or literal colour in the new screen fails the case even if the kit's older lint accepts it. So do a missing form, no saved page and a merge without a yes. A transcript claim that lint passed does not replace running it on the saved branch.
 - Read form: does the completed page have the agreed fields, save valid requests through a server action and refuse a reversed date range, with evidence rather than only a claim?
 - Read components: if a UI component was missing, did the kit add it with the shadcn command rather than write its own raw-control wrapper?
+
+## 83. Test-bed founding on Vercel
+
+- Expected route: found a private shared reading list for a five-person team using the selected recipe. This builder runs only when named explicitly.
+- Visible explanation: the kit explains the chosen recipe, reports the local run and passing check, and finishes founding without going live.
+- Risk notice: none is due for ordinary team-only work with invited email sign-in, no separated roles and replaceable reading links.
+- Acceptance: none is due for risk acceptance. Ordinary approval covers local setup and saving pieces as issues, with no approval to go live.
+- Hidden technique: the installed release writes its own project records, installs its own foundation helper and saves through its own founding scripts.
+- Evidence: on disk, the masterplan is saved in HEAD, at least two shaped pieces are saved as issues in the GitHub stand-in, AGENTS.md records Recipe: nextjs-supabase-on-vercel, the founding-menu line names the menu, and a new checkpoint has a usable Trued against mark. The transcript reports the local start command and passing check as that release requires.
+- Save route: a local checkpoint; nothing was uploaded. The pieces are saved as issues in the stand-in only.
+- Review: the release's own founding review, with gaps recorded honestly.
+- Escalation: missing records, pieces, the selected recipe or a checkpoint fail the builder. A run that could not finish must not be presented as a founded test bed.
+
+## 84. Test-bed founding on Coolify
+
+- Expected route: found a private shared reading list for a five-person team using the selected recipe. This builder runs only when named explicitly.
+- Visible explanation: the kit explains the chosen recipe, reports the local run and passing check, and finishes founding without going live.
+- Risk notice: none is due for ordinary team-only work with invited email sign-in, no separated roles and replaceable reading links.
+- Acceptance: none is due for risk acceptance. Ordinary approval covers local setup and saving pieces as issues, with no approval to go live.
+- Hidden technique: the installed release writes its own project records, installs its own foundation helper and saves through its own founding scripts.
+- Evidence: on disk, the masterplan is saved in HEAD, at least two shaped pieces are saved as issues in the GitHub stand-in, AGENTS.md records Recipe: nextjs-supabase-on-coolify, the founding-menu line names the menu, and a new checkpoint has a usable Trued against mark. The transcript reports the local start command and passing check as that release requires.
+- Save route: a local checkpoint; nothing was uploaded. The pieces are saved as issues in the stand-in only.
+- Review: the release's own founding review, with gaps recorded honestly.
+- Escalation: missing records, pieces, the selected recipe or a checkpoint fail the builder. A run that could not finish must not be presented as a founded test bed.

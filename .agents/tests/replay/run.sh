@@ -2,7 +2,7 @@
 # run.sh: replay scenarios from the contract and record what the kit actually did.
 #
 # Usage:
-#   ./run.sh                     every case, the default number of repeats
+#   ./run.sh                     default cases, the default number of repeats
 #   ./run.sh 5 15                only these scenarios
 #   REPEATS=1 ./run.sh 5         one pass, for a quick look
 #
@@ -103,7 +103,7 @@ fi
 if [ "$#" -gt 0 ]; then
   cases=$*
 else
-  cases=$(find "$REPLAY_DIR/cases" -name '*.txt' -exec basename {} .txt \; | sed 's/^0*//' | sort -n)
+  cases=$(default_cases)
 fi
 
 # A run the harness breaks is neither a pass nor a fail. Look for the cheap faults
