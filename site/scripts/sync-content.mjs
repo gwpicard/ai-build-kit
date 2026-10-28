@@ -35,15 +35,15 @@ function tocFrontmatter(markdown) {
 const agentsIntro = 'The table summarises the evidence for using AI Build Kit with each coding agent. A coding agent reads and changes project files. Its support grade reflects how the kit has been tested on that agent, not whether a tool built with it is safe.';
 const agentsLimits = `
 
-Tested means maintainers have run scripted test conversations on the agent and graded its behaviour. Expected to work means the agent reads the same skill files as a tested agent, but no behavioural test run has been recorded. Experimental means the required files are included, but their checks establish only that the files are well formed.
+Tested means maintainers have run scripted test conversations on the agent and graded its behaviour. Expected to work means the agent reads the same skill files as a tested agent, but no graded replay has been recorded. Experimental means the required files are included, but their checks establish only that the files are well formed.
 
 ## Known limits
 
 - Claude Code: the recorded test conversations run without a person present, so they do not demonstrate how the kit behaves in an interactive session. No test rate yet describes an installable release, and the plugin route cannot be replayed in those unattended sessions.
-- Codex: no full behavioural test run has been recorded. Start a command by naming it; the kit does not provide Codex command files.
-- Cursor: no behavioural test run has been recorded, and command and background-skill loading remain unconfirmed.
-- Gemini CLI: no behavioural test run has been recorded, and command and background-skill loading remain unconfirmed. Unless Gemini is configured to hide tool results, any secret printed by a tool reaches the agent.
-- GitHub Copilot: no behavioural test run has been recorded, and it remains unconfirmed whether the agent follows the setup instructions.
+- Codex: no graded replay run is recorded. Start a command by naming it; the kit does not provide Codex command files. A secret printed by a tool reaches the agent. The merge script requires recorded approval, but the kit does not show Codex a confirmation box. The kit does not set up a deny list or remind you of a check-up when a session opens.
+- Cursor: no behavioural test run has been recorded, and command and background-skill loading remain unconfirmed. A secret printed by built-in Bash, Read or Grep reaches the agent. The kit does not set up a deny list or remind you of a check-up when a session opens.
+- Gemini CLI: no behavioural test run has been recorded, and command and background-skill loading remain unconfirmed. Unless Gemini is configured to hide tool results, any secret printed by a tool reaches the agent. The kit does not set up a deny list or remind you of a check-up when a session opens.
+- GitHub Copilot: no behavioural test run has been recorded, and it remains unconfirmed whether the agent follows the setup instructions. The kit does not set up a deny list or remind you of a check-up when a session opens.
 - Other agents: no behavioural test runs have been recorded. Support requires evidence from each agent.
 
 [Read the full agent support notes](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md).

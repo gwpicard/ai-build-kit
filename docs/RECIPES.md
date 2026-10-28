@@ -106,8 +106,8 @@ It opens with fixed fields. Each names a tool only, so checks can read it.
 - `Health-check tool:` names the tool used to read the live health route.
 - `Command-line tools:` the tools the recipe's scripts run on the person's
   machine, as command names separated by commas, or `none`. The setup tooling
-  check reads this line and reports each one, and a missing one never stops
-  founding, because only a project on this recipe needs it.
+  check reads this line and reports each tool. A missing tool stops founding
+  until it is installed, because the chosen recipe needs it to run its checks.
 - `Last checked:` a date, written YYYY-MM-DD, when somebody last read the
   recipe against the current documentation of everything it names. The date
   moves only when somebody did that.

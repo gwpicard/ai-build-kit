@@ -46,7 +46,7 @@ before you make it.
   kit did against what it promises.
 - **Expected to work.** The agent reads the same skill files a tested agent
   reads, and nothing known stops the kit working there. Nobody has recorded a
-  run. Its known limits are listed below.
+  graded replay. Its known limits are listed below.
 - **Experimental.** Nobody has recorded running the kit on this agent. The
   files it needs ship with the kit, and the only checks on them are checks of
   their shape.
@@ -115,11 +115,11 @@ skills installed into the project, which is the shared installer's route.
 - Codex has no result redaction, so a secret that a tool prints reaches the agent.
 - Nothing reminds you of a check-up when a session opens. `what-now` says when
   a visit is overdue.
-- There is no deny list set up for you, and nothing asks you before the agent
-  merges. Codex's own approval settings do that job, and you set them
-  yourself.
-- Nobody has checked whether Codex keeps the background skills out of your
-  hands.
+- There is no kit deny list set up for you. `merge.py` requires a recorded
+  approval before it merges; the kit does not show Codex a confirmation box.
+  Codex's own approval settings are separate, and you set them yourself.
+- The kit does not put background skills in Codex's command menu. Whether Codex
+  loads them as intended has not been checked.
 - GitHub access depends on the session's network permissions and the CLI's
   sign-in. See [GitHub access in Codex](#github-access-in-codex).
 
@@ -221,11 +221,12 @@ and leaves the previous printout intact.
   Cursor cannot replace built-in Bash, Read or Grep results, so a secret they
   print reaches the agent. See the [Cursor hooks reference](https://cursor.com/docs/hooks)
   and [Gemini CLI hooks reference](https://geminicli.com/docs/hooks/reference/).
-- There is no deny list set up for you, and nothing asks you before the agent
-  merges. Where the agent has command allow and deny settings, you add the
-  kit's blocked commands there yourself.
-- Nobody has checked whether these agents keep the background skills out of
-  your hands.
+- There is no kit deny list set up for these agents. `merge.py` requires a
+  recorded approval before it merges; the kit does not show a confirmation
+  box. Where an agent has command allow and deny settings, you add the kit's
+  blocked commands there yourself.
+- The kit does not put background skills in the command menu. Whether these
+  agents load them as intended has not been checked.
 
 ## Choose one installation route
 
@@ -324,9 +325,9 @@ the person's yes.
 That command replaces the installed skill files outright. Anyone who has edited
 one of the kit's skills in their own project loses that edit, without being
 asked and without being told. This is why `maintain` looks for local edits
-before it updates anything, and why a project rule belongs in `AGENTS.md`, which
-no update touches. The one edit the kit makes there is to the line naming the
-commands, after a rename, and only with approval.
+before it updates anything, and why a project rule belongs in `AGENTS.md`.
+Updates leave that file alone except when a command is renamed; then the kit
+changes its command list only with approval.
 
 An Agent Plugins installation belongs to the coding agent that installed it,
 so use that agent's own plugin update command. When the agent has none,

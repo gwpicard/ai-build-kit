@@ -41,11 +41,12 @@ and keep it running without reading code.
 
 - **It's yours.** Each tool built on a recipe is a standard Next.js and
   Supabase project in your GitHub, running on Vercel or on a server you rent
-  through Coolify, which can host several tools on one machine. You can move
-  it, and a developer can take it over at any time.
+  and manage with Coolify, which can host several tools on one machine. You can
+  move it, and a developer can take it over at any time.
 - **It lasts.** The agent's work goes through scripted checks and a second
-  agent's review, you try each change before deciding whether to merge it, and
-  a fixed recipe handles launch, backups and rollback.
+  agent's review, and you try each change before deciding whether to merge it.
+  Each recipe defines launch, backup and rollback steps; its `PROVEN.md` record
+  lists which steps have run on a live host.
 - **You get better at it.** Every change starts as a small piece of work with
   written acceptance criteria, its "Done when", so you learn to specify and
   lead the build as well as use the result.
@@ -88,8 +89,8 @@ does not record a launch as done until a backup is confirmed and a rollback
 step is defined, and after launch `/maintain` compares the live tool with the code and reports what
 differs, such as a database change not yet applied.
 
-Claude Code is tested and Codex is expected to work. Cursor, Gemini
-CLI and Copilot are experimental. Each recipe's `PROVEN.md` records
+Claude Code is graded Tested, Codex Expected to work, and Cursor, Gemini CLI
+and Copilot Experimental. Each recipe's `PROVEN.md` records
 which steps have run on a live host; others, such as restoring a backup, are
 rehearsed by script but not yet proven live.
 
