@@ -25,7 +25,7 @@ export default defineConfig({
     ],
     sidebar: [
       { label: 'Get started', items: ['index', 'install'] },
-      { label: 'Design and workflow', items: ['design', { slug: 'how-it-works', label: 'Workflow' }, 'records', 'recipes', 'what-it-checks', 'how-it-differs'] },
+      { label: 'Design and workflow', items: ['design', { slug: 'how-it-works', label: 'Workflow' }, 'working-together', 'records', 'recipes', 'live-data', 'maintaining-your-tool', 'what-it-checks', 'how-it-differs'] },
       { label: 'Reference', items: ['agents', 'sources', 'releases'] },
     ],
     social: [{
