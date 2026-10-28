@@ -206,7 +206,8 @@ def validate_map(project, lines):
             failed = True
     extensions = {".c", ".cc", ".cpp", ".cs", ".go", ".java", ".js", ".jsx", ".kt", ".php",
                   ".py", ".rb", ".rs", ".swift", ".ts", ".tsx"}
-    ignored = {"build", "coverage", "dist", "docs", "node_modules", "test", "tests", "vendor"}
+    ignored = {"build", "coverage", "dist", "docs", "node_modules", "test", "tests", "vendor",
+               "venv", ".venv", "__pycache__"}
     try:
         names = os.listdir(project)
     except OSError as error:
@@ -215,6 +216,10 @@ def validate_map(project, lines):
     for name in names:
         folder = os.path.join(project, name)
         if name.startswith(".") or name in ignored or not os.path.isdir(folder):
+            continue
+        if git("check-ignore", "-q", "--", name, cwd=project).returncode == 0:
+            continue
+        if not git("ls-files", "--", name, cwd=project).stdout.strip():
             continue
         source = any(os.path.splitext(file)[1] in extensions
                      for current, _, files in os.walk(folder) for file in files)
