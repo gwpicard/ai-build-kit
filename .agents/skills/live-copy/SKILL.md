@@ -51,6 +51,8 @@ be undone. A no leaves the service as it was, and the step is a warning.
 With that approval, record it with the `records` skill's `scripts/approval.py`, as
 `approval.py yes "<change>" --words "<their words>"`. A recipe step that
 changes something live refuses without it and names the change it waits for.
+Name the change as the step's script without `.sh` followed by its arguments,
+such as `migrate --apply`, and let the step spend the approval itself.
 Changing the masterplan's `Access:` line is one: say who gains or loses the
 way in, and with that approval run the recipe's Access scripts, write the new line,
 dated unless private, and add a changelog line.

@@ -322,7 +322,7 @@ def approved_yes(change):
     """The one gate before an online change: the person's recorded approval for it."""
     gate = Path(__file__).resolve().parents[2] / "records" / "scripts" / "approval.py"
     try:
-        done = subprocess.run([sys.executable, str(gate), "use", change], text=True,
+        done = subprocess.run([sys.executable, str(gate), "use", change, "--step"], text=True,
                               capture_output=True)
     except OSError:
         stop("merge: the approval gate could not run", 2)

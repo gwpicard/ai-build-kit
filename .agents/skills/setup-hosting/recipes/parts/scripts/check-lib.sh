@@ -23,8 +23,8 @@ cl_approved() {
   cl_gate_script="$(CDPATH= cd -- "$(dirname -- "$0")/../../../.." && pwd)/records/scripts/approval.py"
   [ -f "$cl_gate_script" ] ||
     cl_cannot "The approval gate is missing, so nothing was changed."
-  python3 "$cl_gate_script" use "$cl_change" >&2 ||
-    cl_cannot "No approval is recorded for \"$cl_change\", so nothing was changed. Ask the person, record their words with approval.py yes, then run this again."
+  python3 "$cl_gate_script" use "$cl_change" --step >&2 ||
+    cl_cannot "No approval is recorded for \"$cl_change\", so nothing was changed; follow the approval gate's guidance to record approval.py yes \"$cl_change\" --words \"<their words>\" and run the step again."
 }
 
 cl_pass() { printf '%s\n' "$1"; exit 0; }
