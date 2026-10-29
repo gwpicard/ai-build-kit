@@ -69,7 +69,7 @@ To move from Experimental to Expected to work, somebody runs a published
 release on the agent, from a blank folder through founding and one built
 piece, and the maintainer writes down what happened and on which release. A
 maintainer's own walk-through counts, and so does a report from a real user
-that says the same.
+that confirms the same.
 
 To move from Expected to work to Tested, the replay harness drives the agent
 through the replayed conversations and the rates are recorded beside the
@@ -86,9 +86,9 @@ it does not fail elsewhere.
 ### What Tested means for Claude Code
 
 Tested describes a rate. The harness runs each conversation several
-times and counts how often the kit behaved as promised, and some cases hold
-less often than others. One case, a bug that resists repeated fixes, held in
-four runs of five on one Claude model and in none of five on another. The runs
+times and counts how often the kit behaved as promised; some cases succeed
+less often than others. One case, a bug that resists repeated fixes, succeeded
+in four of five runs on one Claude model and none of five on another. The runs
 have no person in them, so a failure they show is a lead to check by hand.
 
 The last time every case was measured together was 25 August 2026. Some cases
@@ -109,13 +109,13 @@ skills installed into the project, which is the shared installer's route.
 
 - No graded replay run is recorded. A check proves the harness can start, resume
   and grade a Codex conversation, against a stand-in for Codex and without a
-  model. That proves the harness wiring, and says nothing yet about how the kit
-  behaves in a graded run. The founding and first-upload run described under
+  model. That proves the harness wiring, but provides no evidence about how the
+  kit behaves in a graded run. The founding and first-upload run described under
   GitHub access in Codex is recorded, and it was not graded.
 - The kit ships no Codex command files. Codex finds the skills in
   `.agents/skills/`, and you start a command by naming it.
 - Codex has no result redaction, so a secret that a tool prints reaches the agent.
-- Nothing reminds you of a check-up when a session opens. `what-now` says when
+- Nothing reminds you of a check-up when a session opens. `what-now` reports when
   a visit is overdue.
 - There is no kit deny list set up for you. `merge.py` requires a recorded
   approval before it merges; the kit does not show Codex a confirmation box.
@@ -135,7 +135,7 @@ skills installed into the project, which is the shared installer's route.
 - Setup creates the file that points Gemini CLI at `AGENTS.md`,
   and the one that points GitHub Copilot at it. Nobody has confirmed that
   either agent follows that pointer.
-- Nothing reminds you of a check-up when a session opens. `what-now` says when
+- Nothing reminds you of a check-up when a session opens. `what-now` reports when
   a visit is overdue.
 - Gemini CLI can hide a result, but cannot keep its original form. Unless
   Gemini is set up to hide it, a secret printed by a tool reaches the agent.
@@ -176,52 +176,17 @@ global Git setting changes, and `gh auth setup-git` is not needed. The recovery
 guide holds the agent-facing diagnostics; the scripts give you the exact
 restart command when access fails.
 
-The network and credential route was tried on 1 October 2026 with Codex CLI
-0.159.3 on macOS. Both account and repository reads succeeded in the new command
-tool with a restricted filesystem and networking enabled. Automated checks
-cover launch failure, existing token precedence, credential masking and the
-installation routes. This is evidence for GitHub access, not a replayed founding
-or build, so Codex keeps its grade above.
-
-On 9 October 2026, plain Codex CLI 0.161.0 on macOS, with the
-`workspace-network` profile and no token environment variable, failed both
-`gh api user` (HTTP 401) and Git remote reads (`unable to get password from
-user`). Signing in again inside that session did not help. A new launcher
-session worked for `gh auth status` and `git ls-remote --heads origin` when Git
-was set to ask `gh` through `gh auth setup-git`. Git accepted the equivalent
-process settings in a local check. Rehearsals cover those settings. That
-observation did not yet prove a founding without the global helper.
-
-Later that day, Orca started Codex CLI 0.162.0 through the updated launcher
-with an empty temporary global Git config and system Git config disabled.
-Inside Codex's shell tool, `gh api user` succeeded, Git's credential helper
-returned a credential, and that credential authenticated an account read.
-The active-account check also succeeded. Checking every saved account failed
-in the same session, so the startup and tooling checks now ask only about the
-active GitHub account. No personal Git settings changed. This checks session
-access: plain Codex failed the same account and credential checks, while the
-launcher session passed both kit checks silently. That probe did not run
-founding or upload code.
-
-A later Orca run used a fresh installation assembled from commit `7330c07`
-and a preanswered brief for a disposable local notes tool. Plain Codex gave
-the exact restart sentence and prepared no project files. The launcher then
-carried founding through the tool report, real private GitHub issues and a
-local checkpoint, with no code uploaded during founding. A new zsh session
-typed `codex` through the approved function, built a piece, passed eleven
-local tests, type checking and lint, then pushed its branch. GitHub created
-`main` at the founding checkpoint through the API, made it the default branch
-and opened the piece's pull request. It stayed unmerged.
-
-The run used an empty temporary global Git config, disabled system Git config
-and a disposable shell settings file. Its login shell kept the working PATH
-used for founding, since a different Node runtime could not start Codex. No
-personal Git or shell setting changed. The project hook stayed untrusted;
-the AGENTS startup rule checked access before work. Hook trust approval was
-not automated. GitHub could not start the private project's remote check
-because of the account's billing or spending limit. Local checks passed;
-this is evidence for real founding and first-upload access, not a passing
-remote project check.
+**What has been tried (October 2026, macOS).** Plain Codex CLI, with networking
+enabled and no token variable, failed both the GitHub account read and Git's
+remote read. Signing in again in that session did not help. Sessions started
+through the launcher passed both kit checks without changing personal Git or
+shell settings. The startup checks now ask only about the active GitHub account,
+because checking every saved account failed. One launcher run founded a
+disposable notes tool using real private GitHub issues and a local checkpoint.
+It then built a piece that passed local tests, type checking and lint, pushed its
+branch and opened a pull request, which stayed unmerged. GitHub did not start
+the remote project check because of the account's billing limit. These runs
+were not graded, so Codex keeps its grade above.
 
 Codex supports project hooks at `.codex/hooks.json`. It loads them only for a
 trusted project, and the person reviews each new or changed definition with
@@ -265,8 +230,8 @@ npx skills add gwpicard/ai-build-kit
 
 The shared [skills installer](https://github.com/vercel-labs/skills) detects
 installed coding agents and asks where the project skills should appear. It
-keeps one project-level copy and uses the selected harness locations for
-discovery. The same command can install the kit for several harnesses used on
+keeps one project-level copy and uses the selected coding agent's locations for
+discovery. The same command can install the kit for several coding agents used on
 one project.
 
 A coding agent that installs plugins in the open
@@ -289,7 +254,7 @@ shared skills, confirm they work, then remove the other installation.
 
 ## Update the installed skills
 
-During `maintain`, the agent names the version this project holds and the
+During `maintain`, the agent names the version this project records and the
 latest published one, reads that release's notes, and asks before changing the
 kit. Every route delivers a published release, never work that has not been
 released yet. The agent first identifies the installation route.
@@ -323,8 +288,8 @@ any other name without a word, so a project that updated across the rename of
 The `add` command keeps a skill the kit has retired, such as `fix`, `queue`,
 `sync` and `ship` after the move to six commands, and the lockfile still lists
 it. `maintain` offers to remove each one with `npx skills remove`, which
-takes out the folder, its links and its lockfile entry. It runs that only on
-the person's yes.
+removes the folder, its links and its lockfile entry. It runs that command only
+with the person's approval.
 
 That command replaces the installed skill files outright. Anyone who has edited
 one of the kit's skills in their own project loses that edit, without being
@@ -346,12 +311,12 @@ Projects created before this installation model may not have
 `skills-lock.json`. The same command registers the installed skills on the
 next `maintain` visit, and later visits use it again.
 
-## Harness map
+## Coding agent map
 
-The shared installer owns the exact placement and symlinks. Its current project
+The shared installer sets the file locations and symlinks. Its current project
 paths are:
 
-| Harness | Project skill location | Standing instructions |
+| Coding agent | Project skill location | Standing instructions |
 |---|---|---|
 | Claude Code, shared installer | `.claude/skills/` | `CLAUDE.md` points to `AGENTS.md` |
 | Claude Code, plugin | Claude's plugin cache | the six commands use the `ai-build-kit:` prefix; the background skills stay out of the menu |
@@ -364,9 +329,9 @@ Another coding agent may work through the same portable files. It stays
 Experimental until somebody records a run on it.
 
 The setup-ai-build-kit skill creates missing standing-instruction pointers. It does not
-replace an existing harness configuration.
+replace an existing coding agent configuration.
 
-Use the harness's skill picker or ask for a skill by name. When native
+Use the coding agent's skill picker or ask for a skill by name. When native
 discovery is unavailable, open `.agents/skills/<name>/SKILL.md` directly and
 follow it.
 
@@ -374,7 +339,7 @@ follow it.
 
 You can type one of the six commands, name it anywhere in a message, or just
 say what you want done in your own words. The agent starts the right command
-and says which one it is running. It never starts one you did not ask for.
+and tells you which one it is running. It never starts one you did not ask for.
 
 The background skills run when a command needs them. The kit marks them so
 that you cannot pick one yourself, where your coding agent enforces that.
@@ -401,16 +366,16 @@ A whole copy of the kit and the Claude Code plugin carry them. The shared
 skills installer and the Agent Plugins folder carry skills only, so there the
 command starts an ordinary subagent and tells it which skill to load.
 
-The reviewer, refuter and researcher only read. How firmly that holds depends on
-the coding agent:
+The reviewer, refuter and researcher only read. Enforcement depends on the
+coding agent:
 
 | Coding agent | What keeps a read-only agent from changing files |
 |---|---|
 | Claude Code | Its tool list has no editing tool. A review agent keeps the command line, because a review runs commands, so a check after the review puts back anything under review that changed and tells you. |
 | Cursor | `readonly: true` in the agent's file: no edits, and no command that changes anything. |
-| Gemini CLI | Its tool list holds only reading and searching tools, with no command line. |
+| Gemini CLI | Its tool list contains only reading and searching tools, with no command line. |
 | GitHub Copilot | Its tool list holds reading, searching and the web, with no editing or commands. |
-| Codex | Nothing in the agent's file. Codex keeps the session's own sandbox and approval settings for every agent, so only the agent's brief and the check after the review hold it. |
+| Codex | Nothing in the agent's file. Codex keeps the session's own sandbox and approval settings for every agent, so only the agent's brief and the check after the review enforce it. |
 
 VS Code reads agents from both `.github/agents/` and `.claude/agents/`, and
 Cursor from `.claude/agents/` and `.codex/agents/`. Each may list the kit's
@@ -431,23 +396,23 @@ Then ask the agent:
 A later manual update replaces only the AI Build Kit skill folders,
 after a clean checkpoint and explicit approval.
 
-## Optional harness features
+## Optional coding agent features
 
 | Capability | Portable behaviour | Optional enhancement |
 |---|---|---|
 | Command invocation | Ask for a skill by name | Native skill picker or slash command |
 | Background skills | Command loads the named skill | Automatic skill triggering |
 | Independent review | A clean separate chat with a prepared instruction | The reviewer agent, another subagent, or a headless run |
-| Unsaved work | `what-now` says what it belongs to | Session-end reminder |
-| Check-up due | `what-now` says when a visit is overdue | Said automatically when a session opens |
+| Unsaved work | `what-now` reports what it belongs to | Session-end reminder |
+| Check-up due | `what-now` reports when a visit is overdue | Said automatically when a session opens |
 | Safety | Standing restrictions and approval gates | Mechanical command deny list |
-| Merge | By default, approval naming the merge; recorded automatic merging is available with its limits. `merge.py` holds the project check and open review boxes | Claude Code blocks raw merge commands |
+| Merge | By default, approval for that merge; recorded automatic merging is available with its limits. `merge.py` blocks merging while the project check is failing or review boxes are open | Claude Code blocks raw merge commands |
 | Long runs | Normal sequential work | Native goal or orchestration mode |
 
 During `setup-ai-build-kit`, the capability check records which enhancements the current
-harness provides and selects a fallback for anything absent. Missing optional
+coding agent provides and selects a fallback for anything absent. Missing optional
 automation reduces convenience. Autonomy remains off unless it is recorded in
-the project's `Runs on its own:` setting and the harness can enforce its limits.
+the project's `Runs on its own:` setting and the coding agent can enforce its limits.
 
 `setup-ai-build-kit` writes the session-start wiring only into a Claude settings file it
 creates itself, and never into one that already exists. A project whose Claude

@@ -1,6 +1,8 @@
 # Sources
 
-AI Build Kit grew from the private `claude-kernel-builder` and its output, `claude-kernel`, then from the private `agentic-dev-skills`, and then into this kit.
+AI Build Kit began as the private `claude-kernel-builder`. Its output,
+`claude-kernel`, led to the private `agentic-dev-skills` project, which became
+this kit.
 
 This list identifies ideas used in the kit and the files that implement them.
 
