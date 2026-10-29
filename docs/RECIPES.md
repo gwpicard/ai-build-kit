@@ -139,12 +139,12 @@ Then come nine sections, in this order:
 
 - Preview is how a change is seen somewhere safe before it goes live.
 - Going live is how a checked change reaches the live address.
-- Rollback is how the live tool goes back to the last version that worked.
+- Rollback is how the live copy goes back to the last version that worked.
 - Backup is what is saved, where, and how often.
 - Restore is how a backup is put back, and roughly how long that takes.
 - Secrets is where keys live and how they reach the tool.
 - Logs is where the tool's record of requests and errors is read.
-- Health is how anyone knows the live tool is up.
+- Health is how anyone knows the live copy is up.
 - Access is who can reach the tool. Every recipe carries this section because
   every tool is private by default.
 
@@ -152,7 +152,7 @@ The access section explains how private access excludes uninvited people, with
 sign-up closed and the host's gate where available, and how public access
 removes that gate. Where a host has no gate, or offers one only on a paid plan,
 the recipe records that limit and the check covers what it can. Its script
-reads the live tool, compares it with the masterplan's `Access:` line and fails
+reads the live copy, compares it with the masterplan's `Access:` line and fails
 when they differ either way. A script that changes the setting changes a live
 service, so the coding agent's settings ask before it runs.
 

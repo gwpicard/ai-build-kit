@@ -3,7 +3,7 @@
     "id": "found",
     "title": "Set up a project",
     "checks_anchor": "set-up-a-project",
-    "summary": "During the founding interview, you describe the tool and the agent records its purpose, risks and first pieces of work.",
+    "summary": "During the founding interview, you describe the tool and the agent records its purpose, risks and first pieces of work. Before opening issues it says whether the repository is public, and warns that a public plan is readable by anyone.",
     "command": "/setup-ai-build-kit",
     "skills": [
       "clarify",
@@ -195,8 +195,8 @@
   },
   {
     "id": "live",
-    "title": "Set up or check the live tool",
-    "checks_anchor": "set-up-or-check-the-live-tool",
+    "title": "Set up or check the live copy",
+    "checks_anchor": "set-up-or-check-the-live-copy",
     "summary": "On a recipe, the launch script blocks recording a live address until the backup and way back are confirmed.",
     "command": "/setup-hosting",
     "skills": [
