@@ -39,7 +39,8 @@
   "v1.2.0",
   "v1.2.1",
   "v1.2.2",
-  "v1.2.3"
+  "v1.2.3",
+  "v1.2.4"
  ],
  "files": {
   ".agents/agents/builder.md": [
@@ -298,6 +299,7 @@
    "76d01424beffc6fd",
    "7dfe51344c2f4d64",
    "847119a517b31dac",
+   "86c93dd9eb28fff7",
    "86f0555bccd069ac",
    "9ccb2326fed99f74",
    "9f4986da543c1aa9",
@@ -397,6 +399,7 @@
   ".agents/skills/maintain/scripts/kit-released-copies.json": [
    "0af4bd54ce8bd0b4",
    "1bd1e75cc479c79f",
+   "36a8fee974e7a555",
    "50f41d06a065881e",
    "656f9b3a61b66abb",
    "747b13b63a8d2ba8",
@@ -1702,6 +1705,7 @@
    "76d01424beffc6fd",
    "7dfe51344c2f4d64",
    "847119a517b31dac",
+   "86c93dd9eb28fff7",
    "86f0555bccd069ac",
    "9ccb2326fed99f74",
    "9f4986da543c1aa9",
@@ -1736,6 +1740,7 @@
    "3438217a1e7f9f24",
    "357e24cf07fad3d8",
    "3b18352d3cb5a3e5",
+   "58423d246f153cc0",
    "5d9dccd5cbdcd2db",
    "5f7af52e6d739c1e",
    "89d183d1858e2f17",
@@ -2117,6 +2122,7 @@
    "088a1a1a70dba296",
    "1f9568e8cf644b96",
    "2648029fdfbd75ca",
+   "2823f98c259be7b4",
    "35aa4445931c0649",
    "502b720bbee9bd0b",
    "5972f0ebdf63cd5e",
@@ -2198,6 +2204,7 @@
    "85e5b1fd37e55636",
    "87747452e05c2a7b",
    "88cd350763f3e213",
+   "8960a1b581535e19",
    "95323a777cdec8d7",
    "9c864fb5924e7f7f",
    "9fb85106ecb2cca5",
@@ -2420,6 +2427,7 @@
    "76d01424beffc6fd",
    "7dfe51344c2f4d64",
    "847119a517b31dac",
+   "86c93dd9eb28fff7",
    "86f0555bccd069ac",
    "9ccb2326fed99f74",
    "9f4986da543c1aa9",
@@ -2517,6 +2525,7 @@
   "agent-plugin/skills/maintain/scripts/kit-released-copies.json": [
    "0af4bd54ce8bd0b4",
    "1bd1e75cc479c79f",
+   "36a8fee974e7a555",
    "50f41d06a065881e",
    "656f9b3a61b66abb",
    "747b13b63a8d2ba8",
