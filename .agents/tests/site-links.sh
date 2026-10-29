@@ -10,7 +10,7 @@ cd "$ROOT"
 BUILD=skip
 dist="$ROOT/site/dist"
 if [ ! -f "$dist/index.html" ] ||
-   [ -n "$(find "$ROOT/site/src" "$ROOT/site/data" "$ROOT/site/scripts" "$ROOT/site/astro.config.mjs" "$ROOT/docs" "$ROOT/llms.txt" "$ROOT/WORKFLOW.md" -newer "$dist/index.html" -type f 2>/dev/null | head -n 1)" ]; then
+   [ -n "$(find "$ROOT/site/src" "$ROOT/site/data" "$ROOT/site/scripts" "$ROOT/site/astro.config.mjs" "$ROOT/docs" "$ROOT/llms.txt" -newer "$dist/index.html" -type f 2>/dev/null | head -n 1)" ]; then
   if [ -d "$ROOT/site/node_modules" ] && command -v npm >/dev/null 2>&1 &&
      (cd "$ROOT/site" && npm run build >/dev/null 2>&1); then
     BUILD=built

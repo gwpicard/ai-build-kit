@@ -83,7 +83,7 @@ for required in \
   .github/ISSUE_TEMPLATE/feature-request.yml \
   .github/ISSUE_TEMPLATE/config.yml \
   .github/workflows/checks.yml \
-  AGENTS.md CONTRIBUTING.md README.md WORKFLOW.md CLAUDE.md GEMINI.md \
+  AGENTS.md CONTRIBUTING.md README.md CLAUDE.md GEMINI.md \
   docs/PHILOSOPHY.md docs/COMPATIBILITY.md docs/SOURCES.md \
   .ai-build-kit-version .env.example .gitignore LICENSE; do
   [ -e "$FIRST/$required" ] || fail "starter is missing $required"
