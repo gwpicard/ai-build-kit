@@ -45,6 +45,18 @@ else
 fi
 check "a current map passes" "$pass"
 
+mkdir -p "$project/ignored-src"
+printf '%s\n' 'print("local helper")' > "$project/ignored-src/helper.py"
+printf '%s\n' 'ignored-src/' > "$project/.gitignore"
+git -C "$project" add .gitignore
+git -C "$project" commit -qm 'Ignore a local source folder'
+if run_check > "$tmp/out" 2>&1; then
+  ignored=yes
+else
+  ignored=no
+fi
+check "a git-ignored source folder is skipped" "$ignored"
+
 if run_check --change "" > "$tmp/out" 2>&1; then
   empty_base=no
 else
@@ -180,6 +192,8 @@ check "a completed area passes after a rename" "$changed"
 check "the changed path still names the accepted area" "$glob"
 mkdir -p "$project/services"
 printf '%s\n' 'export const send = true' > "$project/services/send.ts"
+git -C "$project" add services/send.ts
+git -C "$project" commit -qm 'Add an unassigned source folder'
 if run_check > "$tmp/out" 2>&1; then
   unassigned=no
 else
