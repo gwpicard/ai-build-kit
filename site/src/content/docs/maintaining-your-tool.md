@@ -24,7 +24,7 @@ If a session stopped part-way through, start with `/what-now` to see what remain
 |---|---|
 | Project rules for the coding agent | `AGENTS.md` |
 | Keys and passwords | Git-ignored files made from `.env.example`; live values belong in the host's settings |
-| Risk record and accepted risks | The risk section of `masterplan.md` |
+| Risk record and accepted risks | The risk section of `masterplan.md`; see [project records and risk](/ai-build-kit/records/) |
 | Hosting recipe | The `Recipe:` line in the stack section of `AGENTS.md` |
 | Commands the agent must not run | The project's blocked-command list and the coding agent's own settings |
 

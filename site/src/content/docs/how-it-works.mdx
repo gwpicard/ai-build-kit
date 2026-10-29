@@ -6,7 +6,7 @@ draft: false
 
 import WorkflowMap from '../../components/WorkflowMap.astro';
 
-Project setup comes first. For each piece, you then agree on the scope, build, review and merge the change. Hosting is set up once, and maintenance continues over the life of the project.
+Setup comes first. For each piece, you and the agent agree scope, it builds the change, a reviewer checks it, and you decide whether to merge. You can rerun hosting setup.
 
 <WorkflowMap />
 
@@ -14,70 +14,65 @@ Project setup comes first. For each piece, you then agree on the scope, build, r
 
 ### Set up a project
 
-**What happens:** You describe the tool and answer setup questions. The agent prepares the project.
+**What happens:** In the founding interview, you describe the tool, its users, work and risks. The agent records its purpose and risks in the masterplan, creates the first GitHub issues and saves a local checkpoint.
 
-**Checks and mechanisms:** The interactive map above lists the checks. See the [stage instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/SKILL.md).
+See the [setup instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/SKILL.md).
 
-**What you decide:** You answer the setup questions and decide whether to use existing work.
+**What you decide:** You answer the interview questions and decide whether to use existing work.
 
-**Why:** The project needs the tools and accounts assessed during setup before work can begin ([design reasons](/ai-build-kit/design/)).
 
 ### Shape a piece
 
 **What happens:** You and the agent define one piece and agree on its acceptance criteria.
 
-**Checks and mechanisms:** The interactive map above lists the checks. See the [stage instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/shape/SKILL.md).
+**What the labels mean:** `ready` marks work ready to build; `needs-answers` marks an open question. A `Reaches:` line lists code areas the piece may change.
 
-**What you decide:** You settle the questions that need your judgement, then decide whether to ask /implement to build the ready piece.
+See the [shape instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/shape/SKILL.md).
 
-**Why:** You agree on the intended result and resolve open questions before the agent starts building ([design reasons](/ai-build-kit/design/)).
+**What you decide:** You resolve open questions and decide whether to run `/implement`.
+
 
 ### Implement a piece
 
 **What happens:** The agent builds one ready piece on its own branch.
 
-**Checks and mechanisms:** The interactive map above lists the checks. See the [stage instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/implement/SKILL.md).
+See the [implementation instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/implement/SKILL.md).
 
-**What you decide:** By default, you try the result and tell the agent to merge the named pull request. The agent records your approval. Automatic merging is off until you enable it. It requires three previous merges with recorded approvals and a dated “Runs on its own:” decision in the masterplan, and applies only within its recorded limits.
+**What you decide:** By default, you try the result and tell the agent to merge the named pull request; it records your approval. Automatic merging is off unless enabled. It requires three previous approved merges and a dated `Runs on its own:` entry in the masterplan, and acts within those limits.
 
-**Why:** Scripts check rules with testable conditions; written instructions guide decisions requiring a person’s or an agent’s judgement ([design reasons](/ai-build-kit/design/)).
 
 ### Review the change
 
-**What happens:** A reviewer agent assesses the change and its evidence in a separate session, without the builder’s conversation history.
+**What happens:** A reviewer agent assesses the change and evidence in a separate session, without the builder’s conversation history.
 
-**Checks and mechanisms:** The interactive map above lists the checks. See the [stage instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/second-opinion/SKILL.md).
+See the [review instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/second-opinion/SKILL.md).
 
-**What you decide:** You decide which findings the agent fixes. You can ask it to explain a finding first.
+**Second review:** A fresh reviewer tries to refute each "worth stopping for" finding before it is recorded.
 
-**Why:** The review gives you evidence about the change without asking you to read its code. Each report says what the agent tried and what happened ([design reasons](/ai-build-kit/design/)).
+**What you decide:** You choose which findings to fix and can ask for an explanation. An open "worth stopping for" finding blocks the merge.
+
 
 ### Merge the change
 
-**What happens:** The agent asks you to approve the merge of the named pull request. It records your words and the date, then a merge script merges that change.
+**What happens:** By default, the agent asks you in conversation to approve merging the named pull request, records your words and date, then runs the merge script.
 
-**Checks and mechanisms:** The interactive map above lists the checks. See the [stage instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/merge/SKILL.md).
+See the [merge instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/merge/SKILL.md).
 
-**What you decide:** You approve the merge of the named pull request. Each approval authorises one merge and can be used only once.
+**What you decide:** Your approval covers only the pull requests it names and each recorded approval is used once.
 
-**Why:** You decide whether to merge the change into the main branch. The merge script verifies your recorded approval and the project check results ([design reasons](/ai-build-kit/design/)).
 
 ### Set up or check the live tool
 
-**What happens:** The agent sets up hosting or checks the live tool.
+**What happens:** The agent sets up hosting or checks the live copy.
 
-**Checks and mechanisms:** The interactive map above lists the checks. See the [stage instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/SKILL.md).
+See the [hosting instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/SKILL.md).
 
-**What you decide:** You decide whether to launch after the agent explains the live change.
-
-**Why:** [Hosting recipes](/ai-build-kit/recipes/) define the launch, backup and rollback steps; outside one, the kit provides no guarantees ([design reasons](/ai-build-kit/design/#host-only-on-recipes-that-have-been-tried)).
+**What you decide:** Decide whether to launch after the agent explains the change. [Hosting recipes](/ai-build-kit/recipes/) define launch, backup and rollback steps; outside one, the kit gives no guarantees ([design reasons](/ai-build-kit/design/#host-only-on-recipes-that-have-been-tried)).
 
 ### Maintain the project
 
-**What happens:** The agent checks project records and the live tool, then handles upkeep that is due.
+**What happens:** The agent checks project records and the live copy (the running tool on its host), then runs monthly or quarterly upkeep when due.
 
-**Checks and mechanisms:** The interactive map above lists the checks. See the [stage instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/maintain/SKILL.md).
+See the [maintenance instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/maintain/SKILL.md).
 
-**What you decide:** You decide whether to apply changes beyond routine updates.
-
-**Why:** Records and the live tool can change over time, so the agent rechecks them during maintenance ([design reasons](/ai-build-kit/design/)).
+**What you decide:** After its report, you decide whether to apply changes beyond routine record updates.

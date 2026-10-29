@@ -3,7 +3,7 @@
     "id": "found",
     "title": "Set up a project",
     "checks_anchor": "set-up-a-project",
-    "summary": "Setup reports whether the required tools and GitHub access are available before preparing the project.",
+    "summary": "During the founding interview, you describe the tool and the agent records its purpose, risks and first pieces of work.",
     "command": "/setup-ai-build-kit",
     "skills": [
       "clarify",
@@ -26,7 +26,7 @@
       {
         "script": "protect-branch.py",
         "path": ".agents/skills/merge/scripts/protect-branch.py",
-        "description": "Branch protection requires the project check to pass on GitHub where your plan supports it."
+        "description": "Branch protection requires the project check to pass on GitHub where your GitHub plan allows it."
       },
       {
         "script": "first-upload.py",
@@ -44,14 +44,14 @@
         "description": "Recipe projects skip the placeholder and use the starter's recipe-check workflow for application checks."
       }
     ],
-    "person_decides": "You answer the setup questions and decide whether to use existing work.",
+    "person_decides": "You answer the founding interview questions and decide whether to use existing work.",
     "source": ".agents/skills/setup-ai-build-kit/SKILL.md"
   },
   {
     "id": "shape",
     "title": "Shape a piece",
     "checks_anchor": "shape-a-piece",
-    "summary": "The agent defines one piece of work and records the decisions it needs.",
+    "summary": "You and the agent agree on one piece and the decisions it needs.",
     "command": "/shape",
     "skills": [
       "triage",
@@ -64,7 +64,7 @@
       {
         "script": "mark-ready.sh",
         "path": ".agents/skills/records/scripts/mark-ready.sh",
-        "description": "The readiness script adds the ready label only when the piece has acceptance criteria under “Done when”, records its risk areas and records decisions for any open-question labels. Projects with code also require a Reaches line describing the proposed scope."
+        "description": "The readiness script adds the ready label, meaning the piece is ready to build, only when it has acceptance criteria under Done when, records its risk areas and records decisions for open-question labels such as needs-answers. Projects with code also require a Reaches line, which lists the code areas the piece may change."
       },
       {
         "script": "quality.py",
@@ -77,7 +77,7 @@
         "description": "The agent gives a risk notice for work touching a risk area whose caution has not been completed and whose risk has not been accepted, and records your decision and the date."
       }
     ],
-    "person_decides": "You settle the questions that need your judgement, then decide whether to ask /implement to build the ready piece.",
+    "person_decides": "You settle questions that need your judgement, then decide whether to run /implement on the ready piece.",
     "source": ".agents/skills/shape/SKILL.md"
   },
   {
@@ -99,17 +99,17 @@
       {
         "script": "check-tests.sh",
         "path": ".agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh",
-        "description": "The test protection check rejects unexplained edits to tests frozen by a Test: commit."
+        "description": "The test protection check rejects unexplained edits to tests frozen by a commit whose subject starts with Test:. Changes to existing test lines need a Test fix: commit with a reason; a later Test: commit may add lines."
       },
       {
         "script": "quality.py",
         "path": ".agents/skills/quality-checks/scripts/quality.py",
-        "description": "The test evidence check reports tests for the change that already passed beforehand and acceptance criteria without matching tests. Criteria marked for you to try are excluded from the automated test mapping."
+        "description": "The test evidence check reports when tests passed before the change was made or acceptance criteria have no matching tests. Criteria marked for you to try are excluded from the automated test mapping."
       },
       {
         "script": "quality.py",
         "path": ".agents/skills/quality-checks/scripts/quality.py",
-        "description": "The structure script reports new circular dependencies, where parts of the code depend on each other in a loop. Boundary crossings are checked separately, using the project’s tools or an examination of the changed dependencies."
+        "description": "The structure script reports new circular dependencies, where parts of the code depend on each other in a loop. The agent checks boundary crossings with a project tool, if available, or by examining changed dependencies."
       },
       {
         "script": "trim-commit.sh",
@@ -164,7 +164,7 @@
     "id": "merge",
     "title": "Merge the change",
     "checks_anchor": "merge-the-change",
-    "summary": "Before merging, the merge script verifies your approval for the named change and the project check results.",
+    "summary": "By default, the merge script verifies your recorded approval for the named change and the project check results before merging.",
     "command": null,
     "skills": [
       "merge",
@@ -187,17 +187,17 @@
       {
         "script": "env-names-added.sh",
         "path": ".agents/skills/merge/scripts/env-names-added.sh",
-        "description": "For a live project, the settings script identifies new settings in .env.example. The agent waits for hosting setup to confirm them before requesting a merge."
+        "description": "For a live project, the settings script identifies new setting names in .env.example, the example file listing the project’s required settings. The agent waits for hosting setup to confirm them before requesting a merge."
       }
     ],
-    "person_decides": "By default, you approve the merge of the named pull request, and the agent records your words and the date. Automatic merging requires your explicit decision and recorded limits.",
+    "person_decides": "By default, you tell the agent in conversation to merge the named pull request, and it records your words and the date. Automatic merging requires your explicit decision and recorded limits.",
     "source": ".agents/skills/merge/SKILL.md"
   },
   {
     "id": "live",
     "title": "Set up or check the live tool",
     "checks_anchor": "set-up-or-check-the-live-tool",
-    "summary": "On a supported recipe, a launch script holds the launch flow if a live address is set but no backup or way back is confirmed.",
+    "summary": "On a recipe, the launch script blocks recording a live address until the backup and way back are confirmed.",
     "command": "/setup-hosting",
     "skills": [
       "fit-check",
@@ -209,7 +209,7 @@
       {
         "script": "run-recipe.sh",
         "path": ".agents/skills/setup-hosting/scripts/run-recipe.sh",
-        "description": "On a supported recipe, the launch script holds the launch flow if a live address is set but no backup is confirmed or no way back is defined. It cannot stop a host that deploys on merge. With no recipe, it gives a one-time notice that recipe checks cannot run."
+        "description": "On a recipe, the launch script blocks recording a live address if no backup is confirmed or no way back is defined. It cannot stop a host that deploys on merge. With no recipe, it gives a one-time notice that recipe checks cannot run."
       },
       {
         "script": "approval.py",
@@ -219,12 +219,12 @@
       {
         "script": "live-check.sh",
         "path": ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh",
-        "description": "The live check compares the live version with the main branch on Vercel or Coolify without changing the live tool."
+        "description": "The live check compares the live version with the main branch on Vercel or Coolify without changing the live copy."
       },
       {
         "script": "live-check.sh",
         "path": ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/scripts/live-check.sh",
-        "description": "The live check compares the live version with the main branch without changing the live tool."
+        "description": "The live check compares the live version with the main branch without changing the live copy."
       }
     ],
     "person_decides": "You decide whether to launch after the agent explains the proposed live change.",
@@ -234,7 +234,7 @@
     "id": "maintain",
     "title": "Maintain the project",
     "checks_anchor": "maintain-the-project",
-    "summary": "The agent checks project records and the live tool, then handles upkeep that is due.",
+    "summary": "The agent checks project records and the live copy (the running tool on its host), then runs monthly or quarterly upkeep when due.",
     "command": "/maintain",
     "skills": [
       "live-copy",
