@@ -39,7 +39,8 @@ DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start sec
 PUBLISH_CHECKS="release-builder release-publication validate-kit"
 MODE_CHECKS="validate-kit fake-github"
 
-MUTATIONS="release-notes-unchecked
+MUTATIONS="housekeeping-misses-mutate
+release-notes-unchecked
 released-docs-unrecorded
 reach-wide-threshold
 reach-route-groups
@@ -193,6 +194,7 @@ backbone-api-merge-unbound"
 
 describe() {
   case "$1" in
+    housekeeping-misses-mutate) echo "the housekeeping inventory skips mutation clones" ;;
     release-notes-unchecked) echo "a version is stamped without checking its notes" ;;
     released-docs-unrecorded) echo "released documents are omitted from the whole-copy record" ;;
     reach-wide-threshold) echo "the route threshold rises so a broad route reach is no longer reported as wide" ;;
@@ -350,6 +352,7 @@ describe() {
 
 checks_for() {
   case "$1" in
+    housekeeping-misses-mutate) echo "housekeeping-inventory" ;;
     release-notes-unchecked) echo "version-stamp" ;;
     released-docs-unrecorded) echo "whole-copy-leftovers" ;;
     reach-wide-threshold|reach-route-groups|reach-alias-imports|reach-tables-types|reach-wide-dependents|reach-deleted-paths|reach-wide-tables) echo "reach-rehearsal" ;;
@@ -452,6 +455,15 @@ apply() {
   name=$1
   tree=$2
   case "$name" in
+    housekeeping-misses-mutate)
+      edit "$tree/.agents/maintainer-skills/housekeeping/scripts/inventory.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "each mutate \"$USER_TMP\"/abk-mutate-*\n"
+assert old in s, "mutation clone listing not found"
+open(p, "w").write(s.replace(old, "", 1))'
+      ;;
     release-notes-unchecked)
       edit "$tree/.agents/tools/stamp-version.sh" '
 import os
@@ -2014,4 +2026,4 @@ echo
 echo "Mutations that proved nothing, because they did not take effect:"
 awk -F'\t' 'NR > 1 && ($2 == "NO-CHANGE" || $2 == "NOT-APPLIED") { print "  " $1 }' "$REPORT"
 echo
-echo "Logs and clones are in $WORK"
+echo "Logs and clones are in $WORK. Nothing removes them; clear them with the housekeeping maintainer skill once read."
