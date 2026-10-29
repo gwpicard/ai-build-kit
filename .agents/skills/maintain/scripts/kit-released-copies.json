@@ -37,7 +37,8 @@
   "v1.1.1",
   "v1.1.2",
   "v1.2.0",
-  "v1.2.1"
+  "v1.2.1",
+  "v1.2.2"
  ],
  "files": {
   ".agents/agents/builder.md": [
@@ -246,6 +247,7 @@
   ],
   ".agents/skills/live-copy/SKILL.md": [
    "425ff40efa660ca6",
+   "43b31a51421ce4b7",
    "695ff1a21f906c03"
   ],
   ".agents/skills/maintain/SKILL.md": [
@@ -295,6 +297,7 @@
    "847119a517b31dac",
    "86f0555bccd069ac",
    "9ccb2326fed99f74",
+   "9f4986da543c1aa9",
    "a3f2c68bcd98fbd9",
    "aaeebc6ab5b9dd80",
    "ad11ded300a169bf",
@@ -382,6 +385,7 @@
    "833f7bd63e8d01d9"
   ],
   ".agents/skills/maintain/scripts/kit-leftovers.py": [
+   "0b33c91c8b99dc02",
    "141e83f47e04c62f",
    "153b528a7e53b7a5",
    "7d81a9086ac91839"
@@ -392,6 +396,7 @@
    "656f9b3a61b66abb",
    "747b13b63a8d2ba8",
    "bc349132a5635ebf",
+   "c5d172f2aa25417c",
    "d2acd4aaca7babca",
    "e8f4730f0e1ee940"
   ],
@@ -400,6 +405,7 @@
    "f846c79fdc89f309"
   ],
   ".agents/skills/maintain/scripts/old-skill-pointers.py": [
+   "387e4d1c9b0eb3bc",
    "3c6a5a306de84ced",
    "5acccd2fd3298d84",
    "eb888b0932ee39a7"
@@ -465,7 +471,8 @@
   ".agents/skills/merge/scripts/merge.py": [
    "2feab6d9fcda4542",
    "9fa1ac3091359fd8",
-   "eb8269e9a0dcc7b9"
+   "eb8269e9a0dcc7b9",
+   "f641d65958ff4f9b"
   ],
   ".agents/skills/merge/scripts/protect-branch.py": [
    "731f197b84fd0a7f",
@@ -586,6 +593,7 @@
   ],
   ".agents/skills/records/scripts/approval.py": [
    "1c2c5346f3206f29",
+   "4068384d256aa057",
    "e9c57dfec3c7aae1"
   ],
   ".agents/skills/records/scripts/mark-ready.sh": [
@@ -1131,7 +1139,8 @@
   ],
   ".agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh": [
    "38f8b2939330e4ba",
-   "9d102d707595176a"
+   "9d102d707595176a",
+   "bea10a99b8681190"
   ],
   ".agents/skills/setup-hosting/recipes/parts/scripts/container-check.sh": [
    "1ab1f2559a91c831",
@@ -1686,6 +1695,7 @@
    "847119a517b31dac",
    "86f0555bccd069ac",
    "9ccb2326fed99f74",
+   "9f4986da543c1aa9",
    "a3f2c68bcd98fbd9",
    "aaeebc6ab5b9dd80",
    "ad11ded300a169bf",
@@ -1722,6 +1732,7 @@
    "909f372db0369189",
    "90aa8eef92ff7110",
    "9528d0959d5759d2",
+   "9aa5a8a442abf5e1",
    "a34961ca6bbb3187",
    "a43db8e4bc51f474",
    "a53f36a88599a492",
@@ -2090,6 +2101,7 @@
   "README.md": [
    "07448783b37499a8",
    "088a1a1a70dba296",
+   "1f9568e8cf644b96",
    "2648029fdfbd75ca",
    "35aa4445931c0649",
    "502b720bbee9bd0b",
@@ -2176,6 +2188,7 @@
    "aaf9aabfc46bedd7",
    "abd527692d01a979",
    "aeda967acc5d0514",
+   "b1451215de17f58e",
    "b2752fb6dcbe0d55",
    "b922053cc05dffbf",
    "c2082906c799a7ac",
@@ -2342,6 +2355,7 @@
   ],
   "agent-plugin/skills/live-copy/SKILL.md": [
    "425ff40efa660ca6",
+   "43b31a51421ce4b7",
    "695ff1a21f906c03"
   ],
   "agent-plugin/skills/maintain/SKILL.md": [
@@ -2389,6 +2403,7 @@
    "847119a517b31dac",
    "86f0555bccd069ac",
    "9ccb2326fed99f74",
+   "9f4986da543c1aa9",
    "a3f2c68bcd98fbd9",
    "aaeebc6ab5b9dd80",
    "ad11ded300a169bf",
@@ -2474,6 +2489,7 @@
    "833f7bd63e8d01d9"
   ],
   "agent-plugin/skills/maintain/scripts/kit-leftovers.py": [
+   "0b33c91c8b99dc02",
    "141e83f47e04c62f",
    "153b528a7e53b7a5",
    "7d81a9086ac91839"
@@ -2484,6 +2500,7 @@
    "656f9b3a61b66abb",
    "747b13b63a8d2ba8",
    "bc349132a5635ebf",
+   "c5d172f2aa25417c",
    "d2acd4aaca7babca",
    "e8f4730f0e1ee940"
   ],
@@ -2492,6 +2509,7 @@
    "f846c79fdc89f309"
   ],
   "agent-plugin/skills/maintain/scripts/old-skill-pointers.py": [
+   "387e4d1c9b0eb3bc",
    "3c6a5a306de84ced",
    "5acccd2fd3298d84",
    "eb888b0932ee39a7"
@@ -2557,7 +2575,8 @@
   "agent-plugin/skills/merge/scripts/merge.py": [
    "2feab6d9fcda4542",
    "9fa1ac3091359fd8",
-   "eb8269e9a0dcc7b9"
+   "eb8269e9a0dcc7b9",
+   "f641d65958ff4f9b"
   ],
   "agent-plugin/skills/merge/scripts/protect-branch.py": [
    "731f197b84fd0a7f",
@@ -2678,6 +2697,7 @@
   ],
   "agent-plugin/skills/records/scripts/approval.py": [
    "1c2c5346f3206f29",
+   "4068384d256aa057",
    "e9c57dfec3c7aae1"
   ],
   "agent-plugin/skills/records/scripts/mark-ready.sh": [
@@ -3221,7 +3241,8 @@
   ],
   "agent-plugin/skills/setup-hosting/recipes/parts/scripts/check-lib.sh": [
    "38f8b2939330e4ba",
-   "9d102d707595176a"
+   "9d102d707595176a",
+   "bea10a99b8681190"
   ],
   "agent-plugin/skills/setup-hosting/recipes/parts/scripts/container-check.sh": [
    "1ab1f2559a91c831",

@@ -733,9 +733,10 @@ wherever `N` appears.
    needs. Each refresh waits for a confirmation in the browser, which an agent
    cannot give, so the person runs it.
 
-   Delete the Supabase project in the dashboard, since
-   `supabase projects delete` cancels its own confirmation without a real
-   terminal. Deleting the repository also removes it from the selection of
+   Delete the Supabase project with `supabase projects delete <ref> --yes`,
+   or in the dashboard. Without `--yes` the command cancels its own
+   confirmation when it has no terminal to ask in, and Vercel's does the same
+   unless the answer is piped in, as `printf 'y\n' | vercel project rm abk-try-N`. Deleting the repository also removes it from the selection of
    Vercel's GitHub app, so leave the app installed. Only if it was installed
    for this run, uninstall it under Installed GitHub Apps.
 
@@ -777,6 +778,30 @@ wherever `N` appears.
    created and how it was removed, and anything that surprised you. A failure
    found here is filed as an issue before the release, and the release waits
    until somebody decides what to do about it.
+
+## Local leftovers
+
+Kit work leaves copies on the maintainer's computer, and most tools keep them on
+purpose so a failure can be inspected. Nothing removes them later, so they
+build up: one evening of test-bed runs and mutation checks left about 17 GB.
+`.agents/maintainer-skills/housekeeping/SKILL.md` lists them, labels each one,
+and clears what is safe after one approval, into the Bin.
+
+| What writes it | Where | When it can go |
+|---|---|---|
+| `.agents/tests/mutate.sh` | `$TMPDIR/abk-mutate-<pid>`, or `MUTATE_WORK` | Once its report is read. The script prints the path and never removes it |
+| `.agents/tests/replay/run.sh` | `REPLAY_WORK` (default under `/tmp`), results in `~/.local/state/abk-replay/results` | Work folders once graded. Keep the latest results, and any archived run an open issue or release cites |
+| `.agents/tests/replay/testbed.sh` | `abk-testbeds/.runs/<name>/work` beside the test beds | Once the test bed is built. Keep `results/`, which the founding notes point at |
+| `.agents/tests/replay/testbed-update.sh` | `REPLAY_WORK` and `REPLAY_RESULTS`, about 2.7 GB a run | Keep the run that is evidence for an open issue, and clear the others |
+| `.agents/tests/seeded/run.sh` | `~/.local/state/abk-seeded` | Once a newer run exists |
+| Suite checks | `$TMPDIR/tmp.*` | Each removes its own on exit. One left behind came from a run that was killed |
+| Codex and hand runs | `/private/tmp`, which macOS clears at restart | Once the run's result is recorded |
+| Agents started with an isolated worktree | `.claude/worktrees/` inside the repository | Once the agent's branch is pushed or merged. The validator reads this folder, so a leftover one fails it |
+| Worktrees and branches | the repository | A branch once `main` holds its work and no worktree uses it. A worktree only with no unsaved edits |
+| Notes, briefs and reviews | `.agents/tmp/` | Once their content is in an issue, a pull request, the repository or a memory note. Keep the next release's notes review |
+
+A folder that holds a key is cleared only after the online project it opens is
+deleted or the key rotated, since a paused project can be resumed.
 
 ## House rules for writing
 

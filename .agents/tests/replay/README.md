@@ -166,6 +166,10 @@ exactly like a run that finished instantly. `nohup` alone does the job here: it
 makes the run ignore the hang-up a closing terminal sends, which is the thing
 that would otherwise kill it.
 
+Work folders are kept after a run so a failure can be inspected, and nothing
+removes them later. `docs/MAINTAINING.md` says when each can go, under "Local
+leftovers".
+
 Resume rather than restart. A scenario's results are cleared only when that
 scenario runs, so anything already finished is safe. Run the scenarios that have
 fewer than the full set of files in the results directory and leave the rest
