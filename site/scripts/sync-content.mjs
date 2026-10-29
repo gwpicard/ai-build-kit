@@ -35,7 +35,7 @@ function tocFrontmatter(markdown) {
   const headings = markdown.match(/^#{1,6}\s/gm) ?? [];
   return headings.length < 3 ? 'tableOfContents: false\n' : '';
 }
-const agentsIntro = 'The table summarises the evidence for using AI Build Kit with each coding agent. A coding agent reads and changes project files. Its support grade reflects how the kit has been tested on that agent, not whether a tool built with it is safe.';
+const agentsIntro = 'The table shows each coding agent’s support grade and the evidence behind it. A grade reflects testing of the kit on that agent, not the safety of tools built with it.';
 const knownLimits = section(compatibility, '## Known limits', '## GitHub access');
 const agentsBody = `${agentsIntro}\n\n${gradeContext}\n\n${gradeTable}\n\n${knownLimits}\n\n[Read the full agent support notes](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md).`;
 await writeFile(path.join(generatedDir, 'agents.md'), `---\ntitle: Supported agents\nslug: agents\ndraft: false\n${tocFrontmatter(agentsBody)}---\n\n${agentsBody}`);
@@ -44,13 +44,13 @@ function linkSourcePaths(markdown) {
   return markdown.replace(/`(\.agents\/[^`]+)`/g, (_, sourcePath) => `[\`${sourcePath}\`](https://github.com/gwpicard/ai-build-kit/blob/stable/${sourcePath})`);
 }
 const linkedPromises = linkSourcePaths(promises.replace(/^# .*\n+/, '').trim());
-const recipeIntro = 'A hosting recipe specifies a software stack, the combination of software used to build your tool, and a hosting service. It defines how to preview and publish changes, back up and restore data, and return to an earlier application version. Both recipes use TypeScript, Next.js 16 and Supabase, a combination supported by the kit’s existing checks. They suit internal tools such as dashboards, approval workflows, trackers and portals. Both available recipes have been used in real deployments, but neither has been tested through every procedure.';
+const recipeIntro = 'A hosting recipe pairs a software stack with a hosting service. It defines how to preview and publish changes, back up and restore data, and roll back the application. Both recipes use TypeScript, Next.js 16 and Supabase, the stack the kit’s checks are written for. They suit internal dashboards, approval workflows, trackers and portals. Both have run in real deployments, but not every procedure has been tested.';
 const recipeMenu = section(recipes, '## Site menu', '## A recipe is a folder');
 const recipeDetails = await source('site/data/recipes-explanation.md');
 const recipesBody = `${recipeIntro}\n\n## The recipes today\n\n${recipeMenu}\n\n${recipeDetails.trim()}`;
 await writeFile(path.join(generatedDir, 'recipes.md'), `---\ntitle: Hosting recipes\nslug: recipes\ndescription: Choose a hosting recipe, understand its checks, and see what remains untested.\ndraft: false\n${tocFrontmatter(recipesBody)}---\n\n${recipesBody}\n`);
 
-const checksIntro = 'The rules below apply across projects. Each names the safeguard, the code that enforces or tests it, and any known limit.';
+const checksIntro = 'These rules apply across projects. The table names each safeguard, its enforcement or test, and known limits.';
 const checksDetails = await source('site/data/what-it-checks-explanation.md');
 const checksIntroSection = await source('site/data/what-it-checks-intro.md');
 const checksBody = `${checksIntro}\n\n${checksIntroSection.trim()}\n\n${linkedPromises}\n\n${checksDetails.trim()}`;

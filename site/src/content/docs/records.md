@@ -31,8 +31,4 @@ The exact caution depends on the tool and its exposure. A risk notice explains w
 
 ## Hosting recipes and recovery
 
-The tool goes live through a [hosting recipe](/ai-build-kit/recipes/), which lists the services that run it and the steps for deployment, backup, restoration and rollback. The launch script does not record a live address while its backup and rollback conditions are unmet; it cannot stop a host that deploys on merge. You create and control the service accounts. Outside a recipe, the kit states that it provides no guarantees.
-
-[Read the rules that apply in every project](/ai-build-kit/what-it-checks/).
-
-[Read about live data and recovery](/ai-build-kit/live-data/).
+See [hosting recipes](/ai-build-kit/recipes/) for deployment and recovery steps, [live data and recovery](/ai-build-kit/live-data/) for what hosting checks read and change, and [project checks](/ai-build-kit/what-it-checks/) for the rules every project follows.

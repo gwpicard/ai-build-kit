@@ -10,7 +10,7 @@ Use `/shape` to turn an idea or a fault into a ready piece of work. Use `/implem
 
 ## Repairs
 
-The kit reproduces a fault before changing code. `/shape` records a repeatable failing case, and `/implement` fixes one likely cause at a time. If three attempts fail, the repair stops for a risk review before another attempt.
+The kit reproduces a fault before changing code. `/shape` records a repeatable failing case, and `/implement` fixes one likely cause at a time. After three failed attempts, another attempt needs a risk notice and your decision.
 
 ## Evidence
 
@@ -26,4 +26,4 @@ By default, `/implement` asks for your approval before merging each pull request
 
 ## Working as a team
 
-The pieces live as issues in the project's GitHub repository. Team members with repository access can see the shared work list and its decisions. `/implement` assigns the piece it starts, so the issue shows who is working on it. Agree through the piece and its records before changing shared data, access or live settings.
+The pieces live as issues in the project's GitHub repository. Team members with repository access can see the shared work list and its decisions. `/implement` assigns the piece it starts, so the issue shows who is working on it. Agree through the piece and its records before changing shared data, access or live settings. See [project records and risk](/ai-build-kit/records/) for how the kit records those decisions.
