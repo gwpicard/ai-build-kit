@@ -81,6 +81,8 @@ so each of them needs that work first.
 An agent moves down when a recorded run shows the kit failing there in a way
 it does not fail elsewhere.
 
+## Known limits
+
 ### What Tested means for Claude Code
 
 Tested describes a rate. The harness runs each conversation several
@@ -122,6 +124,32 @@ skills installed into the project, which is the shared installer's route.
   loads them as intended has not been checked.
 - GitHub access depends on the session's network permissions and the CLI's
   sign-in. See [GitHub access in Codex](#github-access-in-codex).
+
+### Known limits of Cursor, Gemini CLI and GitHub Copilot
+
+- Nobody has recorded a run, and the replay harness cannot drive these agents.
+- The kit's release carries generated command files for Cursor and Gemini CLI.
+  A check confirms each file is there and well formed. Nothing has confirmed
+  that the agent lists the six commands, or that it loads a background skill
+  when a command asks for one.
+- Setup creates the file that points Gemini CLI at `AGENTS.md`,
+  and the one that points GitHub Copilot at it. Nobody has confirmed that
+  either agent follows that pointer.
+- Nothing reminds you of a check-up when a session opens. `what-now` says when
+  a visit is overdue.
+- Gemini CLI can hide a result, but cannot keep its original form. Unless
+  Gemini is set up to hide it, a secret printed by a tool reaches the agent.
+  Cursor cannot replace built-in Bash, Read or Grep results, so a secret they
+  print reaches the agent. See the [Cursor hooks reference](https://cursor.com/docs/hooks)
+  and [Gemini CLI hooks reference](https://geminicli.com/docs/hooks/reference/).
+- There is no kit deny list set up for these agents. `merge.py` requires a
+  recorded approval before it merges; the kit does not show a confirmation
+  box. Where an agent has command allow and deny settings, you add the kit's
+  blocked commands there yourself.
+- The kit does not put background skills in the command menu. Whether these
+  agents load them as intended has not been checked.
+
+## GitHub access
 
 ### GitHub access in Codex
 
@@ -203,30 +231,6 @@ while the hook is untrusted or disabled. See [Codex hooks](https://learn.chatgpt
 
 A failed plan refresh shows a credential-masked GitHub error and a recovery step,
 and leaves the previous printout intact.
-
-### Known limits of Cursor, Gemini CLI and GitHub Copilot
-
-- Nobody has recorded a run, and the replay harness cannot drive these agents.
-- The kit's release carries generated command files for Cursor and Gemini CLI.
-  A check confirms each file is there and well formed. Nothing has confirmed
-  that the agent lists the six commands, or that it loads a background skill
-  when a command asks for one.
-- Setup creates the file that points Gemini CLI at `AGENTS.md`,
-  and the one that points GitHub Copilot at it. Nobody has confirmed that
-  either agent follows that pointer.
-- Nothing reminds you of a check-up when a session opens. `what-now` says when
-  a visit is overdue.
-- Gemini CLI can hide a result, but cannot keep its original form. Unless
-  Gemini is set up to hide it, a secret printed by a tool reaches the agent.
-  Cursor cannot replace built-in Bash, Read or Grep results, so a secret they
-  print reaches the agent. See the [Cursor hooks reference](https://cursor.com/docs/hooks)
-  and [Gemini CLI hooks reference](https://geminicli.com/docs/hooks/reference/).
-- There is no kit deny list set up for these agents. `merge.py` requires a
-  recorded approval before it merges; the kit does not show a confirmation
-  box. Where an agent has command allow and deny settings, you add the kit's
-  blocked commands there yourself.
-- The kit does not put background skills in the command menu. Whether these
-  agents load them as intended has not been checked.
 
 ## Choose one installation route
 

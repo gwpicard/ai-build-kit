@@ -1,13 +1,3 @@
----
-title: Rules and checks
-description: Rules that apply in every project and how the kit tests them.
-draft: false
----
-
-## When the agent stops and when you decide
-
-The agent stops when a script detects a problem you cannot assess from the outside, such as a review of an outdated version. For risks you can judge, it explains the risk, lets you decide how to proceed and records your decision. See [records and risk](/ai-build-kit/records/).
-
 ## Rules checked in every project
 
 Each rule says who checks it, when the check runs, what happens if it fails and what it does not cover.

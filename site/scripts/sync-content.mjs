@@ -24,32 +24,37 @@ function section(markdown, heading, nextHeading) {
 const compatibility = await source('docs/COMPATIBILITY.md');
 const sources = await source('docs/SOURCES.md');
 const llms = await source('llms.txt');
+const promises = await source('docs/PROMISES.md');
+const recipes = await source('docs/RECIPES.md');
 
 const grades = section(compatibility, '## How much has been proved on each agent', '### Moving up a grade');
 const gradeRows = grades.split('\n').filter((line) => line.startsWith('|'));
 const gradeTable = gradeRows.join('\n');
+const gradeContext = grades.slice(0, grades.indexOf('\n|')).trim();
 function tocFrontmatter(markdown) {
   const headings = markdown.match(/^#{1,6}\s/gm) ?? [];
   return headings.length < 3 ? 'tableOfContents: false\n' : '';
 }
 const agentsIntro = 'The table summarises the evidence for using AI Build Kit with each coding agent. A coding agent reads and changes project files. Its support grade reflects how the kit has been tested on that agent, not whether a tool built with it is safe.';
-const agentsLimits = `
-
-Tested means maintainers have run scripted test conversations on the agent and graded its behaviour. Expected to work means the agent reads the same skill files as a tested agent, but no graded replay has been recorded. Experimental means the required files are included, but their checks establish only that the files are well formed.
-
-## Known limits
-
-- Claude Code: the recorded test conversations run without a person present, so they do not demonstrate how the kit behaves in an interactive session. No test rate yet describes an installable release, and the plugin route cannot be replayed in those unattended sessions.
-- Codex: no graded replay run is recorded. Start a command by naming it; the kit does not provide Codex command files. A secret printed by a tool reaches the agent. The merge script requires recorded approval, but the kit does not show Codex a confirmation box. The kit does not set up a deny list or remind you of a check-up when a session opens.
-- Cursor: no behavioural test run has been recorded, and command and background-skill loading remain unconfirmed. A secret printed by built-in Bash, Read or Grep reaches the agent. The kit does not set up a deny list or remind you of a check-up when a session opens.
-- Gemini CLI: no behavioural test run has been recorded, and command and background-skill loading remain unconfirmed. Unless Gemini is configured to hide tool results, any secret printed by a tool reaches the agent. The kit does not set up a deny list or remind you of a check-up when a session opens.
-- GitHub Copilot: no behavioural test run has been recorded, and it remains unconfirmed whether the agent follows the setup instructions. The kit does not set up a deny list or remind you of a check-up when a session opens.
-- Other agents: no behavioural test runs have been recorded. Support requires evidence from each agent.
-
-[Read the full agent support notes](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md).
-`;
-const agentsBody = `${agentsIntro}\n\n${gradeTable}\n${agentsLimits}`;
+const knownLimits = section(compatibility, '## Known limits', '## GitHub access');
+const agentsBody = `${agentsIntro}\n\n${gradeContext}\n\n${gradeTable}\n\n${knownLimits}\n\n[Read the full agent support notes](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md).`;
 await writeFile(path.join(generatedDir, 'agents.md'), `---\ntitle: Supported agents\nslug: agents\ndraft: false\n${tocFrontmatter(agentsBody)}---\n\n${agentsBody}`);
+
+function linkSourcePaths(markdown) {
+  return markdown.replace(/`(\.agents\/[^`]+)`/g, (_, sourcePath) => `[\`${sourcePath}\`](https://github.com/gwpicard/ai-build-kit/blob/stable/${sourcePath})`);
+}
+const linkedPromises = linkSourcePaths(promises.replace(/^# .*\n+/, '').trim());
+const recipeIntro = 'A hosting recipe specifies a software stack, the combination of software used to build your tool, and a hosting service. It defines how to preview and publish changes, back up and restore data, and return to an earlier application version. Both recipes use TypeScript, Next.js 16 and Supabase, a combination supported by the kit’s existing checks. They suit internal tools such as dashboards, approval workflows, trackers and portals. Both available recipes have been used in real deployments, but neither has been tested through every procedure.';
+const recipeMenu = section(recipes, '## Site menu', '## A recipe is a folder');
+const recipeDetails = await source('site/data/recipes-explanation.md');
+const recipesBody = `${recipeIntro}\n\n## The recipes today\n\n${recipeMenu}\n\n${recipeDetails.trim()}`;
+await writeFile(path.join(generatedDir, 'recipes.md'), `---\ntitle: Hosting recipes\nslug: recipes\ndescription: Choose a hosting recipe, understand its checks, and see what remains untested.\ndraft: false\n${tocFrontmatter(recipesBody)}---\n\n${recipesBody}\n`);
+
+const checksIntro = 'The rules below apply across projects. Each names the safeguard, the code that enforces or tests it, and any known limit.';
+const checksDetails = await source('site/data/what-it-checks-explanation.md');
+const checksIntroSection = await source('site/data/what-it-checks-intro.md');
+const checksBody = `${checksIntro}\n\n${checksIntroSection.trim()}\n\n${linkedPromises}\n\n${checksDetails.trim()}`;
+await writeFile(path.join(generatedDir, 'what-it-checks.md'), `---\ntitle: Rules and checks\nslug: what-it-checks\ndescription: Rules that apply in every project and how the kit tests them.\ndraft: false\n${tocFrontmatter(checksBody)}---\n\n${checksBody}\n`);
 
 const themesStart = sources.indexOf('\n## ');
 const sourceThemes = themesStart < 0 ? '' : sources.slice(themesStart).trim();

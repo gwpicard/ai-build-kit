@@ -1,21 +1,3 @@
----
-title: Hosting recipes
-description: Choose a hosting recipe, understand its checks, and see what remains untested.
-draft: false
----
-
-A hosting recipe specifies a software stack, the combination of software used to build your tool, and a hosting service. It defines how to preview and publish changes, back up and restore data, and return to an earlier application version. Both available recipes have been used in real deployments, but neither has been tested through every procedure.
-
-## The recipes today
-
-Both recipes use TypeScript, Next.js 16 and Supabase, a combination supported by the kit's existing checks. They suit internal tools such as dashboards, approval workflows, trackers and portals.
-
-[Next.js and Supabase on Vercel](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/recipe.md) is the default for work teams. Vercel provides previews and deployment; rollback is not yet tried. The kit can run its automated checks on your computer; you open a preview when one is available and try the change. Private tools require a Vercel account for each person with access.
-
-[Next.js and Supabase on Coolify](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/recipe.md) suits teams with a rented server or long-running work. Coolify runs on a server you rent elsewhere, and the kit does not access that server directly. Some checks require you, or a separate tool with server access, to retrieve information and paste it into the session for validation.
-
-Each recipe links to its providers' plan terms. Read those terms before choosing a plan; the kit does not interpret them.
-
 ## Checks and testing status
 
 Recipes define how to deploy and recover the tool, control access and store keys and passwords. Their checks also cover error logs and health, including whether the live tool responds. A documented procedure does not mean it has been tested in a real deployment.
@@ -35,4 +17,4 @@ If no recipe matches your stack or host, the kit explains once that it provides 
 
 ## Keeping recipes current
 
-Services change their settings and plan terms. During [maintenance](/ai-build-kit/how-it-works/#maintain-the-project), a script flags recipes whose documentation review is more than 90 days old, recipes no longer offered, and projects still using superseded setting names. The script reports these findings without changing your project or service settings.
+Services change their settings and plan terms. During [maintenance](https://gwpicard.github.io/ai-build-kit/how-it-works/#maintain-the-project), a script flags recipes whose documentation review is more than 90 days old, recipes no longer offered, and projects still using superseded setting names. The script reports these findings without changing your project or service settings.

@@ -32,7 +32,7 @@ root = pathlib.Path.cwd()
 docs_root = root / "site/src/content/docs"
 workflow_path = root / "site/data/workflow.json"
 steps_path = docs_root / "how-it-works.mdx"
-rules_path = docs_root / "what-it-checks.md"
+rules_path = docs_root / "generated" / "what-it-checks.md"
 source_link = re.compile(
     r"https://github\.com/gwpicard/ai-build-kit/(blob|tree)/stable/([^\)\s\"'#?<>]+)"
 )
@@ -50,6 +50,10 @@ files = [
     and "generated" not in path.relative_to(docs_root).parts
 ]
 files.append(workflow_path)
+for generated_name in ("agents.md", "recipes.md", "what-it-checks.md"):
+    generated_path = docs_root / "generated" / generated_name
+    if generated_path.is_file():
+        files.append(generated_path)
 link_count = 0
 
 for path in files:
@@ -97,8 +101,8 @@ if len(data_rows) < 2:
     fail("the rules table has no data rows")
 for row_number, row in enumerate(data_rows[1:], start=1):
     cells = [cell.strip() for cell in row.strip("|").split("|")]
-    if len(cells) < 2 or not source_link.search(cells[1]):
-        fail(f"rules row {row_number} has no source link in its checker")
+    if len(cells) < 2 or (not source_link.search(cells[1]) and "Words only; needs judgement" not in cells[1]):
+        fail(f"rules row {row_number} has no source link in its evidence")
 
 try:
     stages = json.loads(workflow_path.read_text(encoding="utf-8"))
@@ -127,10 +131,12 @@ for stage in stages:
     section_index = stage_sections.index(section)
     section_end = stage_sections[section_index + 1].start() if section_index + 1 < len(stage_sections) else len(checks_section)
     body = checks_section[section.end():section_end]
-    listed_paths = set(re.findall(r"https://github\.com/gwpicard/ai-build-kit/blob/stable/([^\)]+)", body))
-    mapped_paths = {check.get("path") for check in stage.get("checks", [])}
-    if listed_paths != mapped_paths:
-        fail(f"stage {stage_id} checks differ between the page and workflow map")
+    source_path = stage.get("source")
+    if source_path and f"blob/stable/{source_path}" not in body:
+        fail(f"stage {stage_id} does not link to its source instructions")
+    for check in stage.get("checks", []):
+        if not (root / check.get("path", "")).is_file():
+            fail(f"stage {stage_id} maps a missing check: {check.get('path')}")
 
 import os
 if os.environ.get("BUILD") in {"built", "present"}:

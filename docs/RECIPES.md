@@ -68,6 +68,16 @@ The following stay off the road:
 The Python document worker draft targets Coolify. The read-only existing
 database draft targets both recipes. Neither is offered until proven.
 
+## Site menu
+
+This table supplies the reader-facing recipe summaries on the companion site.
+The deployment records remain the source for testing status.
+
+| Recipe | Summary |
+|---|---|
+| [Next.js and Supabase on Vercel](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/recipe.md) | The default for work teams. Vercel provides previews and deployment; rollback is not yet tried. The kit can run its automated checks on your computer. Open a preview when one is available and try the change. Private tools require a Vercel account for each person with access. |
+| [Next.js and Supabase on Coolify](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/recipe.md) | Suits teams with a rented server or long-running work. Coolify runs on a server you rent elsewhere, and the kit does not access that server directly. Some checks require you, or a separate tool with server access, to retrieve information and paste it into the session for validation. |
+
 ## A recipe is a folder
 
 Recipes live in `.agents/skills/setup-hosting/recipes/`, one folder each, named
