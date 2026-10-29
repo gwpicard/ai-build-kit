@@ -393,15 +393,6 @@ into `.agents/skills/setup-hosting/recipes/`. The rehearsal adds it to the menu
 and fails if it remains in both locations. [RECIPES.md](RECIPES.md) owns the
 recipe format and evidence requirements.
 
-Open check for a future real run [CHECK]: on 16 October 2026, Supabase's [API key
-guide](https://supabase.com/docs/guides/getting-started/api-keys) recommended
-publishable keys for client code and described `anon` as their legacy
-equivalent, due for deprecation by the end of 2026. The guide says to create a
-publishable key when a project has none, but whether a new project has one by
-default remains unconfirmed. The recipe names the publishable key and records
-the legacy `anon` setting for `/maintain`. Check the default in a throwaway
-project during a real run.
-
 ## When a release is cut
 
 Follow these linked steps in order:
