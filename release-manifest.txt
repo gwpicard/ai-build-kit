@@ -155,7 +155,6 @@
 CLAUDE.md|
 GEMINI.md|
 LICENSE|
-WORKFLOW.md|
 docs/COMPATIBILITY.md|
 docs/PHILOSOPHY.md|
 docs/SOURCES.md|
