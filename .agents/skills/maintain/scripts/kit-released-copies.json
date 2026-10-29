@@ -38,7 +38,8 @@
   "v1.1.2",
   "v1.2.0",
   "v1.2.1",
-  "v1.2.2"
+  "v1.2.2",
+  "v1.2.3"
  ],
  "files": {
   ".agents/agents/builder.md": [
@@ -95,7 +96,8 @@
   ".agents/skills/build-piece/references/build-limits.md": [
    "09c2bca7681d9bd0",
    "2ebaf0197b205d3f",
-   "57bfbfea00b7cabe"
+   "57bfbfea00b7cabe",
+   "9b9b2730e7d5d058"
   ],
   ".agents/skills/build/SKILL.md": [
    "70dadb56d43d81b3",
@@ -255,6 +257,7 @@
    "397a4ff9099603ff",
    "551e0ae8a5961c5b",
    "5935a021817f3b11",
+   "65d64a80d561ed4a",
    "6958c9356bdcacb3",
    "6ce945dbbcbb2cfc",
    "72496ffe63ca627e",
@@ -310,6 +313,7 @@
    "dea1553c86a7d48c",
    "e1aa68fa2f395e3f",
    "eb8d59c0680eb3f8",
+   "f736d3ac40f8dc59",
    "f9a397ab92ada617",
    "fb31663e843d506f"
   ],
@@ -391,6 +395,7 @@
    "7d81a9086ac91839"
   ],
   ".agents/skills/maintain/scripts/kit-released-copies.json": [
+   "0af4bd54ce8bd0b4",
    "1bd1e75cc479c79f",
    "50f41d06a065881e",
    "656f9b3a61b66abb",
@@ -442,6 +447,7 @@
    "592784c0c0391082",
    "87f5e085bcc71fac",
    "ae8a72eeb4e11e8d",
+   "c99d23ef9d6d65ac",
    "f139d5c11d0211bd",
    "fd5a3c4435ad2fdd"
   ],
@@ -452,6 +458,9 @@
   ".agents/skills/merge/references/automatic-merge.md": [
    "116dbf64e2118af5",
    "4af95c05500a2c38"
+  ],
+  ".agents/skills/merge/references/billing-fallback.md": [
+   "d648a7e3d13e746e"
   ],
   ".agents/skills/merge/references/first-upload.md": [
    "1cada8cb9b8e9b1d",
@@ -1708,6 +1717,7 @@
    "dea1553c86a7d48c",
    "e1aa68fa2f395e3f",
    "eb8d59c0680eb3f8",
+   "f736d3ac40f8dc59",
    "f9a397ab92ada617",
    "fb31663e843d506f"
   ],
@@ -1738,6 +1748,7 @@
    "a53f36a88599a492",
    "a77e3a1dc3967b03",
    "acd89ea617290d7a",
+   "b0565ba17895f288",
    "b5c80de1e0550d27",
    "b86354b9a0cbfa8a",
    "ba61d1df5330171b",
@@ -1783,6 +1794,7 @@
   ],
   ".claude/commands/maintain.md": [
    "6c88b6e5b4ba7a64",
+   "6f7d7477b8a36e8b",
    "792e382702f5bda3",
    "c0e1fbcfdf359abc",
    "efcc69f53a04c196",
@@ -1985,6 +1997,7 @@
   ".gemini/commands/maintain.toml": [
    "3ee9784f58ed4995",
    "68e7bcbad5bd56d2",
+   "e91eaff4324dce64",
    "f25496fb6f9a1296"
   ],
   ".gemini/commands/plan.toml": [
@@ -2088,6 +2101,7 @@
    "336cc4fbf19beaad"
   ],
   "CONTRIBUTING.md": [
+   "0d07f9f145da40bc",
    "3f0cd1b4120318c5",
    "6c4c9e3e9cba58a3",
    "f046479517c5ebbf"
@@ -2119,6 +2133,7 @@
    "9a1172da8e320c91",
    "b4c1d67853983993",
    "b72cda2441619633",
+   "bd789723ab644be5",
    "c0f92d5ab58df5b4",
    "e3feb731ba9ee391",
    "eb263c454a30ad19",
@@ -2126,7 +2141,8 @@
    "fb815867aa2151f2"
   ],
   "SECURITY.md": [
-   "1da16b689fb5ab22"
+   "1da16b689fb5ab22",
+   "a436925ed1c3efb5"
   ],
   "WORKFLOW.md": [
    "04892ef9e75c03c8",
@@ -2189,6 +2205,7 @@
    "abd527692d01a979",
    "aeda967acc5d0514",
    "b1451215de17f58e",
+   "b1913f6aa79f567a",
    "b2752fb6dcbe0d55",
    "b922053cc05dffbf",
    "c2082906c799a7ac",
@@ -2207,7 +2224,8 @@
   "agent-plugin/skills/build-piece/references/build-limits.md": [
    "09c2bca7681d9bd0",
    "2ebaf0197b205d3f",
-   "57bfbfea00b7cabe"
+   "57bfbfea00b7cabe",
+   "9b9b2730e7d5d058"
   ],
   "agent-plugin/skills/build/SKILL.md": [
    "70dadb56d43d81b3",
@@ -2363,6 +2381,7 @@
    "397a4ff9099603ff",
    "551e0ae8a5961c5b",
    "5935a021817f3b11",
+   "65d64a80d561ed4a",
    "6958c9356bdcacb3",
    "6ce945dbbcbb2cfc",
    "72496ffe63ca627e",
@@ -2415,6 +2434,7 @@
    "de468f4b3bb0f6df",
    "dea1553c86a7d48c",
    "eb8d59c0680eb3f8",
+   "f736d3ac40f8dc59",
    "f9a397ab92ada617"
   ],
   "agent-plugin/skills/maintain/agents/openai.yaml": [
@@ -2495,6 +2515,7 @@
    "7d81a9086ac91839"
   ],
   "agent-plugin/skills/maintain/scripts/kit-released-copies.json": [
+   "0af4bd54ce8bd0b4",
    "1bd1e75cc479c79f",
    "50f41d06a065881e",
    "656f9b3a61b66abb",
@@ -2546,6 +2567,7 @@
    "592784c0c0391082",
    "87f5e085bcc71fac",
    "ae8a72eeb4e11e8d",
+   "c99d23ef9d6d65ac",
    "f139d5c11d0211bd",
    "fd5a3c4435ad2fdd"
   ],
@@ -2556,6 +2578,9 @@
   "agent-plugin/skills/merge/references/automatic-merge.md": [
    "116dbf64e2118af5",
    "4af95c05500a2c38"
+  ],
+  "agent-plugin/skills/merge/references/billing-fallback.md": [
+   "d648a7e3d13e746e"
   ],
   "agent-plugin/skills/merge/references/first-upload.md": [
    "1cada8cb9b8e9b1d",
@@ -3735,6 +3760,7 @@
    "4ef34b881a499330",
    "5d2efc08ca1abbfc",
    "63783d0ac2673230",
+   "6cd4c7a121e1c043",
    "704549ddf4829cf0",
    "71bbc9b8f108880a",
    "946e6278e2172150",
@@ -3761,6 +3787,7 @@
    "8878d82e9673e75d",
    "9db9ec0bff410539",
    "ac37770a34ef3c48",
+   "b5fe919ad8dd29bb",
    "d3d64b59f2cd0a43",
    "d6a04fa348f49ace",
    "dbc0897d896f24a0",
@@ -3774,6 +3801,7 @@
    "3b30a34cac5e6660",
    "44dea72b9f04552f",
    "4e4fc385bd9c8697",
+   "65e10d8b251cfe3c",
    "6e4635da58491753",
    "73ab945d5ec62250",
    "7d48cc0a69aa6d0a",
