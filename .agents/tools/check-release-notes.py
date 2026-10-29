@@ -5,7 +5,7 @@ machine can test hold and a fresh review has passed the final text.
 Usage: check-release-notes.py vX.Y.Z
 
 Why this exists. The release-notes skill, the house rules in MAINTAINING.md and
-the humanizer step in AGENTS.md each hold part of what a release's notes need.
+the writing-review step in AGENTS.md each hold part of what a release's notes need.
 Spread across three files, a step was skipped and nothing noticed: notes went
 towards a stamp without the house-rule pass, without a second review after the
 first review's fixes, and without the rewritten pull request list for the
@@ -24,7 +24,7 @@ It checks:
   - `review.md` beside it is newer than `page.md` and ends with a count line
     showing zero Critical and zero Major findings.
 
-The humanizer pass itself cannot be tested here. The skill's checklist names it.
+The writing-review pass itself cannot be tested here. The skill's checklist names it.
 """
 
 import os
@@ -142,7 +142,7 @@ def main(argv):
         for p in problems:
             print("  - " + p, file=sys.stderr)
         return 1
-    print("the %s notes pass the checks a machine can make; the humanizer pass is "
+    print("the %s notes pass the checks a machine can make; the writing-review pass is "
           "the maintainer's to confirm" % version)
     return 0
 

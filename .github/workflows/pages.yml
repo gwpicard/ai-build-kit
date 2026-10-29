@@ -5,6 +5,15 @@ on:
     workflows: ["verify release"]
     types: [completed]
   workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch to build for a site wording update
+        required: true
+        default: stable
+        type: choice
+        options:
+          - stable
+          - main
 
 permissions: {}
 
@@ -17,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: stable
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || 'stable' }}
           persist-credentials: false
       - uses: actions/setup-node@v6
         with:

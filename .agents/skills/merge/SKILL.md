@@ -92,9 +92,8 @@ it and leave the pull request open. In an unattended run, leave it for review.
 After merging, run the `records` skill's `scripts/piece-labels.sh` with
 `merged <number>`, refresh the printout and follow `references/after-merge.md`.
 
-Use the [billing fallback](../../../WORKFLOW.md#7-saving-work) only through
-`merge.py --approved`; say before approval and after that it runs project-check
-here on a clean copy. Any other check that never started holds the merge.
+If GitHub did not start `project-check` because of billing, read
+`references/billing-fallback.md`.
 For queues, conflicts between waiting pieces or `--auto`, read
 `references/automatic-merge.md` first.
 

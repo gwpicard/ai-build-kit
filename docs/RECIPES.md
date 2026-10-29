@@ -15,8 +15,9 @@ The pinned menu has two recipes and no optional parts. A recipe must fit the
 tools the kit can check and use a stack the team can prove on every run. Both
 recipes use strict TypeScript, Next.js 16 and hosted Supabase, on Vercel or
 Coolify. The shared starter pins `next` and `eslint-config-next` to 16.4.2.
-Python document work and a read-only link to an existing database remain drafts
-in `.agents/tests/recipes-awaiting-run/parts/` until their runs are recorded.
+Two drafts wait in `.agents/tests/recipes-awaiting-run/parts/` until a real run
+is recorded: Python document work, for Coolify, and a read-only link to an
+existing database, for both recipes. Neither is offered until then.
 
 1. Next.js and Supabase on Vercel. It suits dashboards, admin panels,
    approvals, CRMs, light ERP, trackers, HR, case management, booking, forms
@@ -24,8 +25,8 @@ in `.agents/tests/recipes-awaiting-run/parts/` until their runs are recorded.
    launch and rollback, and the kit can run its checks on this computer.
 2. The same stack on Coolify. It suits those tools when the team has a server,
    needs long-running work, or must keep processing on a server it chooses.
-   Python document work is a draft, and no recipe offers it today. Its checks need the person or a companion to read the
-   server and paste the result back.
+   Some checks need the person or a hosting companion to read the server and
+   paste the result back.
 
 Vercel Pro and Supabase Pro are the work-team default. Free plans remain
 available. Their terms are recorded on each recipe. Supabase Free
@@ -39,7 +40,7 @@ section is the record of the decisions and their reasons. The research found
 thin evidence on category shares, so this set covers the well-supported common
 shapes rather than claiming to cover every tool.
 
-The following stay off the road:
+The set leaves out the following:
 
 - Python-only stacks: Django with HTMX, FastAPI as the whole tool, Streamlit,
   Reflex and NiceGUI. They would need a second set of checks, and the research
@@ -65,8 +66,15 @@ The following stay off the road:
   their checks yet.
 - Marker, because of its model licence.
 
-The Python document worker draft targets Coolify. The read-only existing
-database draft targets both recipes. Neither is offered until proven.
+## Site menu
+
+This table supplies the reader-facing recipe summaries on the companion site.
+The deployment records remain the source for testing status.
+
+| Recipe | Summary |
+|---|---|
+| [Next.js and Supabase on Vercel](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/recipe.md) | The default for work teams. Vercel provides previews and deployment; rollback is not yet tried. The kit can run its automated checks on your computer. Open a preview when one is available and try the change. Private tools require a Vercel account for each person with access. |
+| [Next.js and Supabase on Coolify](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/recipe.md) | Suits teams with a rented server or long-running work. Coolify runs on a server you rent elsewhere, and the kit does not access that server directly. Some checks require you, or a separate tool with server access, to retrieve information and paste it into the session for validation. |
 
 ## A recipe is a folder
 
@@ -106,8 +114,8 @@ It opens with fixed fields. Each names a tool only, so checks can read it.
 - `Health-check tool:` names the tool used to read the live health route.
 - `Command-line tools:` the tools the recipe's scripts run on the person's
   machine, as command names separated by commas, or `none`. The setup tooling
-  check reads this line and reports each one, and a missing one never stops
-  founding, because only a project on this recipe needs it.
+  check reads this line and reports each tool. A missing tool stops founding
+  until it is installed, because the chosen recipe needs it to run its checks.
 - `Last checked:` a date, written YYYY-MM-DD, when somebody last read the
   recipe against the current documentation of everything it names. The date
   moves only when somebody did that.
@@ -117,7 +125,7 @@ It opens with fixed fields. Each names a tool only, so checks can read it.
   project's settings files, or `none`. `/maintain` offers to move a project
   that still records one of these names.
 
-One or more `Plan terms:` lines may follow. Each says, in one plain sentence,
+One or more `Plan terms:` lines may follow. Each states, in one plain sentence,
 which rule of a free or entry plan the person should read before choosing. It
 points to the service's own page and never interprets it, because what a
 service's terms mean is between the person and that service. It ends with when
@@ -125,38 +133,30 @@ and where the terms were read, as
 `(read YYYY-MM-DD at <source page>)`, from the service's own page. Terms change
 without notice, and a restriction with no date cannot be told from a current
 one. The line never quotes a price. Founding reads it when it offers the
-recipe and tells the person to read the terms themselves.
+recipe and asks the person to read the terms themselves.
 
-The shared stack part holds sign-in and roles, row rules, files, jobs, email,
-the user interface, the project check and updates. Each section carries the same four lines as a
-recipe section. The access gate stays in each recipe because it differs by
-host. The starter workflow checks row rules against a local database built
-from migrations on each pull request and push to main. The launch check reads
-the live database.
-
-Then comes one section for each of the eight things a live tool needs, in this
-order: preview, going live, rollback, backup, restore, secrets, logs and
-health.
+Then come nine sections, in this order:
 
 - Preview is how a change is seen somewhere safe before it goes live.
 - Going live is how a checked change reaches the live address.
-- Rollback is how the live tool goes back to the last version that worked.
+- Rollback is how the live copy goes back to the last version that worked.
 - Backup is what is saved, where, and how often.
 - Restore is how a backup is put back, and roughly how long that takes.
 - Secrets is where keys live and how they reach the tool.
 - Logs is where the tool's record of requests and errors is read.
-- Health is how anyone knows the live tool is up.
+- Health is how anyone knows the live copy is up.
+- Access is who can reach the tool. Every recipe carries this section because
+  every tool is private by default.
 
-A ninth section, access, follows health. Every recipe carries it, because
-every tool is private by default. It says how private keeps out everyone not
-invited, with sign-up closed and the host's gate where the host has one, and
-how public takes the gate off. Where a host has no gate, or only on a paid
-plan, it says so plainly, and the check covers what it can. Its script reads
-the live tool and compares it with the masterplan's `Access:` line, and fails
+The access section explains how private access excludes uninvited people, with
+sign-up closed and the host's gate where available, and how public access
+removes that gate. Where a host has no gate, or offers one only on a paid plan,
+the recipe records that limit and the check covers what it can. Its script
+reads the live copy, compares it with the masterplan's `Access:` line and fails
 when they differ either way. A script that changes the setting changes a live
 service, so the coding agent's settings ask before it runs.
 
-Each section carries four lines, and a fifth where the kit does not run the
+Each section carries four fields, plus `Ask:` where the kit does not run the
 check itself.
 
 - `How it works:` what happens on this pair, in the order it happens, naming
@@ -171,18 +171,19 @@ check itself.
   somewhere the kit cannot reach, and the script reads what is pasted back. `a
   person looking` when no machine can judge the result; the script reads
   whatever a machine can, and the person's answer decides.
-- `Ask:` the fixed words the person hears, for a section the kit does not run.
-  The runner prints them, so every launch asks the same way.
+- `Ask:` the fixed prompt for a section the kit does not run. The runner prints
+  it, so every launch uses the same wording.
 
-A section with no check is not finished. Saying the service handles it tells
+A section with no check is not finished. Stating that the service handles it tells
 nobody how they would find out that it did not.
 
 ## Scripts
 
-Every script runs from the project's folder and decides by its exit code: 0 a
+Every script runs from the project's folder and reports its result through its
+exit code: 0 a
 pass, 1 a fail, 2 could not run, such as a missing tool or an unknown location.
-Its last line is one plain sentence saying what it found, and that sentence is
-what the person hears. A script never prints a secret. A password is read
+Its last line reports what it found in one plain sentence. The runner shows
+that sentence to the person. A script never prints a secret. A password is read
 inside the script from the location the masterplan records.
 
 A check whose result is pasted back takes `--pasted <file>` and reads it.
@@ -190,9 +191,10 @@ Where the paste has a fixed shape, such as a health answer or a list of names,
 the script reads that shape, so the kit never judges it by eye.
 
 `live-check.sh` makes the six reads a later `/setup-hosting` run and every
-`/maintain` visit make: the live copy against `main`, a hold since a rollback,
-a migration not applied, setting names on the host, health and access. It changes
-nothing. Exit 0 means no gap, 1 a gap, and 2 that a read could not be made.
+`/maintain` visit make: the live copy against `main`, whether a rollback left
+the live copy on an earlier version, a migration not applied, setting names on
+the host, health and access. It changes nothing. Exit 0 means no gap, 1 a gap,
+and 2 that a read could not be made.
 
 The Vercel recipe's `get-supabase-keys.sh` writes the publishable and secret
 keys to private files. `add-secret.sh` reads one file on standard input, checks
@@ -202,13 +204,19 @@ build before production uses it: `vercel redeploy <production deployment URL>`.
 
 `setup-hosting/scripts/run-recipe.sh` runs a recipe's nine checks in its
 order, prints one line for each, and writes the run's dated changelog entry. A
-warning the changelog already holds comes back as a pointer. With no recipe it
+warning already in the changelog appears as a pointer. With no recipe the script
 gives one notice that nothing is guaranteed, records the person's words and the
 date, and checks nothing.
 
 ## Shared parts
 
-Two recipes often share a half. A stack deployed in two places keeps the same
+The shared stack part holds sign-in and roles, row rules, files, jobs, email,
+the user interface, the project check and updates. The access gate stays in
+each recipe because it differs by host. The starter workflow checks row rules
+against a local database built from migrations on each pull request and push
+to main. The launch check reads the live database.
+
+Two recipes often share half their sections. A stack deployed in two places keeps the same
 data service, so its backup and restore read the same in both. Such a section
 is written once, as a part in `recipes/parts/`, and a recipe links it in place
 of writing the section out, with one line: `Shared part:` followed by a

@@ -82,7 +82,7 @@ expected_maintainer_skills=$(find "$MAINTAINER_SKILLS" -mindepth 1 -maxdepth 1 -
 # skill turns into an uncredited one. A skill written here has no upstream to
 # carry a licence from, so demanding one of every maintainer skill would mean
 # inventing a file to satisfy a check.
-vendored_maintainer_skills="humanizer"
+vendored_maintainer_skills="writing-review"
 
 # ---------------------------------------------------------------------------
 echo "== Issue references =="
@@ -1618,7 +1618,7 @@ echo "== Retired path vocabulary =="
 # search of the tree finds only real uses.
 path_hits=$(grep -rIlE -e 'Explore p''rivately' -e 'Build and r''un it' -e 'Build with c''are' \
   -e 'build p''ath' -e '^P''ath:' \
-  "$ROOT/.agents" "$ROOT/docs" "$ROOT/README.md" "$ROOT/WORKFLOW.md" "$ROOT/AGENTS.md" \
+  "$ROOT/.agents" "$ROOT/docs" "$ROOT/README.md" "$ROOT/AGENTS.md" \
   "$ROOT/CONTRIBUTING.md" "$ROOT/llms.txt" "$ROOT/.claude" "$ROOT/.cursor" "$ROOT/.gemini" \
   "$ROOT/.github" "$ROOT/agent-plugin" "$ROOT/.claude-plugin" 2>/dev/null \
   | grep -v '/\.git/' \
@@ -1660,7 +1660,7 @@ had_stale=0
 while IFS= read -r term; do
   [ -n "$term" ] || continue
   hits=$(grep -rlFi --include='*.md' -- "$term" "$ROOT/.agents" "$ROOT/docs" \
-    "$ROOT/README.md" "$ROOT/WORKFLOW.md" "$ROOT/AGENTS.md" "$ROOT/starter" 2>/dev/null \
+    "$ROOT/README.md" "$ROOT/AGENTS.md" "$ROOT/starter" 2>/dev/null \
     | grep -v '/\.git/' \
     | grep -v '/\.agents/tmp/' \
     | grep -v '\.agents/tests/scenarios\.md$' \
@@ -1731,7 +1731,7 @@ for entry in \
   "$SKILLS/maintain/SKILL.md|last-light-pass" \
   "$SKILLS/maintain/SKILL.md|last-full-pass" \
   "$SKILLS/what-now/SKILL.md|.ai-build-kit-maintenance" \
-  "$ROOT/WORKFLOW.md|maintain writes the date of each visit" \
+  "$ROOT/site/src/content/docs/maintaining-your-tool.md|maintain writes the date of each visit" \
   "$ROOT/docs/COMPATIBILITY.md|Said automatically when a session opens" \
   "$scenarios|## 27. Session opens on a project past its check-up cadence"; do
   file=${entry%%|*}
@@ -2623,7 +2623,7 @@ project_docs="$(
       fi
     done
   printf '%s\n' "$ROOT/.agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh"
-  for path in "$ROOT/README.md" "$ROOT/WORKFLOW.md" "$ROOT/llms.txt" \
+  for path in "$ROOT/README.md" "$ROOT/llms.txt" \
     "$ROOT/CONTRIBUTING.md" "$ROOT/SECURITY.md"; do
     [ ! -f "$path" ] || printf '%s\n' "$path"
   done
@@ -2715,7 +2715,7 @@ check_claim "sensitive-area step" "sensitive-area step"
 check_claim "absolute merge yes claim" "nothing merges without your yes"
 check_claim "absolute merge wait claim" "every merge waits for your yes"
 check_claim "absolute merge need claim" "every merge needs the person's yes"
-# WORKFLOW.md once said both recipe trials proved every step. The PROVEN.md records do not support that.
+# Earlier user guidance said both recipe trials proved every step. The PROVEN.md records do not support that.
 check_claim "both recipe trials proved all steps" "Both trials proved the preview, launch, rollback, secrets, logs and health steps"
 check_claim "absolute human merge claim" "a human decides whether to merge, always"
 check_claim "human always decides merge" "A human decides whether to merge."
@@ -2734,13 +2734,14 @@ check_claim "informal approval renewal wording" "fresh yes"
 # ---------------------------------------------------------------------------
 echo "== Maintainer writing contract =="
 
-if grep -qF '.agents/maintainer-skills/humanizer/SKILL.md' "$ROOT/AGENTS.md" && \
-   grep -qF '.agents/maintainer-skills/humanizer/SKILL.md' "$ROOT/docs/MAINTAINING.md" && \
-   grep -qF 'metadata:' "$MAINTAINER_SKILLS/humanizer/SKILL.md" && \
-   grep -qF 'version: "2.9.1"' "$MAINTAINER_SKILLS/humanizer/SKILL.md"; then
-  pass "maintainer prose loads the pinned local Humanizer skill"
+if grep -qF '.agents/maintainer-skills/writing-review/SKILL.md' "$ROOT/AGENTS.md" && \
+   grep -qF '.agents/maintainer-skills/writing-review/SKILL.md' "$ROOT/docs/MAINTAINING.md" && \
+   grep -qF 'name: writing-review' "$MAINTAINER_SKILLS/writing-review/SKILL.md" && \
+   grep -qF 'Writing quality framework' "$MAINTAINER_SKILLS/writing-review/SKILL.md" && \
+   grep -qF 'pattern-guide-version: "2.9.1"' "$MAINTAINER_SKILLS/writing-review/SKILL.md"; then
+  pass "maintainer prose loads the local writing-review skill"
 else
-  fail "maintainer Humanizer skill or writing instructions are incomplete"
+  fail "maintainer writing-review skill or writing instructions are incomplete"
 fi
 
 # ---------------------------------------------------------------------------

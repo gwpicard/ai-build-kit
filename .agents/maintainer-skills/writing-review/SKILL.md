@@ -1,28 +1,29 @@
 ---
-name: humanizer
+name: writing-review
 description: |
-  Remove signs of AI-generated writing from text. Use when editing or reviewing
-  text to make it sound more natural and human-written. Based on Wikipedia's
-  comprehensive "Signs of AI writing" guide. Detects and fixes patterns including:
+  Review and edit prose for clarity, precision, naturalness and audience fit. Use
+  before saving human-facing prose. Includes a quality framework and checks for
+  patterns associated with AI-generated writing, based on Wikipedia's "Signs of
+  AI writing" guide. Patterns include:
   inflated symbolism, promotional language, superficial -ing analyses, vague
   attributions, em dash overuse, rule of three, AI vocabulary words, passive
   voice, negative parallelisms, and filler phrases.
 license: MIT
 metadata:
-  version: "2.9.1"
+  pattern-guide-version: "2.9.1"
 ---
 
-# Humanizer: Remove AI Writing Patterns
+# Writing review: clear, natural, audience-appropriate prose
 
-You are a writing editor that identifies and removes signs of AI-generated text to make writing sound more natural and human. This guide is based on Wikipedia's "Signs of AI writing" page, maintained by WikiProject AI Cleanup.
+You are a writing editor. Review and edit prose for clarity, precision, naturalness and audience fit, and remove signs of AI-generated writing where they appear. This skill combines the maintainer-supplied writing quality framework with pattern guidance based on Wikipedia's "Signs of AI writing" page, maintained by WikiProject AI Cleanup. Choose the register for the document's reader: public documents use plain, adult prose for people who do not read code; maintainer documents may use technical language where it is precise and familiar to their audience. Do not simplify language for its own sake.
 
 ## Your Task
 
-When given text to humanize:
+When given text to review or edit:
 
 1. **Identify AI patterns** - Scan for the patterns listed below.
 2. **Preserve the information, not the shape** - Every claim in the original survives into the rewrite, but depth doesn't have to be uniform: compress the dull parts, dwell where a human would, and merge or split paragraphs freely. When keeping the information and mirroring the original's structure pull in different directions, the information wins.
-3. **Never invent facts** - The rewrite must not contain any fact, name, number, date, quote, or citation that isn't in the source text. Swapping a vague claim for a specific one is allowed only when the specific comes from the source or from the user; if a sentence needs real-world detail to work, ask for it or write the plain version without it. Opinions and reactions are voice, not facts: where PERSONALITY AND SOUL applies you may add stance, but never new factual claims. (In fiction, invented detail is the job. This rule governs everything else.)
+3. **Never invent facts** - The revision must not contain any fact, name, number, date, quote, or citation that isn't in the source text. Swapping a vague claim for a specific one is allowed only when the specific comes from the source or from the user; if a sentence needs real-world detail to work, ask for it or write the plain version without it. Opinions and reactions are voice, not facts: where PERSONALITY AND SOUL applies you may add stance, but never new factual claims. (In fiction, invented detail is the job. This rule governs everything else.)
 4. **Match the voice** - Fit the intended tone (formal, casual, technical). Add personality only when the content and the author's voice call for it (see PERSONALITY AND SOUL).
 
 How you're invoked changes what you deliver (see Invocation Modes). The draft → audit → final loop itself is defined under Process and Output, below.
@@ -170,7 +171,7 @@ When voice is appropriate, avoid uniform sentence structures, bloodless neutrali
 
 ### 14. Em Dashes (and En Dashes): Cut Them
 
-**Rule:** The final rewrite contains no em dashes (—) or en dashes (–). The em dash is one of the most reliable AI tells, so treat this as a hard constraint, not a "use sparingly" preference. Replace each one, in rough order of preference: a period (start a new sentence), a comma (a tight aside), a colon (introducing an explanation), parentheses (a true aside), or restructure the sentence. Also catch spaced em dashes (` — `) and double hyphens (` -- `) used the same way.
+**Rule:** The final revision contains no em dashes (—) or en dashes (–). The em dash is one of the most reliable AI tells, so treat this as a hard constraint, not a "use sparingly" preference. Replace each one, in rough order of preference: a period (start a new sentence), a comma (a tight aside), a colon (introducing an explanation), parentheses (a true aside), or restructure the sentence. Also catch spaced em dashes (` — `) and double hyphens (` -- `) used the same way.
 **Before:**
 > The term is primarily promoted by Dutch institutions—not by the people themselves. You don't say "Netherlands, Europe" as an address—yet this mislabeling continues—even in official documents.
 **After:**
@@ -180,7 +181,7 @@ When voice is appropriate, avoid uniform sentence structures, bloodless neutrali
 **After:**
 > The new policy, announced without warning, affects thousands of workers. The changes, long overdue according to critics, will take effect immediately.
 
-Before returning the final rewrite, scan it for `—` and `–`. Any hit means the draft isn't done. One exception: a user-provided writing sample that uses em dashes overrides this rule (see Voice Calibration); match the sample's frequency instead of banning them.
+Before returning the final revision, scan it for `—` and `–`. Any hit means the draft isn't done. One exception: a user-provided writing sample that uses em dashes overrides this rule (see Voice Calibration); match the sample's frequency instead of banning them.
 
 ### 15. Overuse of Boldface
 **Problem:** AI chatbots emphasize phrases in boldface mechanically.
@@ -388,25 +389,88 @@ When you see these, lean toward leaving the prose alone — they are evidence of
 
 ---
 
+## Writing quality framework
+
+Review the draft against these criteria in one pass. Identify only issues that affect this text, choose a proportionate remedy, then verify that the revision preserves meaning and suits its reader.
+
+1. **Artificial or forced simplicity.** Look for basic wording that loses meaning, childlike expressions in professional writing, or avoidance of standard terms. Use established terminology and adjust complexity to the audience. Plain language is not elementary language.
+2. **Unnatural word choices and verb-subject relationships.** Look for verbs that do not fit their subject or object, misleading personification, and literal-sounding paraphrases. Use conventional verbs that describe the real action. Personification is fine when natural and clear.
+3. **Semantic vagueness and low information density.** Look for generic words that hide the action, object, output or condition. Name the supported specifics and remove wording that adds no meaning. Do not invent details.
+4. **Ambiguous actions and missing operational detail.** Look for missing actors, sequence, conditions, or confusion between checking, reporting, blocking and enforcing. Clarify the actor, action, target and outcome where they matter. Do not strengthen a claim.
+5. **Artificial conversational language.** Look for forced friendliness, patronising simplification or informality that does not fit the context. Use straightforward language and match the tone to the document.
+6. **Mechanical or repetitive construction.** Look for repeated sentence shapes, unnecessary fragments and isolated statements where related ideas belong together. Vary or combine them where useful; keep short sentences when they work.
+7. **Weak, generic or imprecise verbs.** Look for verbs that hide what a person or system does. Name the actual operation, such as detecting, validating, generating, reporting or approving. “Check” is suitable when the operation is clear.
+8. **Missing context or unclear significance.** Look for details whose purpose or consequence the reader cannot infer, and assumptions the reader may not share. Add only the context needed to understand the feature or constraint.
+9. **Awkward phrasing.** Look for word order, modifiers or combinations that require rereading or sound unnatural. Rewrite from the intended meaning, read it aloud, and prefer conventional wording over novelty.
+10. **Loss of precision.** Check conditions, scope, certainty, actors and limits. Keep them intact, verify terms and behaviour, and flag missing information rather than inventing it. A smoother sentence that changes the claim is not an improvement.
+11. **Excessive abstraction.** Look for generic benefits and abstract nouns that could describe any product. State the concrete action or effect when supported, or remove the claim.
+12. **Register and audience alignment.** Check the reader's familiarity and keep the register consistent. Define essential terms for public readers who do not read code; maintainer prose may use established technical terms without a gloss. Use one term for one concept unless a distinction is intentional.
+
+### Remediation strategies
+
+| Strategy | Use when | Action |
+|---|---|---|
+| Substitution | A word or expression is unnatural | Replace it with an idiomatic or precise alternative. |
+| Clarification | Meaning is ambiguous | Make the actor, action, condition or outcome explicit. |
+| Specification | Language is generic | Replace vague wording with supported details. |
+| Restructuring | A sentence is awkward or mechanical | Rebuild it around the intended meaning. |
+| Consolidation | Related ideas are fragmented | Combine them into a clearer explanation. |
+| Expansion | Essential context is missing | Add the minimum detail needed for comprehension. |
+| Reduction | A sentence is padded or repetitive | Remove wording that adds no value. |
+| Terminology correction | A term misrepresents the operation | Use technically accurate terminology. |
+| Tone adjustment | The register does not fit | Align it with the audience and context. |
+| Meaning verification | The rewrite may change the claim | Compare scope, conditions, certainty and implied guarantees. |
+
+### Review process and acceptance standard
+
+1. Identify the intended meaning, actors, operations, outcomes, conditions and audience.
+2. Review the 12 criteria and the pattern guidance below. Diagnose only issues present in the text.
+3. Choose a proportionate remedy; do not rewrite a sound sentence just to make it different.
+4. Revise for meaning and naturalness, then review the surrounding passage for tone, terminology, rhythm and flow.
+5. Check that the revision adds no unsupported facts, guarantees, conditions or functionality.
+
+The result should be natural without being casual, clear without being simplistic, precise without needless technicality, concise without lost information, and faithful to the intended meaning. Prefer the most natural and accurate expression for the intended reader. If a polished revision communicates less, changes the claim or adds needless complexity, it is not an improvement.
+
+### Terminology
+
+Use the kit's established term where one exists, and define it once where a reader first meets it. Confirm the term against the named skill before changing a page.
+
+| Concept | Use | Retire |
+|---|---|---|
+| A person's permission | approval, approve, decline | yes, no, "your yes", "a no is recorded" |
+| Text the agent shows | the agent reports, tells you, does not mention | you hear, you hear nothing |
+| A rule a script enforces | blocks, rejects, requires (by what the script does) | holds (keep only "a promise holds" if PROMISES keeps that sense) |
+| Records matching reality | accurate, up to date | true |
+| What a script outputs | reports, detects, lists, fails | says |
+| Claude Code, Codex, Cursor and the rest | coding agent | harness (keep "harness" only for the replay tool, or rename that too) |
+| The list of work | the pieces; the printout for the printed list | the plan, the queue and five other names |
+| git commit / merge to main | save (commit), merge | save meaning merge |
+| The running tool | live copy (`live-copy` skill) | live tool |
+| A risk's safeguard | caution (`fit-check`) | precaution |
+| The six risk areas | Personal or sensitive data, Money, Sign-in and permissions, Automatic action, Irreplaceable live data, Regulated decisions | the three other sets of names |
+| A finding that should stop a merge | worth stopping for | blocking finding, should stop the merge |
+| Setup interview | interview | setup questions, interview questions |
+| Kit check vs project check | project check (a project's automated checks) | undefined uses |
+
 ## Invocation Modes
 
-**Pasted text (default).** The user gives text in the conversation. Run the full loop below and deliver the draft, the audit bullets, and the final rewrite.
+**Pasted text (default).** The user gives text in the conversation. Run the full review below and deliver the draft, brief audit bullets, and final revision.
 
-**File mode.** The user points at a file. Read it, run the draft → audit → final loop internally, then rewrite the file in place so it ends up containing only the final rewrite. Humanize the prose only: leave code blocks, frontmatter, data, and link targets untouched. In the conversation, report a short summary of what changed rather than pasting the whole rewrite back.
+**File mode.** The user points at a file. Read it, run the draft → audit → final loop internally, then rewrite the file in place so it ends up containing only the final revision. Edit the prose only: leave code blocks, frontmatter, data, and link targets untouched. In the conversation, report a short summary of what changed rather than pasting the whole rewrite back.
 
 **Embedded mode.** Another task or agent is using this skill as one step of a larger job (a PR description, a commit message, a doc). Run the loop internally and output only the final text. No draft, no audit bullets, no summary. The caller wants prose, not ceremony.
 
 ## Process and Output
 
-1. Read the input carefully and identify every instance of the patterns above.
+1. Read the input carefully, identify relevant issues in the writing quality framework, and scan for instances of the patterns above.
 2. Write a **draft rewrite**. Check that it reads naturally aloud, varies sentence length, prefers specific details and simple constructions (is/are/has), and keeps the appropriate register.
 3. Ask two questions: **"What makes the below so obviously AI generated?"** and **"Does the rewrite state any fact, name, number, date, or citation that isn't in the source?"** Answer briefly. A fabrication is a defect even when it sounds more human than the vague original.
-4. Revise into a **final rewrite** that addresses them and contains no em or en dashes (see §14).
+4. Revise into a **final revision** that addresses them and contains no em or en dashes (see §14).
 
-In pasted-text mode, deliver the draft, the brief "still-AI" bullets, the final rewrite, and (optionally) a short summary of changes. In file and embedded modes, run the same loop but deliver only what the mode calls for (see Invocation Modes).
+In pasted-text mode, deliver the draft, the brief "still-AI" bullets, the final revision, and (optionally) a short summary of changes. In file and embedded modes, run the same loop but deliver only what the mode calls for (see Invocation Modes).
 
 ## Reference
 
-This skill is based on [Wikipedia:Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing), maintained by WikiProject AI Cleanup. The patterns documented there come from observations of thousands of instances of AI-generated text on Wikipedia.
+This skill is based on [Wikipedia:Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing), maintained by WikiProject AI Cleanup. The patterns documented there come from observations of AI-generated text on Wikipedia.
 
 Key insight from Wikipedia: "LLMs use statistical algorithms to guess what should come next. The result tends toward the most statistically likely result that applies to the widest variety of cases."

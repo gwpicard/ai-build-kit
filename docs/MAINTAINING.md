@@ -1,87 +1,51 @@
-# MAINTAINING.md: notes for the kit's own maintainers
+# Maintaining AI Build Kit
 
 This file is for people working on the kit itself. The release allowlist keeps
 it out of the kit a project receives.
 
-## This repository is the kit's source
+## Configure the commit hook
 
-The distinction is easy to lose in the middle of a session, and losing it has
-produced the same mistake more than once.
-
-- None of the project records exists here. `masterplan.md`
-  and `CHANGELOG.md` are created by `/setup-ai-build-kit` from
-  `.agents/skills/setup-ai-build-kit/templates/`, so the installed setup-ai-build-kit skill can prepare
-  someone's project. The kit's own history lives in commit
-  messages and release notes, not a root `CHANGELOG.md`.
-- Root `AGENTS.md` carries the source-maintainer rules.
-  `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md` carries the rules that
-  start places at the root of a project.
-
-- A fresh clone runs one command before its first commit:
-  `git config core.hooksPath .githooks`. The hook in that folder takes AI
-  attribution lines and session links back out of a commit message. Git finds a
-  hook through `core.hooksPath`, which is a local setting, so a clone does not
-  inherit it and nothing warns you that it is missing. Root `AGENTS.md` says why
-  the rule exists and what else holds it shut.
-
-The six user-facing commands are product under test here, not the source
-repository's own operating workflow. Maintainer changes follow root `AGENTS.md`
-and this guide.
+Run `git config core.hooksPath .githooks` in a fresh clone before its first
+commit. Git does not inherit this local setting; the hook removes attribution
+lines and session links from commit messages. [AGENTS.md](../AGENTS.md) explains
+the rule and its other enforcement.
 
 ## How the issues are organised
 
-The kit's own work is tracked in this repository's GitHub issues. The scheme is
-native, needs no organisation account, and carries no dates, because the work is
-not on a deadline. Follow it so the board stays legible.
+Track the kit's work in this repository's GitHub issues. The scheme has no
+dates because the work is not deadline driven.
 
 An **epic** is one issue that describes an initiative, with the work under it as
 **sub-issues** (GitHub's own parent and child link). The parent shows a progress
-bar that fills as its children close. Keep it to two levels, an epic and its
-tasks. Mark the parent with the `epic` label. Add a child with
+bar that fills as children close. Use two levels only: an epic and its tasks.
+Mark the parent `epic`. Add a child with
 `gh issue edit <parent> --add-sub-issue <child>`, or open one under a parent with
-`gh issue create --parent <parent>`. Put an issue under an epic only when it is
-genuinely part of that initiative, not merely related; a related issue is linked
-by mentioning it in the body instead.
+`gh issue create --parent <parent>`. Put an issue under an epic only when it belongs to that initiative; link a
+related issue in the body.
 
 **Labels** carry the categories. Each open issue takes exactly one `area:` label,
 one of `area:skills`, `area:tests`, `area:release`, or `area:docs`. Its type is
 one of the existing `bug`, `enhancement`, `feature`, `documentation`, or `chore`.
 Two labels carry readiness, and they never sit on one issue together:
 `needs-answers` means a question only a person can answer is open, and `ready`
-means a person judged the piece shaped. `ready` is the same word the kit uses
-for the same state in a project it founds. `status:blocked` is added only when
-it says something. Colour is one hue per family, so the list stays scannable.
-There is no priority label: what to pick up next is set by the maintainer's
-cadence, not recorded on the issues.
+means a person judged the piece shaped. `ready` is also the state name used in
+projects the kit founds. Add `status:blocked` only while a piece is blocked.
+Use one colour per label family. There is no priority label; the maintainer's
+cadence sets what comes next.
 
-Some labels are read by the release machinery and must not be renamed or removed:
-`release-major`, `release-minor`, `release-patch`, `skip-release-notes`, and the
-type labels `bug`, `enhancement`, `feature`, and `documentation`, which feed the
-version bump and the release notes. Only add organising labels around them.
+Do not rename or remove the release labels `release-major`, `release-minor`,
+`release-patch` and `skip-release-notes`, or the `bug`, `enhancement`,
+`feature` and `documentation` labels used for version bumps and release notes.
+Add organising labels alongside them.
 
-The **Kit maintenance** user Project (`github.com/users/gwpicard/projects/3`) is
-the one dashboard across every open issue. Group its table by Parent issue for an
-epic view, or add a second view grouped by an area field. A Project groups by its
-own fields or by Parent issue, never by a label, so drive its grouping off the
-parent link rather than duplicating the area labels as Project fields.
-
-For a quick slice without the Project, bookmark an issue search:
-`is:open label:epic` for the epics, `is:open no:parent -label:epic` for
-top-level work, `is:open label:"area:tests"` for one area, and
-`is:open label:"status:blocked"` for waiting work.
-
-Milestones are not used, because they are release or date buckets and the work
-has no timeline. Issue Types, the built-in type field, need an organisation
-account this repository does not have, so the `epic` and type labels stand in for
-them.
+Milestones are not used because the work has no timeline. The `epic` and type
+labels replace GitHub Issue Types, which require an organisation account.
 
 ### What a shaped issue carries
 
-A piece is shaped when its body carries a condition somebody can check, under
-`## Done when`. That is the heading the kit gives a piece in a project it
-founds, and it is the heading here for the same reason: the checkable condition
-is what turns a request into a piece. A shaped body has this shape, with the
-original report kept whole underneath it.
+A piece is shaped when its `## Done when` section gives a checkable condition.
+Use the same heading as projects the kit founds, and preserve the original
+report beneath the template.
 
 ```md
 <!-- elaborated:v1 -->
@@ -114,52 +78,28 @@ The unchanged original body.
 </details>
 ```
 
-Two routines write that shape, and neither builds anything. One runs when an
-issue is opened. The other runs each morning and picks up the answers to the
-questions the first one asked. Their outputs are an issue body, an issue
-comment, and a label change, and nothing else. The first line of the body,
-`<!-- elaborated:v1 -->`, is how a run knows the work is done, and a question
-comment opens with `<!-- elaborate:questions -->` so the morning run can tell
-its own question from the answer under it.
+## Every rule says where it applies
 
-A routine asks only about a blocker, which is an unknown where two different
-answers give two different results. Everything else becomes an assumption,
-written into the body so the person can correct it. A routine asks at most
-twice on one issue. After that it takes its own defaults, lists them under
-assumptions, and writes the body, because a piece stuck behind an unanswered
-question is a piece nobody sees again.
-
-A routine skips an epic, since an epic is an initiative rather than a piece,
-and it skips a pull request. When it writes the body it also adds the one
-`area:` label and the one type label the evidence supports, and swaps
-`needs-answers` for `ready`. Those are guesses from the code, and the
-maintainer corrects them. A routine never closes an issue, never adds a
-sub-issue, and never sends a reminder.
-
-## Adaptive process is a contract
-
-Every rule declares where it applies (always, on named changes, or
-only to a piece that touches a named risk area), the way PHILOSOPHY.md
-requires. Do not add a strict step to the default workflow merely because it is
-good engineering practice. A change that improves care for one risk area but
-burdens ordinary work belongs behind a risk-area condition, not in the shared
-default.
+Every rule declares whether it applies always, to named changes, or only to
+work touching a named risk area. [PHILOSOPHY.md](PHILOSOPHY.md) explains why.
+Do not add a strict step to the default workflow just because it is good
+practice elsewhere. Put safeguards for a named risk behind that risk area's
+condition.
 
 ## The backbone and its mechanisms
 
-PHILOSOPHY.md names seven promises that hold in every project. This section is
-the one list of what holds each. A promise whose mechanism says "none yet" is
-not a guarantee. The kit may not claim it, and the piece that closes the gap is
-named beside it.
+PHILOSOPHY.md names seven promises for every project. This section lists the
+mechanism behind each. A promise marked "none yet" is not a guarantee; do not
+claim it until the piece beside it closes the gap.
 
 | Promise | Mechanism today | Gap |
 |---|---|---|
-| A person approves each merge, unless they chose auto-merge with its limits. | `merge.py --approved` spends the person's recorded approval through the approval gate, `records/scripts/approval.py`; `.agents/tests/merge-gate.sh` and `.agents/tests/approval-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; the local push guard and branch protection where the plan allows it, checked by `.agents/tests/push-guard.sh` and `.agents/tests/check-tooling.sh` | A private repository on Free has no GitHub protection; a person with permission can merge by hand there. |
-| Nothing goes online without approval. | One approval gate, `approval.py`, called by `merge.py --approved` and by every recipe step that moves what is live, applies a migration, adds a secret, or changes access, sign-up or the host connection: `.agents/tests/approval-gate.sh`, `.agents/tests/merge-gate.sh`, `.agents/tests/recipe-nextjs-supabase-on-vercel.sh`. Claude Code asks before approval is recorded, checked by `.agents/tests/push-to-main-rules.sh`; `.agents/tests/first-upload.sh`. In the behaviour set, `.agents/tests/replay/backbone.py` fails a replay in which a merge, a push to main or a change to the host came before the person's approval | Closed for the kit's own scripts. A host's tool run directly, outside a kit script, is held only by Claude Code's rules. |
-| Secrets are never shown. | `.agents/tests/secrets-gates.sh` and `.agents/tests/push-guard.sh` for commits and command output; `.agents/tests/record-secrets.sh` for the saved records: the pull request body `gate.py` writes, the changelog and masterplan `run-recipe.sh` writes, and what Claude Code writes into a record file or a GitHub body. In the behaviour set, each replay project holds a planted canary secret in an untracked file, and `.agents/tests/replay/backbone.py` fails the replay if the canary or any secret-shaped value appears in what the run said or saved | Closed for the kit's scripts and Claude Code. Another agent writing a record by hand is caught when the record is pushed. |
+| By default, a person approves each merge unless they chose auto-merge with its limits. | `merge.py --approved` spends the person's recorded approval through the approval gate, `records/scripts/approval.py`; `.agents/tests/merge-gate.sh` and `.agents/tests/approval-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; the local push guard and branch protection where the plan allows it, checked by `.agents/tests/push-guard.sh` and `.agents/tests/check-tooling.sh` | A private repository on Free has no GitHub protection; a person with permission can merge by hand there. |
+| Nothing goes online without approval. | One approval gate, `approval.py`, called by `merge.py --approved` and by every recipe step that moves what is live, applies a migration, adds a secret, or changes access, sign-up or the host connection: `.agents/tests/approval-gate.sh`, `.agents/tests/merge-gate.sh`, `.agents/tests/recipe-nextjs-supabase-on-vercel.sh`. Claude Code asks before approval is recorded, checked by `.agents/tests/push-to-main-rules.sh`; `.agents/tests/first-upload.sh`. In the behaviour set, `.agents/tests/replay/backbone.py` fails a replay in which a merge, a push to main or a change to the host came before the person's approval | Closed for the kit's own scripts. A host tool run outside a kit script is subject only to Claude Code's rules. |
+| Secrets are never shown. | `.agents/tests/secrets-gates.sh` and `.agents/tests/push-guard.sh` for commits and command output; `.agents/tests/record-secrets.sh` for the saved records: the pull request body `gate.py` writes, the changelog and masterplan `run-recipe.sh` writes, and what Claude Code writes into a record file or a GitHub body. In the behaviour set, each replay project contains a planted canary secret in an untracked file, and `.agents/tests/replay/backbone.py` fails the replay if the canary or any secret-shaped value appears in what the run said or saved | Closed for the kit's scripts and Claude Code. On Codex, Cursor and Gemini CLI, a secret printed by a tool reaches the agent; see COMPATIBILITY.md. Another agent writing a record by hand is caught when the record is pushed. |
 | Checks pass before a merge. | The project checks workflow, read by `merge.py`; `.agents/tests/merge-gate.sh`. When a billing limit alone stopped GitHub's check, `merge.py --approved` runs the same steps on a clean copy of the commit with `merge/scripts/local-check.py`; `.agents/tests/merge-billing.sh`. Every check reports a result from `quality-checks/scripts/results.py`; `.agents/tests/result-vocabulary.sh` | In the billing case, this computer's own tools stand in for the steps that set up tools on GitHub, so the result can differ from a run on GitHub's fresh machine. |
-| A review matches the code it read. | The review record names the commit the review read and carries a seal over itself and the stopping findings. `check-review.sh` and `merge.py` hold a record for another commit, a hand-edited one, and an older one with no commit. A review no second login approved is recorded as unverified. `.agents/tests/review-gate.sh`, `.agents/tests/merge-gate.sh`. In the behaviour set, `.agents/tests/replay/backbone.py` fails a replay whose merge landed a version the review did not read, and `.agents/tests/replay-behaviour.sh` proves it | The seal stops a hand edit, and anyone who runs the kit's code can still write a record. A review counts as verified only when a second GitHub login approved that commit. |
-| Every launch has a way back and a backup. | Each recipe must carry rollback, backup and restore sections, checked by `.agents/tools/check-recipes.sh`. `run-recipe.sh` holds a live tool whose backup is not confirmed, whose recipe names no rollback, or, on a later run, with no earlier build to go back to. Hosting is recipe-only. With no recipe, `run-recipe.sh none` gives one notice that nothing is guaranteed, records the person's words and the date, holds nothing and checks nothing. `.agents/tests/run-recipe.sh` | A first launch has no earlier build, so its way back is the recipe's rollback step, untried. Off a recipe the promise does not hold, and the kit says so. |
+| A review matches the code it read. | The review record names the commit the review read and carries a seal over itself and the stopping findings. `check-review.sh` and `merge.py` reject review records for another commit, a hand-edited record and an older record with no commit. A review without approval from a second login is recorded as unverified. `.agents/tests/review-gate.sh`, `.agents/tests/merge-gate.sh`. In the behaviour set, `.agents/tests/replay/backbone.py` fails a replay whose merge landed a version the review did not read, and `.agents/tests/replay-behaviour.sh` proves it | The seal stops a hand edit, and anyone who runs the kit's code can still write a record. A review counts as verified only when a second GitHub login approved that commit. |
+| On a proven recipe, every launch requires a way back and a confirmed backup. | Each recipe must carry rollback, backup and restore sections, checked by `.agents/tools/check-recipes.sh`. `run-recipe.sh` blocks launch when a live address has no confirmed backup, the recipe names no rollback, or a later run has no earlier build to return to. Hosting is recipe-only. With no recipe, `run-recipe.sh none` gives one notice that nothing is guaranteed, records the person's words and the date, blocks nothing and checks nothing. `.agents/tests/run-recipe.sh` | A first launch has no earlier build, so its way back is the recipe's rollback step, untried. Off a recipe the promise does not hold, and the kit reports that limit. |
 | Records say "accepted", never "done". | `.agents/tests/replay/state-check.sh` reads the end state a replay leaves and fails when an area is marked done on the date of an acceptance; `.agents/tests/replay-state.sh` proves that assertion. The project check reports an accepted area as accepted, and `.agents/tests/sensitive-area-map.sh` proves it. The move from an older path record keeps each acceptance as accepted, and `.agents/tests/risk-move-rehearsal.sh` proves it | The replay check measures the kit; it does not run in a project. Nothing stops an agent writing "done" by hand there. |
 
 Each mechanism needs a check that fails when the mechanism is removed. The
@@ -167,99 +107,71 @@ mutation run breaks each one in turn.
 
 ### Two kinds of check
 
-An integrity check protects one of the seven promises. It may stop the work,
-and it stops it even if the person insists. A judgement risk belongs to one
-piece of work. The kit warns once, records the person's words and the date, and
-then builds. It does not refuse, ask again or hold the work back.
-
-When the two seem to meet, ask who can judge. If the person can judge the harm
-from where they sit, it is a judgement risk. If the harm is invisible to them,
-such as a review of old code or a launch with no backup, it is an integrity
-check.
+[PHILOSOPHY.md](PHILOSOPHY.md) explains integrity checks and judgement risks.
+When it is unclear which applies, ask who can judge the harm. If the person can
+judge it from where they sit, it is a judgement risk; otherwise it is an
+integrity check.
 
 ### Results
 
 Every check that gates a merge reports one of five results: `PASS`, `FAIL`,
 `NOT_RUN`, `INCONCLUSIVE` or `NOT_APPLICABLE`. A missing runner, a crashed tool
-or a check that never started is `NOT_RUN`. It is never shown as `PASS`. One table, in
-`.agents/skills/quality-checks/scripts/results.py`, says which results stop a
-merge, which ask for a review and which only inform. `FAIL` and `NOT_RUN` stop
+or a check that never started is `NOT_RUN`. It is never shown as `PASS`. The table in
+`.agents/skills/quality-checks/scripts/results.py` maps results to merge blocks,
+review requests and information-only outcomes. `FAIL` and `NOT_RUN` stop
 it, `INCONCLUSIVE` asks for a review, and the other two inform. `quality.py`,
 `gate.py` and `merge.py` keep their own exit codes and map them onto these
-names where they report. A test the harness breaks is "could not run", never a
-pass or a fail.
+names where they report. A test the replay harness breaks is recorded as `could not run` and is neither a pass nor a fail.
 
 The hosting recipe checks are the exception. They report in plain words, as
-warnings the person can accept, and a check that did not run says "not checked".
+warnings the person can accept, and a check that did not run reports "not checked".
 
 ### Rollout states
 
 A check that a project cannot yet run is in one of three states: `off`,
 `report-only` or `enforced`. A project starts at `report-only` when it lacks
 what the check needs, such as a second identity for a review. A report-only
-check says so in plain words and never shows a false pass. The move to
-`enforced` is a decision, recorded with the date.
+check reports its state in plain words and never shows a false pass. The move to
+`enforced` is recorded with the date.
 
 A review that the kit cannot verify, because the agent and the reviewer share
-one login, is recorded as unverified: the record says `verified=no`, and the
-pull request and the merge say so in plain words. The hand-over never calls it
+one login, is recorded as unverified: the record contains `verified=no`, and the pull request and merge report the
+status in plain words. The hand-over never calls it
 an independent review.
 
 A project moved from an older path record lists the checks it cannot yet run on
 a `Report-only:` line of its risk record, with the date. The line names areas
-that have no `paths:` line, because the project check cannot hold changes to
-them, and open pieces that name no risk area. Nothing on that line is shown as
+without a `paths:` line, which the project check does not block, and open pieces
+that name no risk area. Nothing on that line is shown as
 passed.
 
 ### The risk record
 
-The record lives in the masterplan, under a heading for risk. The project
-instructions point to it. It holds:
+The fit-check skill owns the risk record and its fields. `mark-ready.sh`
+requires a `Risk areas:` line on each piece, and
+`.agents/tests/sensitive-area-map.sh` fails on an open area and passes on an
+accepted area.
 
-- who is exposed if the tool fails;
-- what data the tool holds;
-- what a wrong answer does;
-- how the person recovers;
-- the named risk areas the project touches, each with the person's words and
-  the date once they accepted it.
-
-Setup asks three questions to fill it: who is exposed if this fails, what data
-does it hold, and how would you recover from a failure. The agent writes the
-record with the person and checks it again whenever the project changes. A
-piece carries a "Risk areas" field naming the areas it touches. The notice
-comes once per piece. The acceptance is saved with the person's words and the
-date, and after it the project check reports the area and passes. `mark-ready.sh`
-refuses a piece that has no `Risk areas:` line, and
-`.agents/tests/sensitive-area-map.sh` holds an open area and passes an accepted
-one.
-
-The named risk areas are the ones PHILOSOPHY.md lists: personal data, money,
-sign-in, automatic actions, data that cannot be replaced, and a regulated
-decision.
-
-An older project moves from its path record with approval. `/maintain` shows the old
-section and the proposed record in one reply, before approval. The first visit
-that finds a path record offers the move, and each monthly visit offers it
-again after a no. A no changes nothing in the project's records; the only write
-is the kit's own note in `.ai-build-kit-maintenance` that the offer was
-declined. A project that was private only gets the same offer and is told what
-the kit now expects. With approval, every risk area, acceptance date and word moves
-as written, and the earlier path and why stay as history. An acceptance is never
-turned into a finished caution. The open pieces get a `Risk areas:` line where
-the piece's reach says which area it touches, and a changelog entry records the
-move. `.agents/tests/risk-move-rehearsal.sh` rehearses each old path value and
-the old path fields.
+`/maintain` moves older path records only with the person's approval. It shows
+the old section and proposed record before approval; a declined offer leaves the
+project records unchanged and records the decline in
+`.ai-build-kit-maintenance`. With approval, it preserves each area, acceptance
+and date, keeps the old path and its reason as history, adds risk areas to open
+pieces where their reach identifies them, and records the move in the changelog.
+An acceptance never becomes a completed caution.
+`.agents/tests/risk-move-rehearsal.sh` covers the old path values and fields.
 
 ### Working conditions
 
-Setup does not complete until a script confirms them: a repository with issues
-switched on, an agent session that can read and write issues, branch protection
-or a recorded private Free plan limit, and host and database access. A missing
-condition stops setup with the one step the person takes. The person creates
-the accounts.
+Setup requires a repository with issues switched on, an agent session that can
+read and write issues, branch protection or a recorded private Free plan limit,
+and the command-line tools named by the chosen recipe. A script stops setup
+when one of those conditions is missing. Host and database sign-in cannot yet
+be checked, so the script reports them as unchecked. The person creates the
+accounts.
 
-The script is `check-tooling.sh --conditions` in the setup skill, and
-`.agents/tests/check-tooling.sh` holds it. It proves issue access by opening a
+The script is `check-tooling.sh --conditions` in the setup skill, covered by
+`.agents/tests/check-tooling.sh`. It proves issue access by opening a
 test issue, closing it and labelling it `skip`. A private repository on Free
 carries on with the local push guard; `protect-branch.py` records the condition
 in `.ai-build-kit-maintenance` and explains the missing GitHub layer once.
@@ -269,257 +181,145 @@ available; first upload checks protection again. Missing admin rights still stop
 founding.
 
 For host and database access it stops only on the tools the chosen recipe names.
-The recipes name no sign-in check yet, so a sign-in is could not check, like
-anything else there. It also says whether the agent
-and the reviewer share one GitHub login. That is a report, never a stop.
+No recipe currently names a host or database sign-in check, so the script
+reports those as `could not check`. It also reports whether the agent and
+reviewer share one GitHub login; that result does not stop setup.
 
 ### Settled points
 
-- Hosting is offered on proven recipes only. Outside one, the kit says plainly
-  that it guarantees nothing and still helps.
-- The kit never deletes the person's unfinished work. It explains how to
-  recover it.
-- "Fix the live error, no more yeses" still needs approval naming the change.
-- When the person gives too little detail at setup, the kit asks only for the
-  three questions, records any gap as an assumption, and goes on.
-- A recipe launch with no confirmed backup or no named rollback stops. With no
-  recipe, nothing is checked and nothing stops: the kit gives one notice,
-  records the person's words and the date, and helps by hand.
+- The kit never deletes unfinished work; it explains how to recover it.
+- A request to fix a live error still needs approval for the named change.
+- When setup lacks detail, the kit asks only the three fit-check questions,
+  records gaps as assumptions and continues.
 
 ## Changing a skill
 
-This section governs the canonical skills in `.agents/skills/` and the agents
-in `.agents/agents/`. A
-maintainer skill sits outside it, and `AGENTS.md` says what it does and does not
-owe.
-
-Start with PHILOSOPHY.md, beside this file. Its four questions get answered in
-the pull request description before the skill changes. A change that cannot
-answer them gets reshaped before it's considered for merge.
-
-A change that retires a term, mode or behaviour adds its old phrases to the
-stale-claim list in the same pull request. A number owned by a check belongs in
-the check, not repeated in prose.
+This section covers canonical skills in `.agents/skills/` and agents in
+`.agents/agents/`. Read [PHILOSOPHY.md](PHILOSOPHY.md) first and answer its four
+questions in the pull request description. Reshape a change that cannot answer
+them. When retiring a term, mode or behaviour, add its old phrases to the stale
+claim checks in `.agents/tools/validate-kit.sh`. Keep numbers owned by a check
+in that check rather than repeating them in prose.
 
 `.agents/skills/` is the single source of truth. Edit `<name>/SKILL.md`, run
-`.agents/tools/build-adapters.sh`, and commit the canonical change together with
-the regenerated compatibility fixtures. Never hand-edit a generated file under
-`.claude/`, `.cursor/`, `.gemini/`, `.codex/agents/` or `.github/agents/`. New projects use the shared skills
-installer, the optional Claude Code plugin, or the Agent Plugins folder. The
-Claude plugin metadata lives under `.claude-plugin/`. It explicitly
-selects the six generated command files, the generated background skills and
-the generated agents.
-Those thin adapters load the canonical instructions from the plugin cache. The
-Agent Plugins manifest lives under `agent-plugin/`, and its `skills`
-folder is assembled by the release allowlist rather than by
-`build-adapters.sh`, so the canonical skills stay in one place here. The
-generated files also remain as maintainer checks. Codex reads the skills from
-`.agents/skills/` directly, so its only generated folder is `.codex/agents/`.
+`.agents/tools/build-adapters.sh`, and include the regenerated compatibility
+fixtures. Never hand-edit generated files under `.claude/`, `.cursor/`,
+`.gemini/`, `.codex/agents/` or `.github/agents/`. The Claude plugin selects the
+six generated commands, background skills and agents; its metadata is in
+`.claude-plugin/`. Agent Plugins uses `agent-plugin/`, whose skills folder is
+assembled from the release allowlist. Codex reads `.agents/skills/` directly.
+The adapters remain in the repository for maintainer checks; the builder and
+`check-structure.py` compare them with the canonical files.
 
-### Thin commands, background skills and agents
+A command routes work, while a background skill owns one method and its
+references. An agent is a brief in `.agents/agents/` that names the skills it
+loads, the access it needs and what it returns; it never starts another agent.
+`.agents/tools/kit-inventory.txt` lists each skill and agent with its kind.
+`check-structure.py` enforces the structure, callers and word budgets. A script
+may be called by path from any skill because that costs the agent no attention.
+When moving a rule, move it whole. Compare the old and new files line by line
+before saving, so each sentence appears at its new home or points to it.
 
-A command routes the work: when it runs, which background skills it calls in
-what order, what it says to the person, and when it is done. It holds no
-method of its own, and keeps a reference only for work no other command does.
-A background skill has one job, owns its references and scripts, and earns its
-place by having two callers or an agent that loads it. An agent is a thin
-brief in `.agents/agents/` that names the background skills it loads, the
-access it needs and what it returns; the method stays in the skills, so the
-same words run with or without subagents. An agent never starts another one.
+### How a skill is triggered
 
-`.agents/tools/kit-inventory.txt` lists every skill and agent with its kind.
-`build-adapters.sh` generates from it, and `check-structure.py` holds the
-shape: no skill loads a command's own references or sections, each background
-skill has its callers, and the word budgets hold. A script may still be run by
-path from any skill, since it costs the agent no attention.
+A background skill called by another skill has `user-invocable: false` in its
+own file; a skill without it is a command. The adapter builder reads this
+setting, and the count check catches a dropped or misspelt declaration.
 
-When a rule moves between files, it moves whole. Run the line-by-line
-comparison against the old file before committing: every sentence is either in
-its new home or is a pointer that changed. A cut is for repetition only, never
-for a safeguard.
+The agent may start a command when the person types it, names it in a message,
+or asks for its job in plain words. It reports which command it is running and
+never starts one the person did not ask for. The person cannot choose a
+background skill; the tool enforces that boundary. The shared installer and
+Agent Plugins clients read canonical files, so the setting must be correct in
+the skill itself.
 
-One setting says how a skill is triggered. A background skill another skill
-calls carries `user-invocable: false` in its own file. A skill without it is a
-command. The adapter builder reads that setting and nothing else, so a dropped
-or misspelt line shows up as seven commands and one background skill, and the
-count check stops the build there.
+`user-invocable` is absent from the written Agent Skills standard, so the
+reference checker reports background skills as invalid. Keep the setting with
+that cost recorded: a strict Agent Plugins client would skip skills that fail
+the standard, while Claude Code accepts it. If the standard adopts an
+equivalent setting, follow it and update the person-facing summary in
+`docs/COMPATIBILITY.md`.
 
-The commands used to carry a second setting that stopped the agent starting one
-by itself, and each description ended with a sentence saying the same. Both
-went. A person who wrote `/fix` in the middle of a message, or said "let's
-implement", was told to retype the message with the command first, and that
-restricted the person more than it protected them. The agent may now start a
-command when the person types it, names it anywhere in a message, or asks for
-its job in plain words, and it says which command it is running. It never
-starts one the person did not ask for. The guard worth keeping is that the
-person cannot pick a background skill, and that stays where the tool enforces
-it. The shared installer and an Agent Plugins client load the canonical files
-directly, so the setting has to be right in the skill itself, whatever the
-generated adapters look like.
+### Maintainer skills
 
-`user-invocable` is not in the written Agent Skills standard, so its reference
-checker reports the background skills as invalid. Keep it anyway, with the
-cost on the record: the plugin standard tells a client to skip any skill that
-fails the skill standard, so a strict Agent Plugins client would load the six
-commands and skip the rest. Claude Code accepts the setting, which is why that
-route works today. If the standard adopts a setting of its own, follow it and
-update the short person-facing version in `docs/COMPATIBILITY.md`.
+Maintainer skills live in `.agents/maintainer-skills/`, outside folders that
+installers scan. Root [AGENTS.md](../AGENTS.md) lists them and explains how to
+load them. They have no generated adapters or release entries. The validator
+checks that no maintainer skill appears in an installer folder.
 
-Humanizer is not in that tree at all. It lives under
-`.agents/maintainer-skills/`, alongside `review-issues`, which reads the open
-issues, groups them by theme and names the next piece worth picking up, and
-`stack-research`, which reads what changed upstream for the products the
-recipes name and proposes changes in a dated note, and `housekeeping`, which
-finds and clears what maintainer work left on this computer. They belong to
-whoever works on the kit, and none belongs to anybody who installs it.
+The shared installer scans `.agents/skills/` and `.claude/skills/`, merging
+files by frontmatter `name`. Adapters use the canonical names, so they merge
+with their source files. A maintainer skill copied into either folder would
+instead be offered to project users. A marker file cannot prevent that because
+external installers do not recognise this repository's convention.
 
-`stack-research` writes its note to `.agents/tmp/stack-research/`, which git
-ignores, so the note is never tracked and never ships. It changes no recipe,
-part or date itself. A proposal worth keeping becomes an issue.
+`stack-research` records proposals in the git-ignored
+`.agents/tmp/stack-research/`; it changes no recipe, version or date. A proposal
+worth keeping becomes an issue. Its research note and the recipe record remain
+separate from the installed skills.
 
-The reason is what a shared skills installer reads. It looks in
-`.agents/skills/` and `.claude/skills/` and offers whatever it finds in either,
-merging the two by the `name` in each file's frontmatter. The adapters carry
-the names of the skills they point at, so they merge away and an installer
-finds the kit's skills once each. No maintainer skill shares a name with one of
-them, so a copy of any of them in those folders would be one more skill
-offered to every project.
+The writing-review skill's pattern guidance draws on version 2.9.1 of
+[the upstream writing guide](https://github.com/blader/humanizer/tree/v2.9.1),
+used under its included MIT licence. The maintainer supplied the audience-aware
+framework. Review upstream changes before replacing the pattern guidance.
 
-Sitting outside both folders is what prevents that. It is also why the skill
-gets no generated adapter and no line in the release allowlist. A marker file
-was tried first and cannot work: the marker is this kit's own convention, and
-an installer written by somebody else has never heard of it.
+### Project templates and hooks
 
-Load any of them by its path when you need it. The validator checks the placement
-rather than trusting it, and fails if a folder or command file named for a
-maintainer skill turns up anywhere an installer reads.
+A project's Claude settings come from
+`.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json`,
+not this repository's `.claude/settings.json`. Keep the deny lists aligned;
+`validate-kit.sh` compares both with `.agents/guard/blocked-commands.md`. Only
+the template carries session-start wiring, and `setup-ai-build-kit` installs
+that script in a project.
 
-The vendored copy is pinned to version 2.9.1 from
-[blader/humanizer](https://github.com/blader/humanizer/tree/v2.9.1) under its
-included MIT licence. Review upstream changes before replacing the local copy.
+`.agents/hooks/session-end-sync.sh` is opt-in. Its header documents per-tool
+wiring; `/what-now` at the next session start serves the same purpose. The hook
+keeps its existing name because projects may already refer to it.
 
-Some skills carry a `references/` folder loaded only when it applies. Keeping
-rules that apply to a minority of sessions out of the always-loaded body is the
-pattern to follow when a skill grows.
+Editing a skill body usually leaves adapters unchanged because they contain
+pointers and frontmatter descriptions. A changed description changes the
+adapter. [COMPATIBILITY.md](COMPATIBILITY.md) owns the per-tool map.
 
-A project's Claude settings live in start's foundation template, not in this
-repository's own `.claude/settings.json`. Change the deny list in both, because
-the validator compares each of them against `.agents/guard/blocked-commands.md`.
-Only the template carries the session-start wiring, and only `setup-ai-build-kit` places the
-session-start script into a project.
+## The source validator
 
-The session-end hook, `.agents/hooks/session-end-sync.sh`, ships alongside it
-but is opt-in by design rather than by oversight: a check-up cadence should not
-be missed, while a reminder about unsaved work at session end is a lighter
-prompt. Its own header gives the per-tool wiring, and typing `/what-now` at the
-start of the next session does the same job on any tool. The file keeps its
-old name, since a project that wired it points at that name.
+Run `.agents/tools/validate-kit.sh` after changes to skills or kit machinery.
+Its output names each rule and reports `PASS` or `FAIL`; read the script for the
+checks and their scope. CI runs it on source pull requests alongside the
+rehearsal suite.
 
-Editing a skill's body usually produces no adapter diff, because the adapters are
-pointers carrying only the frontmatter description; changing a description does.
-COMPATIBILITY.md, beside this file, holds the full per-tool map.
+The starter project check intentionally fails until
+`setup-ai-build-kit` replaces the placeholder with the project's real commands
+during stand-up. The template is
+`.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml`.
 
-## Maintainer validation
+## Behaviour tests: scenarios, replays and seeded products
 
-Every change to `.agents/skills/` or the kit's own machinery runs
-`.agents/tools/validate-kit.sh`, which checks:
+Before a release, read `.agents/tests/scenarios.md` and confirm each scenario
+still resolves to its risk record, evidence and route. It is a maintainer
+contract, not material shown to project users.
 
-- the canonical skill inventory: `.agents/tools/kit-inventory.txt` lists every
-  skill and agent with its kind, the six commands are named exactly, and the
-  folders hold what the list says and nothing else;
-- the shape of the skills, by `.agents/tools/check-structure.py`: no skill
-  loads a command's own references or sections, each background skill has two
-  callers or an agent that loads it, and a command's SKILL.md stays within
-  the word budgets set in `.agents/tools/check-structure.py`;
-- the maintainer skill boundary: every folder under `.agents/maintainer-skills/`
-  is read off the disk rather than from a list, the vendored writing skill
-  carries its licence, and no folder or command file named for any of them
-  exists in `.agents/skills/`, `.claude/skills/`, `.claude/commands/`,
-  `.cursor/commands/`, `.gemini/commands/`, or the release allowlist;
-- frontmatter on every `SKILL.md` (name, description, folder match, no
-  duplicates);
-- harness contracts: `.codex/skills` does not exist, and Claude's generated
-  background skills carry `user-invocable: false` while its generated commands
-  do not;
-- trigger declarations: a background skill declares `user-invocable: false` in
-  its own file, a command never carries it, and `.claude/commands/` and
-  `.claude/skills/` are compared as whole listings against the expected names;
-- that no tracked file carries an AI attribution line or a link back to the
-  session the work came out of, and that `.githooks/commit-msg`, which takes
-  those out of a commit message, is saved as a runnable file;
-- that every local Markdown link and every skill, reference, or template path
-  named in another file resolves;
-- the fit check's structure: the three questions and the risk-area table are
-  present, and the masterplan template carries the same risk-record fields as
-  the fit check, `Risk areas` among them;
-- that the plan template carries the `Subjects` column, that no retired path
-  name or `Path:` field appears outside the frozen fixtures, and that
-  `team.md` is referenced nowhere;
-- that clarify says which questions may be offered as choices and which are
-  asked in plain words, with the matching maintainer scenario present;
-- that `/setup-hosting` keeps the recipe's checks inside its launch section;
-- that the generated adapters match what `.agents/skills/` produces, with no
-  stale adapter folder left behind;
-- shell syntax on every script, and that config files (JSON, TOML, YAML)
-  parse;
-- that the Claude Code deny list mirrors the mechanically enforceable entries
-  in `.agents/guard/blocked-commands.md`, in this repository's own settings and
-  in the settings template a project receives;
-- that the project's Claude settings template carries the session-start wiring
-  while this repository's own settings do not;
-- that every tracked file opening with a shebang is saved as runnable, unless
-  this repository only ever sources it or hands it to `sh`. It reads the mode
-  git recorded rather than asking the disk, for the Windows-mount reason given
-  under releases below;
-- that project-facing docs carry none of the stale claims this kit has made
-  before: "all markdown", "seven skills" describing the whole repository,
-  "four project documents", `team.md`, a mandatory fresh session for every
-  build, a universal pull-request or test-first requirement, an automatic
-  rebuild treated as the fourth `/fix` attempt, an absolute claim that the
-  background skills never appear in any harness, incorrect Claude invocation
-  semantics, `.codex/` described as a generated adapter, or a claim that
-  everything in the kit is markdown.
+`.agents/tests/replay/` runs whole conversations against an assembled release
+and uses a separate grader over several runs. Read its table before a release;
+a replay result is a rate. A run with nobody present is a lead, so repeat any
+finding by hand before treating it as a defect. The folder documents its scope
+and limits.
 
-CI runs the same script in this repository's own pull requests, alongside every
-rehearsal in `.agents/tests/`. The released starter receives its deliberately
-failing project check from
-`.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml`; `setup-ai-build-kit` replaces that
-placeholder with the project's real commands during stand-up.
+`.agents/tests/replay/behaviour.sh` runs scenarios 64 to 81, three per command:
+expected path, skipped step and pushback. It also runs seeded products 03, 04
+and 08 as additional `/implement` cases. Each scenario has four to six checks,
+read from disk by `behaviour_checks.py` or answered by the grader, and is also
+graded against the backbone by `backbone.py`. The maintainer reads draft
+scenarios before relying on them. For a comparison, set `KIT_SRC` for each kit,
+run the six expected paths first, then compare result folders with `compare.sh`.
 
-## Scenario review
+`preflight.sh` checks the replay harness before calling a model. A broken run is
+recorded as `could not run`, excluded from rates, and a round with no graded
+result exits 2.
 
-Before a release, work through `.agents/tests/scenarios.md` and confirm each
-scenario still resolves to the risk record, evidence, and route it names. It is a
-maintainer contract: nothing there is shown to someone building a project
-with the kit.
-
-`.agents/tests/replay/` does part of that walk for you. It holds a whole
-conversation with an assembled release and asks a separate grader whether what
-happened matches the contract, several times over, so the answer is a rate
-rather than a pass. Read its table before a release. It settles nothing on its
-own: a session with nobody in it is a lead rather than a verdict, and anything
-it turns up should be repeated by hand before it counts as a defect. Its own
-folder explains what it covers and what it cannot reach.
-
-`.agents/tests/replay/behaviour.sh` runs the behaviour set. It holds scenarios 64
-to 81, three for each command: the expected path, a skipped step and pushback.
-It also runs the seeded products 03, 04 and 08 as further cases of `/implement`.
-A scenario has four to six yes or no checks. Most are read from disk by
-`behaviour_checks.py`, and a few are questions for the grader. Each scenario is
-also graded on the backbone by `backbone.py`. The scenarios are drafts until the
-maintainer has read them. To compare two kits, point `KIT_SRC` at each, run the
-six expected paths first, and compare the two result folders with `compare.sh`.
-
-Before any model is called, `preflight.sh` checks the harness itself. A run the
-harness breaks is written as could not run. It is neither a pass nor a fail, it
-is left out of every rate, and a pass in which nothing was graded exits 2.
-
-`.agents/tests/seeded/` asks a different question: is what the kit builds sound?
-Each product plants one fault in a small project, and the run counts whether the
-kit found it before the merge, whether the fix works, and whether a healthy twin
-was wrongly held. Its keys stay out of the project the kit sees. It reports
-counts with denominators and never one score, so read it the way you read the
-replay table.
+`.agents/tests/seeded/` measures whether the kit catches a planted fault before
+merge, fixes it, and avoids blocking a healthy twin. Answer keys stay outside
+the project being tested. Results include counts and denominators, not one
+score.
 
 ## What earns a shell test
 
@@ -548,395 +348,274 @@ close first.
 
 ## The pull request check
 
-`.github/workflows/source-checks.yml` is private source machinery. It never
-ships. Its `source-kit-validation` job regenerates the adapters and runs
-`validate-kit.sh` on pull requests here.
+`.github/workflows/source-checks.yml` is private source machinery. Its
+`source-kit-validation` job checks the generated adapters and runs
+`validate-kit.sh` on pull requests. The `rehearsal` job runs
+`.agents/tests/run-all.sh` once for the whole suite.
 
-Its `rehearsal` job runs `.agents/tests/run-all.sh`, which is every rehearsal in
-that folder, in a single job. A job for each would name a failure on the pull
-request's own checks list, which reads better. But a hosted job is billed a whole
-minute however long it takes, and most of these finish in seconds, so a job each
-would cost about twenty five minutes to do about three minutes of work.
+The runner continues after failures and names each one in its output and run
+summary. It reads the test folder, so new rehearsals run when saved. Only
+`mutate.sh` is excluded because it audits the suite. A rehearsal that cannot
+run reports `could-not-run: <reason>` and exits 2; failures exit 1 and take
+precedence. Locally, only failures make the suite exit non-zero. GitHub also
+fails the job for incomplete rehearsals. `validate-kit.sh` checks the workflow
+jobs, repository gate and call to `run-all.sh`.
 
-The runner does that naming instead. It carries on past a failure and names every
-one, in its output and in the run summary, rather than stopping at the first and
-hiding the rest. `rehearsal-runner.sh` is what proves it holds: a validator could
-read a list off the file, but only running the thing settles whether it behaves.
-The runner reads the folder rather than a written-out list, so a rehearsal runs
-from the moment it is saved. Only `mutate.sh` is left out, and it audits the
-suite rather than passing or failing.
-
-A rehearsal with cases it could not run prints `could-not-run: <reason>` and
-exits 2, following the replay harness's exit code. The shared helper in
-`.agents/tests/lib/could-not-run.sh` records each reason; `finish_rehearsal`
-returns 2 after the remaining cases pass. A failure still exits 1 and takes
-precedence. Exit 2 without a reason is also a failure. The runner lists
-incomplete rehearsals and their reasons separately from failures, in both
-summaries, and does not count them as passed.
-
-Locally, only failures make the suite exit non-zero. On GitHub,
-`GITHUB_ACTIONS=true` also makes an incomplete rehearsal fail the job, including
-the `rehearsal` job above.
-
-`validate-kit.sh` checks that this workflow still has both jobs, that the
-rehearsal job is guarded to this repository, and that it runs `run-all.sh`. The
-last of those is the load-bearing one, because a rehearsal job that ran something
-else, or nothing at all, would go green.
-
-`validate-kit.sh` also calls several of those rehearsals itself by name. That is
-what keeps it a single local command and what gives release preparation its coverage. So the
-hosted run does that work twice, and at about half a minute for the whole set
-that is cheaper than either half losing it.
-
-Do not add a switch to skip the rehearsals when the hosted job runs them. Every
-expensive fault this repository has had came from a check that passed by never
-running, and the duplication costs half a minute and fails loudly.
+The validator runs some of the rehearsals itself, so the hosted job repeats
+them. Keep both runs; do not add a skip switch. The hosted duplication costs
+about half a minute, while a check that passes without running can hide an
+expensive fault.
 
 The job installs Claude Code and the starter's pinned Node.js and database
-tools. The Claude plugin rehearsal and `fake-github.sh` run without a GitHub
-account, through a stand-in for its command line tool. The recipe workflow
-rehearsal installs locked packages and a browser, then starts a disposable
-local database and web server. It calls no live hosting or database service.
-The replay harness stays out altogether: it costs money and needs a model,
-which its own README explains.
+tools. Claude plugin checks and `fake-github.sh` use a stand-in rather than a
+GitHub account. The recipe workflow uses locked packages, a browser and a
+disposable local database and web server; it calls no live service. The replay
+suite is excluded because it needs a model and costs money.
 
 ## Keep it generic
 
-Nothing in the released kit names a project, a company, or a person;
-`/setup-ai-build-kit` is what makes it someone's. Every workflow names this
-repository in a gate, so none of them runs in somebody's fork, and none of those
-workflows ships.
+Nothing in the released kit names a project, company or person; it becomes a
+specific tool at founding. The workflows are gated to this repository and do
+not ship.
 
-A service a tool runs on, meaning its hosting, its data or its deploy, is
-named nowhere either, except inside a recipe folder under
-`.agents/skills/setup-hosting/recipes/` and in the README. A recipe pairs a build stack
-with a place to run it, so naming those services is its whole job. A skill that
-needs to know how one behaves reads the project's recipe, which keeps
-every skill the same whichever recipe a project runs on. `validate-kit.sh`
-refuses a hosting, data or deploy product's name in every skill file outside
-`.agents/skills/setup-hosting/recipes/`, which holds the recipes, their scripts
-and their shared parts.
-Its list of names includes the place each recipe's title names, so a new recipe
-adds its own host. The screen rules' link to Vercel's interface guidelines is
-the one exception, because it names a design guide rather than a place a tool
-runs. The
-`stack-research` maintainer skill names those products too, because reading
-their changelogs is its job, and it never ships.
+Files in `.agents/skills/` outside
+`.agents/skills/setup-hosting/recipes/` may not name a hosting, data or deploy
+service. `validate-kit.sh` enforces this boundary. Documentation may name the
+services used by current recipes. A skill that needs service-specific behaviour
+reads the project's recipe, so its instructions stay the same whichever recipe
+the project uses. The screen rules link to Vercel's interface guidelines, which
+are a design reference rather than a service the tool runs on. The maintainer
+stack-research skill names services to check their product changes.
 
-A recipe waiting for its real run sits in `.agents/tests/recipes-awaiting-run/`,
-which ships nowhere, and its rehearsal reads it there. Once the run is recorded
-in its `PROVEN.md`, move the folder into `.agents/skills/setup-hosting/recipes/` with
-`git mv`. The rehearsal finds it on the menu from then on, and fails if a copy
-is left in both places. `docs/RECIPES.md` gives the whole format.
-
-Before each release, run `stack-research` against every recipe and part. It
-runs `npm audit` on each starter using current advisory data; that network check
-does not run in CI. Its ignored note records upstream changes and proposals.
-Carry agreed changes into the recipe and this guide, with the versions and date
-checked. A recipe taken off the menu keeps its route to a current recipe in
-`maintain/references/recipe-move.md` for `/maintain` to offer; the move requires approval.
-The 2026-10-16 read confirmed Supabase recommends publishable keys for client
-code and treats `anon` as their legacy equivalent, to be deprecated by the end
-of 2026 ([API keys](https://supabase.com/docs/guides/getting-started/api-keys)).
-The same page says to create a publishable key if a project has none, so whether
-a new project holds one by default is [CHECK]: make a throwaway project in the
-real run and record which keys it has. The recipe names the publishable key and
-records the legacy anon setting for `/maintain`.
+A recipe awaiting its real run stays in `.agents/tests/recipes-awaiting-run/`,
+which does not ship. Once its `PROVEN.md` records the run, move it with `git mv`
+into `.agents/skills/setup-hosting/recipes/`. The rehearsal adds it to the menu
+and fails if it remains in both locations. [RECIPES.md](RECIPES.md) owns the
+recipe format and evidence requirements.
 
 ## When a release is cut
 
-Before release, run `.agents/maintainer-skills/review-public-docs/SKILL.md`.
-Wait until every finding is fixed or the maintainer accepts it.
+Follow these linked steps in order:
 
-Ask first what an existing user must do to upgrade. The kit has had real users
-since v0.5, so a release is an upgrade for them as much as a first install for a
-newcomer. Name anything that breaks a project already running on an earlier
-version: a renamed command, a removed feature, a changed record or label, or a
-new precondition. For each, there must be a path that carries an existing project
-across without losing its work, and the person must be told about it in a place
-they will see. A migration lives in the maintain skill's scripts, chiefly
-`upgrade-check.py`, which runs on every `/maintain` visit and is idempotent. The
-move from a path record to the risk record is `risk_move.py`, which
-`upgrade-check.py` runs with approval. The script finds what is left, prints the sentence the person hears, and applies the
-change with approval, so the skill's own text keeps only the ask. The visible change
-is named in the release notes. A migration stays in the scripts for as long
-as a project could still need it. Each update route brings the latest
-release, so nothing sends a project through an older one first.
-If a breaking change has neither, it is not ready to ship. A release that only
-adds behaviour still gets this check, and answers it with "nothing to do".
+1. [Before the build](#before-the-build)
+2. [Build and rehearse](#build-and-rehearse)
+3. [Notes, stamp and preparation](#notes-stamp-and-preparation)
+4. [Publish and verify](#publish-and-verify)
+5. [After publication](#after-publication)
+
+### Before the build
+
+Run `.agents/maintainer-skills/review-public-docs/SKILL.md`. Fix each finding or
+record the maintainer's acceptance.
+
+Ask what an existing user must do to upgrade. Identify changes to commands,
+features, records, labels and preconditions. Each breaking change needs a path
+that preserves existing project work and a notice where the person will see it.
+The migration scripts, chiefly `upgrade-check.py`, run on `/maintain` visits
+and are idempotent. `risk_move.py` performs the risk-record migration with
+approval. Name visible changes in the release notes and keep a migration while
+an existing project may need it. Each update route brings the latest release.
+
+If a breaking change lacks either a migration path or a notice, it is not ready
+to ship. A release that only adds behaviour answers the upgrade question with
+"nothing to do".
 
 Before checking an upgrade, rebuild the older-release test bed with
-`.agents/tests/replay/testbed.sh`; `--list` previews the four default projects
-without running a model, and `--replace` rebuilds existing copies while keeping
-them in the run archive. The [replay guide](../.agents/tests/replay/README.md#projects-founded-by-older-releases)
-explains the cases, records and retained evidence. A real project the maintainer
-works in is never part of this test bed. Use one only when the maintainer points
-to it for a specific migration test, and then only as a copy with no credentials
-and no remote.
+`.agents/tests/replay/testbed.sh`. `--list` previews the four default projects
+without a model; `--replace` rebuilds existing copies while keeping them in the
+run archive. The [replay guide](../.agents/tests/replay/README.md#projects-founded-by-older-releases)
+describes the cases and retained evidence. Do not use a real project unless the
+maintainer names it for a migration test; use a copy without credentials or a
+remote.
 
-Then run `.agents/tests/replay/testbed-update.sh` to check the current kit
-against copies of those founded projects. Its `--list` mode previews the inputs
-without a model. Read each retained update report for the offer, project-check
-exits, leftovers and both visits, including repeated offers and live claims
-without fresh evidence. The [replay guide](../.agents/tests/replay/README.md#updating-the-older-release-test-beds)
-gives the options and output locations. The source test beds stay unchanged.
+Run `.agents/tests/replay/testbed-update.sh` against those copies. Its `--list`
+mode previews inputs without a model. Read each retained report for the offer,
+project-check exits, leftovers, both visits and any live claims without fresh
+evidence. The [replay guide](../.agents/tests/replay/README.md#updating-the-older-release-test-beds)
+describes options and report locations. These runs leave the source test beds
+unchanged.
 
-Run PHILOSOPHY.md's four questions over everything already here, including what
-is being added. Anything that now fails a question it used to pass has drifted
-(PHILOSOPHY.md explains how), and that is the list of work for the next pass.
+Apply PHILOSOPHY.md's four questions to the existing kit and proposed changes.
+A part that no longer passes a question it once passed has drifted; use the
+method in [PHILOSOPHY.md](PHILOSOPHY.md) to decide what to change. Check
+`docs/SOURCES.md` in the same review: add new borrowed ideas and remove credit
+for work the kit no longer does.
 
-Check `docs/SOURCES.md` in the same sweep. A borrowed idea that arrived since
-the last release belongs there, and a credit for something the kit no longer
-does comes out.
+Read every recipe and shared part with `stack-research` before release. It
+checks upstream changes and runs `npm audit` with current advisory data, which
+is not run in CI. Its ignored note records findings and proposals. Carry agreed
+changes into the recipe and this guide with the versions and date checked. A
+retired recipe keeps an approved route to a current recipe in
+`maintain/references/recipe-move.md`.
 
-Then build the released kit into a new temporary folder with
-`.agents/tools/build-release.sh <version> <folder>`. The allowlist in
-`release-manifest.txt` is the boundary: only its paths ship. Run
-`.agents/tests/release-builder.sh`, `.agents/tests/starter-rehearsal.sh`, and
-the full source validator. The release check proves the boundary and the
-rehearsal proves that installed skills can prepare a clean, independently saved
-project with its founding record templates in place. It does not replace a
-person's guided `setup-ai-build-kit` check of the interview itself.
+Read `.agents/tests/scenarios.md` and confirm each scenario still resolves to
+the risk record, evidence and route it names. The replay and seeded-product
+reads are described in [Behaviour tests](#behaviour-tests-scenarios-replays-and-seeded-products).
+Before releases touching founding or `/setup-hosting`, also follow
+[Trying unreleased work as a person would](#trying-unreleased-work-as-a-person-would).
 
-The release builder also writes the version without its leading `v` into the
-Claude plugin manifest. Validate the assembled folder with
-`claude plugin validate <folder> --strict`. One warning is expected: Claude
-Code says a root `CLAUDE.md` is not loaded by a plugin. The kit keeps that file
-for a project that copies the whole kit, so the rehearsal accepts that warning
-and fails on any other. Then rehearse the plugin from an isolated `CLAUDE_CONFIG_DIR`. The rehearsal must cover marketplace discovery,
-the manual command boundary, local project installation, bootstrap, a failed
-marketplace refresh, a successful update, and removal. It must not change the
-maintainer's real Claude configuration.
+### Build and rehearse
 
-Run `.agents/tests/agent-plugin.sh` too. It builds a release and checks the
-assembled `agent-plugin` folder against the open standard: the manifest's
-permitted fields, the kit's skills as immediate children of `skills`, no
-skill hidden deeper, no maintainer-only writing skill, and a project
-stand-up from that folder alone.
+Build the released kit into a new temporary folder with
+`.agents/tools/build-release.sh <version> <folder>`. Only paths in
+`release-manifest.txt` ship. Run `.agents/tests/release-builder.sh`,
+`.agents/tests/starter-rehearsal.sh`, and `.agents/tools/validate-kit.sh`.
+The release check verifies the archive boundary; the starter rehearsal proves
+an installed kit can prepare a clean project with its founding record
+templates. Neither checks the person's guided setup interview.
 
-Run `.agents/tests/release-publication.sh` as well. It rehearses preparing a
-draft against a stand-in for GitHub: a draft that does not exist yet, one naming
-a different version, a Release already published, and a repeat that must leave
-one archive rather than two. It then proves what no longer exists. No workflow
-or tool may run a push, no file may be named for the deleted starter publisher,
-no workflow may mint a credential beyond the run's own token, and only the two
-workflows that edit a Release may write at all. Every job in the folder is
-checked for its repository gate, per job rather than per file, because a
-file-wide check is satisfied by one gated job while a second runs beside it
-ungated.
+The builder writes the version without its leading `v` into the Claude plugin
+manifest. Validate the folder with `claude plugin validate <folder> --strict`.
+One warning is expected: Claude Code reports that a root `CLAUDE.md` is not
+loaded by a plugin. The kit keeps the file for projects copied as a whole; fail
+on any other warning. Then rehearse the plugin with an isolated
+`CLAUDE_CONFIG_DIR`, covering marketplace discovery, the manual command
+boundary, local installation, bootstrap, failed marketplace refresh,
+successful update and removal. Do not use the maintainer's real Claude
+configuration.
+
+Run `.agents/tests/agent-plugin.sh`. It builds a release and checks the
+assembled `agent-plugin` folder against the standard: manifest fields, skills
+as immediate children, no nested skills, no maintainer-only writing skill, and
+project stand-up from that folder alone.
+
+Run `.agents/tests/release-publication.sh`. It rehearses draft preparation
+against a GitHub stand-in, including a missing draft, wrong version, published
+Release and repeated preparation. It checks that publication workflows cannot
+push, that deleted-publisher names and extra credentials are absent, and that
+each job has its own repository gate.
 
 Run `.agents/tests/mutate.sh` and `.agents/tests/promises-list.sh`, then read
-`docs/PROMISES.md` to check that each promise still names what holds it.
+`docs/PROMISES.md` to confirm each promise still names its mechanism. Only
+tracked files can enter an approved release folder.
 
-Approved folders contribute only files already tracked here, so an unexpected
-local file cannot enter a release.
+Builds on a Windows mount record incorrect file modes because every file there
+appears runnable. The mount can also hide a missing runnable bit. The validator
+therefore reads the mode Git recorded for each script run by path.
 
-Each merge into `main` updates one draft Release. Closing a pull request without
-merging it changes nothing. The draft collects the pull request titles since the
-last published version and suggests the next version. Features and enhancements
-suggest a minor version; other changes suggest a patch. The `release-major`,
-`release-minor`, and `release-patch` labels make the intended version visible,
-with the highest matching increase winning. If labels change after a merge, run
-`update release draft` from the Actions page to refresh the suggestion.
-The draft workflow and its configuration are maintainer machinery and do not
-ship in the released kit.
+### Notes, stamp and preparation
 
-Online release still has two deliberate stages, and one thing has to happen
-before either of them. Three files carry the version an installation reports:
-the two plugin manifests and `maintain`'s `VERSION` marker. Both installers read
-this branch, so the branch has to say which version it is. Run
-`.agents/tools/stamp-version.sh vX.Y.Z` on a branch, open the pull request, let
-the checks run, and merge it. Then merge nothing else until the release is
-published, or the version covers work the notes do not mention.
+Each merge to `main` updates the draft Release with pull request titles since
+the last publication and suggests a version. Features and enhancements suggest
+a minor version; other changes suggest a patch. The `release-major`,
+`release-minor` and `release-patch` labels select the highest matching increase.
+If labels change after a merge, run `update release draft` from the Actions
+page. Closing an unmerged pull request changes nothing.
 
-When the draft is ready, start `prepare release` with the version shown on it,
-such as `v0.1.0`. The workflow rejects a version whose tag already exists,
-validates `main`, confirms `main` carries that version, assembles the starter,
-and attaches the checked archive to that draft. If the Release Drafter
-draft is missing, preparation stops and tells the maintainer to refresh it.
-GitHub's native generated notes are not used because their pull request format
-cannot omit private numbers. Check the version, archive, and notes before
-publishing. If another pull request merges after preparation, run
-`prepare release` again so the archive matches the latest draft.
+Write the versioned notes file with
+`.agents/maintainer-skills/release-notes/SKILL.md`. Keep one file in
+`docs/release-notes/`; delete the previous release's file when drafting the
+next. The file is required before stamping. The skill gives the format and
+review steps. Pull request titles can appear in public notes, so write them for
+readers. Review the draft, remove internal detail, correct misleading summaries
+and state any action existing users must take. Use `skip-release-notes` only
+when a merged pull request has no useful place in the project's public history.
 
-`.github/release-drafter.yml` groups labelled work and keeps unlabelled work in
-`Other changes`, so an absent label cannot silently remove a change. A pull
-request title may become a line in the public notes, which makes the title
-human-facing prose. Public notes omit the private pull request number. Review
-the draft before publishing. Remove internal noise, correct any misleading
-summary, and state any action an existing user must take. Use
-`skip-release-notes` only when a merged pull request has no useful place in the
-project's public history.
+Paste the notes file into the Release web page above the drafted changes. If
+editing notes through the API, include `tag_name` and `target_commitish` with
+every draft edit: a `PATCH /releases/{id}` that sends only `body` resets
+`tag_name` to `untagged-...`.
 
-Some releases need words no pull request title carries. Where
-`docs/release-notes/` holds a file named for the version, the published notes
-open with that file's text, word for word, above the drafted changes. Paste it
-in when you edit the notes on the Release's web page. The v0.20.0 notes must
-open with this line: "After updating, start a new session (or /reload-plugins)
-and type /maintain again." The visit that runs an update still follows the old
-release's maintain text, which reads the new release's notes and nothing else
-of it. So the notes are the one place that can send the person back for the
-visit that finishes the update. The folder never ships.
+Run `.agents/tools/stamp-version.sh vX.Y.Z` on a branch, open its pull request,
+let checks pass and merge it. The script runs
+`.agents/tools/check-release-notes.py` and refuses to stamp until the notes pass
+machine-checkable rules and the latest review has no Critical or Major finding.
+Then merge nothing else until publication, or the version will cover changes
+the notes do not mention. The two plugin manifests and `maintain`'s `VERSION`
+marker carry the version installations report.
 
-Write each release's notes file with
-`.agents/maintainer-skills/release-notes/SKILL.md`. It holds the writing
-standard, the shape of the file, and the steps in order, from the humanizer
-pass to a fresh review of the final page text. `stamp-version.sh` runs
-`.agents/tools/check-release-notes.py` before it writes a version, and refuses
-until the notes pass the rules a machine can test and the latest review records
-no Critical or Major finding.
+When the draft is ready, start `prepare release` with its version, such as
+`v0.1.0`. The workflow rejects an existing tag, validates `main`, confirms its
+version and attaches the checked archive. If the Release Drafter draft is
+missing, refresh it first. Native GitHub generated notes are not used because
+they cannot omit private numbers. Review the version, archive and notes before
+publishing. If another pull request merges after preparation, run `prepare
+release` again so the archive matches the draft.
 
-After a release is published, run `.agents/tools/record-released-copies.py`
-with its archive on the next branch. It adds the release's whole-copy files to
-the record `/maintain` compares against, so a later update can offer to remove
-an untouched copy of them. A release missing from the record costs nothing
-worse than its files being named rather than offered for removal.
+### Publish and verify
 
-Edit the notes in the Release's web page. An edit through the API is where a
-draft loses its tag: a `PATCH /releases/{id}` that sends only `body` resets the
-draft's `tag_name` to `untagged-...`, and the tag and target then have to be set
-again before publishing. If the notes must change through the API, send
-`tag_name` and `target_commitish` with every edit to a draft, whatever else the
-edit changes.
+Publishing the draft is the release. The prepared repository is the one people
+install from, so there is no second copy or credential to create.
 
-Publishing the draft is the release. There is nothing to copy anywhere and no
-credential to mint, because the repository the version is prepared in is the
-repository people install from.
+`verify release` rebuilds the published version from its tag and compares it
+with the reviewed archive. It accepts only a tag contained in reviewed `main`.
+This catches a manually retargeted draft or a pull request merged between
+preparation and publication. A fix to a release workflow affects the next
+release because a `release` event runs the workflow from the tagged commit.
 
-`verify release` then rebuilds the published version from its own tag and
-compares it with the archive that was reviewed before publication. It cannot
-un-publish anything, and it is not meant to. What it catches is a draft
-retargeted by hand, or a pull request that merged between preparation and
-publication, either of which would leave the tag and the reviewed archive
-describing different things. It accepts only a tag contained in reviewed `main`.
+### After publication
 
-A publisher that took an assembled release and made it the exact tree of a
-second repository used to run here, along with a GitHub App and its two Actions
-settings. All of it existed because a workflow token cannot write to another
-repository. There is no other repository, and that same code aimed at this one
-would replace the source with a packaged release, so it was deleted rather than
-pointed somewhere safer. The rehearsal now proves its absence: no workflow or
-tool may run a push, and only the two workflows that edit a Release may write
-at all.
+On the next branch, run `.agents/tools/record-released-copies.py` with the
+release archive. It adds whole-copy files to the record `/maintain` uses to
+offer removal of untouched copies. If a release is missing from the record,
+its files are listed rather than offered for removal.
 
-A fix to a release workflow cannot rescue the release being published. A
-`release` event runs the workflow from the tagged commit, not from current
-`main`, so a repair sitting on `main` takes effect only for the next version.
+The companion site deploys from `stable` after verification. See
+[The companion site](#the-companion-site) for its publication path.
 
-Building a release locally on a Windows mount records the wrong file modes,
-because every file on that mount reports as runnable. The same mount also hides
-a script saved without its runnable bit, which is why `validate-kit.sh` reads
-the mode git recorded for every script the kit runs by path rather than asking
-the disk.
+## The main and stable branches
 
-Preparation is safe to repeat. It refuses to create a draft where Release
-Drafter has not left one, refuses when a draft names a different version,
-refuses to touch a Release that is already published, and removes the archive it
-replaces rather than leaving two attached. Running it twice for the same version
-leaves one archive, not two.
+Two of the three installation routes read the default branch, which is
+`stable`; it determines the release a project receives. Only a verified
+published release moves it. After `verify release`, a second job points it at
+the verified commit; failed verification leaves the branch unchanged. The
+promotion job is the only workflow that writes to a branch.
+`.agents/tools/promote-stable.sh` defines its limits.
 
-Two of the three installation routes read the repository's default branch, so
-which branch that is decides what a project receives. `stable` is the answer to
-that. Only a release moves it: `verify release` rebuilds the published tag,
-compares it with the reviewed archive, and a second job in the same workflow
-then points `stable` at the verified commit. A release that fails verification
-leaves `stable` where it was. That job carries the only repository write in
-this repository, and `.agents/tools/promote-stable.sh` is where its limits are
-written down.
-
-Work still merges into `main`, and `main` is still the branch a contributor
-targets. What changed is that the branch installers read is no longer the
-branch the work happens on.
-
-Because `stable` is the default, GitHub fills it in as the base of a new pull
-request, and so does `gh pr create`. Open one with `gh pr create --base main`.
-A version stamp once went in without `--base`, merged into `stable`, and
-stopped the next release from moving the branch until a person turned its
-force-push rule off by hand. The `pull request base` check now goes red on a
-pull request aimed at `stable` and says how to change it. It stays off the
-required list: a required check on `stable` would refuse the release job's
-update in the same way a pull-request rule does. A project installing between two releases used to
-receive the label of one release with the contents of another, and `/maintain`
-told it that it was up to date. Now it receives the release. `/maintain` reads
-the project's own version against
-`/repos/gwpicard/ai-build-kit/releases/latest`, the one endpoint that cannot
-answer with a draft or a prerelease, and says both numbers every visit, so a
-project that installed before this arrived can still see where it stands.
-
-The switch is done. `stable` exists, it points at the latest published
-release's commit, and it is the repository's default branch. What matters now
-is how the two branches are protected, because they are protected differently
-and the difference is not arbitrary.
+Because `stable` is the default branch, GitHub and `gh pr create` propose it as
+a new pull request's base. Open source pull requests with
+`gh pr create --base main`. The `pull request base` check fails a pull request
+aimed at `stable` and explains how to retarget it. It is not required because a
+required check on `stable` would reject the release job's update.
 
 `main` requires a pull request and the `source-kit-validation` and `rehearsal`
-checks, and refuses a deletion or a force push. `stable` refuses a deletion or
-a force push and nothing else. It cannot require a pull request. Nothing merges
-into `stable`: the release job updates the ref through the API, and a
-pull-request rule rejects a ref update whoever makes it. A rule meant to keep
-people out would stop the release instead.
+checks; it rejects deletion and force-push. `stable` rejects deletion and
+force-push but cannot require a pull request: the release job updates its ref
+through the API, while a pull-request rule rejects any ref update.
 
-That leaves one gap, stated here rather than papered over. An ordinary
-fast-forward push to `stable` by somebody with write access is not refused. The
-rule that would refuse it is the ruleset's update restriction, and on a
-user-owned repository that restriction binds the workflow's own token as
-readily as a person, with no bypass to tell the two apart. What is in place
-stops the damage that cannot be undone, a deletion or a rewrite. A stray push
-shows in the branch and is corrected by publishing again.
+An ordinary fast-forward push to `stable` by someone with write access is not
+blocked. The ruleset's update restriction would also block the workflow token,
+with no way to distinguish it from a person's push. The current rules prevent
+deletions and rewrites; a stray push is corrected by publishing again.
 
-One trap for anybody who moves the default branch again. A ruleset whose
-condition is `~DEFAULT_BRANCH` rather than a branch name follows the default
-branch when it moves, and takes its rules off the branch it used to cover.
-That happened here. Switching to `stable` left `main` with no rules on it at
-all, and nothing said so: the ruleset list read exactly as it had before,
-because the ruleset had not changed. Both rulesets now name their branch
-literally. After any change of this kind, ask each branch what applies to it
-rather than reading the list:
+Rulesets must name `main` and `stable` literally. A `~DEFAULT_BRANCH`
+condition follows the default branch when it moves and removes protection from
+the branch it covered. After changing the default branch, query both branches:
 
 ```
 gh api repos/<owner>/<repo>/rules/branches/main --jq '[.[].type]'
 gh api repos/<owner>/<repo>/rules/branches/stable --jq '[.[].type]'
 ```
 
-If `stable` ever has to be rebuilt, confirm it against the published tag rather
-than assuming:
+If `stable` needs rebuilding, compare it with the published tag before creating
+it by hand:
 
 ```
 git fetch origin && git rev-parse origin/stable
 git rev-list -n1 vX.Y.Z
 ```
 
-Those two have to match. Create `stable` by hand at the right commit rather
-than cutting a release to move it.
+The commits must match. To check a promotion remotely, compare the branch with
+the lightweight tag:
 
-To check a promotion from the remote side, compare `stable` with the tag
-itself. The release tags are lightweight, and a lightweight tag has no `^{}`
-form, so `git ls-remote origin 'refs/tags/vX.Y.Z^{}'` prints nothing and looks
-like a mismatch. `git ls-remote origin refs/heads/stable refs/tags/vX.Y.Z`
-prints both commits, and they have to be the same.
+```
+git ls-remote origin refs/heads/stable refs/tags/vX.Y.Z
+```
 
-The bridge for projects installed before the shared installer is retired. Only
-v0.1.0 and v0.1.1 shipped a `/maintain` that could reach it, v0.1.0 was never
-tagged publicly, and the kit's own record says real users arrived at v0.5. A
-project older than that reinstalls with `npx skills add gwpicard/ai-build-kit`
-once and then updates like any other. Every installation now records where its
-skills came from and updates through that route, and project records, AGENTS.md,
-README.md, environment files, application code, and the project's own check stay
-project-owned either way.
-
-Only stable numbered releases update the public repository. A preview build
-stays on this computer, and the next section says how to try one.
+A lightweight tag has no `^{}` form, so querying
+`refs/tags/vX.Y.Z^{}` returns nothing. The branch and tag commits must match.
 
 ## The companion site
 
-The companion site lives in `site/`. It stays outside `release-manifest.txt`,
-so it never enters the kit release. After `verify release` succeeds, the Pages
-workflow builds the site from `stable` and deploys it. A failed site build does
-not change release preparation or verification.
+`site/` is outside `release-manifest.txt`. After verification, the Pages
+workflow builds from `stable` and deploys; a failed site build does not change
+release preparation or verification. For wording fixes, the maintainer may
+start the workflow by hand on `main`. Behaviour changes reach the site through
+a release.
 
-GitHub Pages needs `pages: write` and `id-token: write` to deploy. The
-`release-publication.sh` check allows those permissions only in the deploy job
-of `pages.yml`. The maintainer must switch the Pages source to **GitHub
-Actions** once in the repository settings.
+`release-publication.sh` allows `pages: write` and `id-token: write` only in the
+`pages.yml` deploy job. Set the Pages source to **GitHub Actions** in repository
+settings.
 
 ## Trying unreleased work as a person would
 
@@ -947,7 +626,7 @@ one of those two slots must be unused. Pick a number for the run and put it
 wherever `N` appears.
 
 1. Build a preview from a clean `main`. The builder copies the working tree, so
-   run this in the checkout that holds `main`, not a worktree on another branch.
+   run this in the checkout on `main`, not a worktree on another branch.
 
    ```
    touch ~/.abk-try-N-start
@@ -962,7 +641,7 @@ wherever `N` appears.
 
    The first line leaves a marker file whose time is the start of the run, so
    teardown can find what the run made. The branch must print `main`, and the
-   status must print nothing. Note the commit. Every line of the tooling report says ready. The builder refuses a
+   status must print nothing. Note the commit. Every line of the tooling report must read `ready`. The builder refuses a
    folder that already exists, so a second build takes the next number.
 
 2. Install the preview twice, into two empty folders.
@@ -977,7 +656,7 @@ wherever `N` appears.
 
    The first puts the kit's skills in `.claude/skills/`, the second in
    `.agents/skills/` with links in `.claude/skills/`. In both, `setup-hosting/recipes/`
-   holds the same recipes as `ls <kit checkout>/.agents/skills/setup-hosting/recipes/`.
+   contains the same recipes listed by `ls <kit checkout>/.agents/skills/setup-hosting/recipes/`.
 
    Each `skills-lock.json` now records `"sourceType": "local"`, with a path into
    `/private/tmp/abk-preview-N`. A project installed this way cannot update
@@ -985,12 +664,12 @@ wherever `N` appears.
 
 3. Found a small internal tool in each folder: open Claude Code, run
    `/setup-ai-build-kit`, and ask for something small, such as a page where a
-   team keeps short notes. When founding offers a GitHub repository, say yes
-   and name it `abk-try-N` in the first folder. Say no in the second. Then
+   team keeps short notes. When founding offers a GitHub repository, approve its creation and name it
+   `abk-try-N` in the first folder. Decline in the second. Then
    check in each folder:
 
-   - During the interview, the kit showed the recipe menu, marked one recipe
-     as recommended, and said it would use that one unless told otherwise.
+   - During the founding conversation, the kit showed the recipe menu, marked one
+     recipe as recommended and reported that it would use it unless told otherwise.
    - `grep '^Recipe:' AGENTS.md` names one recipe folder.
    - `grep founding-menu .ai-build-kit-maintenance` names every recipe on the
      menu.
@@ -998,8 +677,7 @@ wherever `N` appears.
    A failed check is a finding. File it as an issue, and do not fix it in the
    throwaway project.
 
-4. In the first folder only, run `/implement` on one ready piece and say yes
-   to its merge, then run `/setup-hosting` once, asking for a Vercel project
+4. In the first folder only, run `/implement` on one ready piece and approve its merge, then run `/setup-hosting` once, asking for a Vercel project
    named `abk-try-N`. Without that name, `/setup-hosting` names the project
    after the tool. The person does two things:
 
@@ -1087,7 +765,7 @@ wherever `N` appears.
    no longer lists the project.
 
 6. Write a dated log: the preview version and the commit it was built from,
-   each check and whether it held, with the words that show it, what the run
+   each check and whether it passed, with its output, what the run
    created and how it was removed, and anything that surprised you. A failure
    found here is filed as an issue before the release, and the release waits
    until somebody decides what to do about it.
@@ -1119,20 +797,21 @@ deleted or the key rotated, since a paused project can be resumed.
 ## House rules for writing
 
 Anything written into this repository, by a person or an agent, follows these.
-They exist because the audience is not required to read code, so the words are the product.
-A short form of the list ships in `AGENTS.md`'s project template, so a project
-built with the kit inherits the plain-language spirit of it without carrying the
-full editorial machinery. This is the full version, and it governs the kit's own
-documents.
+Most public documents are for people who do not read code, so they use plain,
+adult prose. Maintainer documents are for people who work on the source and may
+use technical language suited to their readers. A short form ships in the
+project template, so a project built with the kit inherits its public-facing
+writing guidance without carrying the full editorial framework. These rules
+govern the kit's own documents.
 
-Before saving human-facing prose, load
-`.agents/maintainer-skills/humanizer/SKILL.md` and run its embedded mode. This
+Before saving prose, load
+`.agents/maintainer-skills/writing-review/SKILL.md` and run its embedded mode. This
 covers documentation, skills, pull request titles and descriptions, issues,
-release notes, interface copy, error messages, and reader-facing comments. The local
-skill is the shared instruction for every supported harness; the rules below
-remain the kit's own stricter house style. Release notes also follow
-`.agents/maintainer-skills/release-notes/SKILL.md`, whose framework applies the
-same standard in more detail.
+release notes, interface copy, error messages, and reader-facing comments. The
+framework replaces any Simplified Technical English instruction for this
+repository. The skill is the shared instruction for every supported coding
+agent, and the rules below remain the kit's house style. Release notes also follow
+`.agents/maintainer-skills/release-notes/SKILL.md` for their format and review.
 
 Preserve the information and intended voice rather than the draft's sentence
 shape. Never invent facts, names, figures, dates, quotations, or citations.
@@ -1150,9 +829,11 @@ belongs only where the subject and author's voice call for it.
 - Plain does not mean elementary. Join closely related ideas into one sentence
   rather than a row of short ones, and write sentences that read naturally
   aloud rather than ones assembled from a template.
-- Give each tool the verb that matches what it does. A check detects, reports,
-  blocks or skips; it does not say, judge or decide. A person approves or
-  confirms.
+- Give each tool the verb that matches what it does. A check passes, fails,
+  detects, reports, blocks or skips. A script enforces, rejects or records. A
+  test fails on a fault and proves a mechanism works. None of them says, judges
+  or decides. A check or script blocks or rejects an action. A person approves,
+  confirms or declines.
 - Claim only what the evidence shows. Keep each condition and limit beside the
   claim it narrows, and do not turn a narrow fix into a general promise.
 - Banned: leverage, robust, comprehensive, seamless, crucial, foster, enhance,
@@ -1163,8 +844,8 @@ belongs only where the subject and author's voice call for it.
 - Explain a concept where it lives, and link from everywhere else.
 - One name per thing. This is a kit, and calling it a pack somewhere else only
   makes a reader wonder whether the two are different.
-- Paragraphs stay under about 100 words. Four here had passed 140 before the
-  rule existed, and the audience is not required to read code.
+- Keep paragraphs to about 100 words. Long paragraphs hide the one sentence a
+  reader needed.
 - Vary the sentence shape. Almost every explanation wants to arrive as
   "statement: a, b, and c", and a document leaning on one device reads as a
   template however clear each instance is.
@@ -1173,56 +854,48 @@ belongs only where the subject and author's voice call for it.
 
 ## One owner per concept
 
-This repository grew heavy through duplication, so every concept has exactly one
-home and every other mention is a link.
+Each concept has one home; other documents link to it.
 
-- Root `README.md`: what the kit is, installation, and positioning for someone
-  deciding whether to use it. It ships as the public README unchanged, so it is
-  written for that reader rather than for a maintainer. The six-command table
-  there is a summary; what each command actually does belongs to WORKFLOW.
-  Orientation for someone working on the source belongs in root `AGENTS.md`.
-- `WORKFLOW.md`: everything operational. How work runs, day to day, for someone
-  already using it. Operational detail belongs here and nowhere else, including
-  the parts of setup that come after the README's quick start.
-- Root `AGENTS.md`: standing rules for maintaining the source.
-  `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md`: standing rules for the
-  agent working on a user project, plus the capability profile filled in by
-  `setup-ai-build-kit`.
-- `docs/PHILOSOPHY.md`: why the kit is shaped as it is, who it is for, and the
-  test any addition has to pass. Read before changing what a skill does.
-- `docs/COMPATIBILITY.md`: the portable core contract and per-tool detail.
-  `docs/MAINTAINING.md`: this file.
-- `docs/SOURCES.md`: the outside work the kit took ideas from, and what each
-  source contributed. It names a borrowed idea in the kit's own vocabulary and
-  links to that idea's owner rather than explaining it again.
-- `.agents/skills/setup-hosting/recipes/`: one folder for each recipe, and the only place
-  outside the README that names a service a tool runs on. What a recipe must hold, and what
-  proves it, belongs to `docs/RECIPES.md`. A project records which recipe it
-  runs on in its own AGENTS.md, in the stack section.
+- The root `README.md` is the public front door: purpose, installation and
+  positioning. The [website](../site/) owns the user guide and explains how the
+  kit works.
+- Root `AGENTS.md` owns source-maintainer rules. The foundation
+  `AGENTS.md` template owns instructions and the capability profile for a
+  project the kit founds.
+- `docs/PHILOSOPHY.md` explains the kit's purpose and the test additions must
+  pass. Read it before changing a skill's behaviour.
+- `docs/COMPATIBILITY.md` owns the portable contract and per-agent details.
+  This guide owns source maintenance.
+- `docs/PROMISES.md` owns the promise register and the mechanisms behind each
+  promise. `promises-list.sh` reads it.
+- `docs/RECIPES.md` owns the recipe format and evidence required to prove one.
+  Recipe folders in `.agents/skills/setup-hosting/recipes/` hold each recipe's
+  implementation.
+- `docs/SOURCES.md` records borrowed work and links to its source.
+- Root `llms.txt` is a standalone summary for tools that read the repository;
+  it may repeat the README.
+- `CONTRIBUTING.md` and `SECURITY.md` are standalone public documents.
+- `.agents/maintainer-skills/release-notes/SKILL.md` owns the notes format and
+  process; `docs/release-notes/` holds the next draft.
+- `.agents/skills/maintain/scripts/kit-released-copies.json` and `/maintain`
+  own recognition and removal offers for untouched files copied by earlier
+  releases.
+- Website content files own their individual site pages.
 
-Two concepts carry two names on purpose, on the same reasoning both times: the
-name a person reads is the one that matters, and an internal name is left alone
-where changing it would churn output nobody reads for no reader benefit.
+Two concepts retain an internal name beside the name a person reads, because
+changing the internal name would alter output without helping the reader. People
+read “background skills”; inventory and check messages use “disciplines”. They
+refer to the same 13 background skills listed in
+`.agents/tools/kit-inventory.txt`. People read that an agent chooses a method;
+`.agents/tests/scenarios.md` and `.agents/tests/replay/grader-prompt.md` call
+that graded field “hidden technique”. Its name remains until a measurement is
+no longer needed for comparison.
 
-A person reads "background skills"; the code identifiers and check messages say
-"disciplines". They are the same two skills.
+`/shape` names the command that turns an idea into a ready piece. The records
+reference uses “shape” for what an issue must contain. The command produces
+that shape, and its slash distinguishes the command. Always write the command
+with its slash.
 
-A person reads that the agent chooses the method; `.agents/tests/scenarios.md`
-and `.agents/tests/replay/grader-prompt.md` call that field "hidden technique".
-It is a graded field, and the grader prompt was last changed in August after a
-run that measured its variance, so renaming it again would make the recorded
-results harder to compare against the next ones. Rename it when a measurement is
-not the thing standing behind it.
-
-One word carries two meanings, and that is deliberate too. A person reads
-`/shape`, the command that turns an idea into a ready piece.
-`.agents/skills/records/references/pieces.md` uses the bare word for
-what an issue has to contain, as in "Shape is what decides". The command
-produces that shape, so the two belong together, and the slash is what tells
-them apart. Write the command with its slash every time.
-
-Nothing should say the old "words" name for the commands now, in prose or in an
-identifier.
-
-Before adding an explanation, check whether its owner already carries it. If it
-does, link. If two documents disagree, the owner wins and the other is edited.
+The stale-claim checks reject retired names for the commands. Before adding an
+explanation, check its owner and link to it. If two documents disagree, edit
+the one that does not own the concept.
