@@ -1731,7 +1731,7 @@ for entry in \
   "$SKILLS/maintain/SKILL.md|last-light-pass" \
   "$SKILLS/maintain/SKILL.md|last-full-pass" \
   "$SKILLS/what-now/SKILL.md|.ai-build-kit-maintenance" \
-  "$ROOT/site/src/content/docs/maintaining-your-tool.md|maintain writes the date of each visit" \
+  "$ROOT/site/src/content/docs/maintaining-your-tool.md|records the date of each monthly and quarterly pass in" \
   "$ROOT/docs/COMPATIBILITY.md|Said automatically when a session opens" \
   "$scenarios|## 27. Session opens on a project past its check-up cadence"; do
   file=${entry%%|*}
