@@ -20,14 +20,14 @@ them.
 
 The kit takes an idea to a real tool without asking the person to read code.
 
-On the road you build fast, without reading code, and the result is real
-software in your own accounts. Three things carry it.
+You can build quickly without reading code, and the result is software in your
+own accounts. Three things make that possible.
 
 Recipes make it fast. A recipe pairs a build stack with a place to run it,
 and settles in advance how the tool goes live, how it is backed up, and how it
 rolls back to an earlier version. A recipe joins the menu only after a recorded
-real run, and its record says which parts that run covered. The person does not make those decisions, so they cannot get them
-wrong.
+real run, and its record says which parts that run covered. The recipe settles
+those decisions in advance.
 
 Mechanisms make it reliable. A rule that a machine can check is a hook, a
 setting, or a script. It applies where that hook, setting or script runs.
@@ -36,8 +36,8 @@ Prose is kept for the judgements a machine cannot make.
 Risk boundaries keep it honest. At the start, and again when the project
 changes, the kit names anything that could hurt people: personal data, money,
 sign-in, automatic actions, data that cannot be replaced, a regulated decision.
-The person hears the risk once, in plain words, and decides. Their decision is
-recorded with their words and the date.
+The agent reports the risk once, in plain words, and the person decides. The
+agent records the decision in the person's words and dates it.
 
 The tool belongs to the person from the first day. The code is in their
 repository, it runs on their host account, and the data is in their database
@@ -56,15 +56,16 @@ They learn these ideas, at the moment each one first appears:
 1. Accounts: GitHub, a host, and a database service, created once.
 2. A repository: where the project and its history live.
 3. Issues: tasks they agree to do, kept with the project on GitHub.
-4. A pull request: a proposed change. They try it, then say yes to merge it.
+4. A pull request: a proposed change. They try it, then approve its merge.
 5. Going live: after a merge, the host puts the change in front of users.
 
-The focus is a simple way to build and run internal tools, with access for
+The focus is a way to build and run internal tools, with access for
 people the owner names, such as a team, a club, a family or invited clients.
 The proven stack keeps each tool private by default. A recipe check is meant
 to show that only invited people can get in. Neither recipe's access step has
 had a real run yet. Public-facing features are possible. The
-person asks for that setting, hears its risks once, and records the choice. A
+person asks for that setting, the agent reports its risks once, and the person
+records the choice. A
 tool that takes money from strangers is a public tool.
 
 The kit is not for someone who wants an app in ten minutes and never wants to
@@ -73,14 +74,14 @@ see GitHub. A hosted builder serves them better.
 ## The rule that settles arguments
 
 The work never requires reading code. Every check is something a person sees
-or tries, and every report says what was tried and what happened. A developer
+or tries, and every report lists what was tried and what happened. A developer
 can read every change if they like. The kit never depends on it, because a
 process that works only while somebody reads the code stops working on the day
 nobody does.
 
 ## Small is a reliability feature
 
-The kit should be as small as it can be while it still holds. Every sentence
+The kit should be as small as it can be while it remains reliable. Every sentence
 in a skill competes for the agent's attention, and an agent given more rules
 skips some of them, and nobody can say in advance which. So a rule that is not
 pulling its weight is not harmless. It makes the rules that matter less likely
@@ -147,16 +148,16 @@ checked, so setup reports those as unchecked. The person creates the accounts.
 The kit never does.
 
 Hosting follows the same reasoning. The kit offers it only on a proven recipe,
-because a recipe is what makes the guarantees below hold. Outside a recipe the
-kit says plainly that it guarantees nothing, and it still helps.
+because a recipe is what makes the guarantees below apply. Outside a recipe the
+kit reports plainly that it guarantees nothing, and it still helps.
 
 ## The backbone
 
-Some promises hold in every project, so they do not depend on what the person
-asks for. Each one needs a mechanism, which is a machine that makes it true,
-and a check that fails when the mechanism is removed. The
+Some promises apply in every project, so they do not depend on what the person
+asks for. Each needs an enforcement mechanism and a check that fails if the
+mechanism is removed. The
 [source repository's mechanism list](https://github.com/gwpicard/ai-build-kit/blob/main/docs/MAINTAINING.md#the-backbone-and-its-mechanisms)
-names each promise's mechanism, or says "none yet".
+names each promise's mechanism, or marks it "none yet".
 
 1. A person approves each merge, unless they chose auto-merge with its limits.
 2. Nothing goes online without approval.
@@ -169,17 +170,16 @@ names each promise's mechanism, or says "none yet".
 
 Two kinds of check follow from this. An integrity check protects the backbone.
 It can stop the work, and it stops it even if the person insists, because the
-person cannot judge from the outside whether it holds. A judgement risk is
+person cannot judge from the outside whether the promise holds. A judgement risk is
 different. It belongs to one piece of work, and the person is the one who can
 judge it. The kit warns once, and the person decides.
 
-A check has more than two outcomes. It passed, it failed, it did not run, it
-could not decide, or it does not apply. A check that did not run is never shown
-as a pass.
+A check has more than two outcomes: it passed, failed, did not run, could not
+decide, or does not apply. A check that did not run is never shown as a pass.
 
 ## The risk concept
 
-The project carries a short record of what failure would cost. It holds who is
+The project carries a short record of what failure would cost. It records who is
 exposed if the tool fails, what data it holds, what a wrong answer does, how the
 person recovers, and which named risk areas the project touches. Setup asks
 three plain questions to fill it. They are: who is exposed if this fails, what
@@ -189,8 +189,8 @@ writes it with the person at setup and checks it again when the project
 changes.
 
 Each piece of work then carries a "Risk areas" field, naming the areas it
-touches. A piece with no area gets no notice. A piece with one gets the notice
-once.
+touches. A piece with no risk area gets no notice. A piece with one gets that
+notice once.
 
 ## Warn, then respect the decision
 
@@ -198,20 +198,19 @@ Where the person can judge a risk, the kit warns and does not block. A step
 they could skip is offered with what it costs, once.
 
 For a risk area the kit gives a risk notice: who is exposed, and what would
-normally prevent the harm. The person can have that caution done, take the work
-out, or carry on. If they carry on, the kit records their acceptance with the
-date and their words, and builds. The area stays named, because the exposure is
-still there. After the acceptance the kit does not refuse, ask again, or hold
-the work back.
+normally prevent the harm. The person can have that caution done, remove the
+work from the piece, or carry on. If they carry on, the kit records their
+acceptance with the date and their words, then builds. The area stays named,
+because the exposure is still there. After acceptance, the kit does not refuse,
+ask again, or block the work.
 
-Two limits hold whatever the person says. The kit does not withdraw a notice
+Two limits apply whatever the person says. The kit does not withdraw a notice
 because somebody pushes back. And where a caution names a person, such as a
 reviewer who knows the law, no agent session stands in for them. A run with
 nobody present stops at a risk area and never accepts on the person's behalf.
 
-A gate that nobody can get past or understand is worse than one they walked
-through knowingly, because people work around the first by starting again
-somewhere with no gate at all.
+An impassable or confusing gate can be worse than one people understand and
+accept: they may work around it by starting somewhere with no gate.
 
 ## What the kit does not do
 
@@ -228,10 +227,7 @@ check names it as a caution.
 `/maintain` checks the project's setup and records, and offers the upkeep that
 is due. It cannot repair badly written code.
 
-A recipe is the one place that names services somebody else runs, because the
-person's tool will run on them. The kit still runs none of them, and the person
-holds the accounts. A hosting, data or deploy service is named in recipe files
-and the README, and nowhere else.
+For the rule on service names, see [Keep it generic](MAINTAINING.md#keep-it-generic).
 
 ## Keeping it honest
 

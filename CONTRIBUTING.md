@@ -13,17 +13,16 @@ before posting.
 
 ## Suggest a change
 
-Open a feature request and describe the situation in which you would use it.
+Open a feature request and describe when you would use it.
 Explain what you would expect to see or do. You do not need to propose a
 technical design.
 
 ## Pull requests
 
-Target `main`. That is where work merges, and where a numbered release is cut
-from. People install from `stable`, a separate branch that only a release
-moves, so a pull request opened against `stable` would be asking to change a
-release that has already gone out. If a new pull request arrives with anything
-other than `main` filled in as its base, change it before asking for a review.
+Target `main`, where work merges and numbered releases are cut. People install
+from `stable`, which moves only when a release is published. If your pull
+request's base is anything other than `main`, change it before asking for a
+review.
 
 Do not open a pull request against the generated release files. A later release
 would replace the edit. Start with an issue instead. Accepted changes appear in
