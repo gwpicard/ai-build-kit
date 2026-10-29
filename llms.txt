@@ -1,43 +1,35 @@
 # AI Build Kit
 
-> AI Build Kit helps people without a software background and small teams plan, build and run internal tools with an AI coding agent. It installs 19 skills: 6 commands the person types and 13 background skills the commands call.
+> AI Build Kit helps people who do not write code build internal tools with a coding agent, an AI assistant that writes software, such as Claude Code or Codex. It installs 19 skills: 6 commands the person types and 13 background skills the commands call.
 
-The person explains what should happen, tries the result and decides on risk. The kit suits internal tools with a manual fallback. The project keeps its code and records in accounts the owner controls. The kit does not host tools or store project records.
+The six commands guide setup, planning, building and maintenance. The person tries the result and decides how to handle risks. The kit is intended for internal tools where a team can keep working by hand if the tool is unavailable. The kit itself runs no online service and does not store project information. Passing checks do not prove that software is safe or right for the person's purpose, and the kit cannot replace a professional developer or provide legal, medical, financial or security advice. The person is responsible for reading and following the terms of the services their tool uses.
 
 Install one route per project:
 
-- Shared installer: `npx skills add gwpicard/ai-build-kit`, then choose agents and install all skills. Ask the agent to run `setup-ai-build-kit`.
-- Claude Code terminal app: `claude plugin marketplace add gwpicard/ai-build-kit`, then `claude plugin install ai-build-kit@ai-build-kit --scope local`. Run `/ai-build-kit:setup-ai-build-kit`.
+- Shared installer: `npx skills add gwpicard/ai-build-kit`. Choose the coding agents and install all the kit's skills, then ask the agent to run `setup-ai-build-kit`.
+- Claude Code terminal app: `claude plugin marketplace add gwpicard/ai-build-kit`, then `claude plugin install ai-build-kit@ai-build-kit --scope local`. Start Claude Code in the project folder and type `/ai-build-kit:setup-ai-build-kit`.
+- Codex on a Mac: start each session from the project folder with `python3 .agents/skills/setup-ai-build-kit/scripts/codex-with-github.py`.
 
 Commands:
 
-- `/setup-ai-build-kit` prepares a project.
-- `/shape` turns an idea or fault into a ready piece of work.
-- `/implement` builds a ready piece and asks before merging by default.
-- `/setup-hosting` sets up or checks how the tool runs live.
-- `/maintain` checks the records and live copy, and runs upkeep when due.
-- `/what-now` says where the project stands and what to do next.
-
-Automatic merging is off by default. The masterplan records the choice and its
-limits under `Runs on its own:`.
-
-The kit cannot replace a professional developer or provide legal, medical, financial or security advice. Passing checks do not prove that software is safe or right for a purpose.
+- `/setup-ai-build-kit` prepares a project for work.
+- `/shape` turns a request or fault into a ready piece of work.
+- `/implement` builds a ready piece and asks for approval before merging by default.
+- `/setup-hosting` sets up or checks where and how the tool runs.
+- `/maintain` checks the project's records and running tool, and runs maintenance when due.
+- `/what-now` reports the project's status and what to do next.
 
 ## Site
 
-- [AI Build Kit site](https://gwpicard.github.io/ai-build-kit/): workflow, project records, rules and checks, hosting recipes, installation, supported agents, design, how it differs from other tools, releases and sources.
+- [AI Build Kit site](https://gwpicard.github.io/ai-build-kit/): the guide to the kit, its workflow, rules, checks, hosting recipes and supported agents.
 
 ## Docs
 
-- [README](https://github.com/gwpicard/ai-build-kit/blob/main/README.md): what the kit is and how to install it
-- [WORKFLOW](https://github.com/gwpicard/ai-build-kit/blob/main/WORKFLOW.md): the day-to-day manual for all six commands
-- [Compatibility](https://github.com/gwpicard/ai-build-kit/blob/main/docs/COMPATIBILITY.md): installation routes and agent support
-- [Philosophy](https://github.com/gwpicard/ai-build-kit/blob/main/docs/PHILOSOPHY.md): why the kit is shaped the way it is
-- [Sources](https://github.com/gwpicard/ai-build-kit/blob/main/docs/SOURCES.md): the borrowed ideas and who they came from
-- [Licence](https://github.com/gwpicard/ai-build-kit/blob/main/LICENSE): MIT
-
-## Optional
-
-- [Contributing](https://github.com/gwpicard/ai-build-kit/blob/main/CONTRIBUTING.md): how to report a problem or suggest a change
-- [Security](https://github.com/gwpicard/ai-build-kit/blob/main/SECURITY.md): how to report a security problem
-- [Releases](https://github.com/gwpicard/ai-build-kit/releases): numbered versions with notes
+- [README](https://github.com/gwpicard/ai-build-kit/blob/main/README.md): what the kit is and how to install it.
+- [Compatibility](https://github.com/gwpicard/ai-build-kit/blob/main/docs/COMPATIBILITY.md): installation routes and agent support.
+- [Philosophy](https://github.com/gwpicard/ai-build-kit/blob/main/docs/PHILOSOPHY.md): why the kit is shaped the way it is.
+- [Sources](https://github.com/gwpicard/ai-build-kit/blob/main/docs/SOURCES.md): ideas the kit draws on and their sources.
+- [Contributing](https://github.com/gwpicard/ai-build-kit/blob/main/CONTRIBUTING.md): how to report a problem or suggest a change.
+- [Security](https://github.com/gwpicard/ai-build-kit/blob/main/SECURITY.md): how to report a security problem.
+- [Licence](https://github.com/gwpicard/ai-build-kit/blob/main/LICENSE): MIT.
+- [Releases](https://github.com/gwpicard/ai-build-kit/releases): numbered versions with notes.
