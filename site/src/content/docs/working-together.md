@@ -20,7 +20,7 @@ For work in a named risk area, the kit may offer to break the changed code in a 
 
 ## Automatic runs
 
-Automatic work is off unless you ask for it. You can opt into building pieces in parallel, a short repeated loop, or automatic merging. The masterplan records your choice and its limits. Automatic merging requires three earlier approved merges and a current branch. It waits for checks, reviews, risk areas, migrations, new settings, live requirements, repairs and changes marked for you to try. A failed check pauses it; only you can resume it.
+Automatic work is off unless you ask for it. You can opt into building pieces in parallel, a short repeated loop, or automatic merging. The masterplan records your choice and its limits. Automatic merging requires three earlier approved merges and a current branch. It waits for checks, reviews, risk areas, migrations, new settings, live requirements, repairs and changes marked for you to try. A failed check on `main`, or a failed live check after an automatic merge, pauses it, and only you can resume it. A pull request whose checks fail stays open.
 
 By default, `/implement` asks for your approval before merging each pull request. If the selected host deploys on merge, the merge also puts the change live.
 

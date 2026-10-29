@@ -247,7 +247,7 @@
       {
         "script": "live-check.sh",
         "path": ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh",
-        "description": "The live check runs at every maintenance visit."
+        "description": "The live check runs at each maintenance visit once a live address and a recipe are recorded."
       },
       {
         "script": "upgrade-check.py",
@@ -257,7 +257,7 @@
       {
         "script": "recipe-freshness.py",
         "path": ".agents/skills/maintain/scripts/recipe-freshness.py",
-        "description": "The recipe freshness check reports recipes missing from the current menu, recipes last checked more than 90 days ago, and superseded settings still used by the project."
+        "description": "The recipe freshness check reports when the project's recipe has left the current menu, was last checked more than 90 days ago, or still uses superseded settings."
       },
       {
         "script": "stale-branches.py",

@@ -12,9 +12,9 @@ The update command depends on how you installed the kit. For the shared installe
 
 ## Visit the project
 
-Use `/maintain` after work outside the kit, before a handover or after time away. Every visit checks the project records and, once the tool is live, compares the live copy with the project's main branch. It reports differences and offers relevant upkeep. Monthly and quarterly checks run only when due. The visit does not change the live service.
+Use `/maintain` after work outside the kit, before a handover or after time away. Every visit checks the project records. Where a live address and a recipe are recorded, it also compares the live copy with the project's main branch; off a recipe, it says it cannot. It reports differences and offers relevant upkeep. Monthly work falls due 30 days after the last monthly pass, and quarterly work 90 days after the last full pass or when you ask for a handover. You can ask for either at any time. The visit does not change the live service.
 
-The visit record helps you see when the project was last checked. maintain writes the date of each visit into the project.
+`/maintain` records the date of each monthly and quarterly pass in `.ai-build-kit-maintenance`, so you can see when the project was last checked.
 
 If a session stopped part-way through, start with `/what-now` to see what remains unfinished.
 
