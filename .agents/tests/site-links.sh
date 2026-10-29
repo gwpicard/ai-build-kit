@@ -22,6 +22,13 @@ else
 fi
 export BUILD
 
+# The rules page and the other generated pages come from the docs. A clean
+# checkout does not hold them, so generate them when they are missing.
+if [ ! -f "$ROOT/site/src/content/docs/generated/what-it-checks.md" ] &&
+   command -v node >/dev/null 2>&1; then
+  node "$ROOT/site/scripts/sync-content.mjs" >/dev/null 2>&1 || true
+fi
+
 python3 - <<'PY'
 import json
 import pathlib
