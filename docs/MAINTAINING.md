@@ -816,8 +816,8 @@ belongs only where the subject and author's voice call for it.
 - Give each tool the verb that matches what it does. A check passes, fails,
   detects, reports, blocks or skips. A script enforces, rejects or records. A
   test fails on a fault and proves a mechanism works. None of them says, judges
-  or decides. A check or script blocks or rejects an action rather than holding
-  it. A person approves, confirms or declines.
+  or decides. A check or script blocks or rejects an action. A person approves,
+  confirms or declines.
 - Claim only what the evidence shows. Keep each condition and limit beside the
   claim it narrows, and do not turn a narrow fix into a general promise.
 - Banned: leverage, robust, comprehensive, seamless, crucial, foster, enhance,

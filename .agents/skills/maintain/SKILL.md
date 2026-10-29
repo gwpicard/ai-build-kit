@@ -1,6 +1,6 @@
 ---
 name: maintain
-description: Make the project true and healthy. Every visit checks records and the live copy. Monthly and quarterly work runs only when due. Use after outside work, before a handover, after time away, or when retiring a tool. A session that died part-way goes to what-now first. Do not use for building, repairing or planning.
+description: Keep project records accurate and the live copy healthy. Every visit checks records and the live copy. Monthly and quarterly work runs only when due. Use after outside work, before a handover, after time away, or when retiring a tool. A session that died part-way goes to what-now first. Do not use for building, repairing or planning.
 ---
 
 # Maintain

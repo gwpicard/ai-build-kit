@@ -447,10 +447,10 @@ Use the kit's established term where one exists, and define it once where a read
 | git commit / merge to main | save (commit), merge | save meaning merge |
 | The running tool | live copy (`live-copy` skill) | live tool |
 | A risk's safeguard | caution (`fit-check`) | precaution |
-| The six risk areas | the names in `fit-check/SKILL.md:45-50` | the three other sets of names |
-| A finding that should stop a merge | the term in `second-opinion` | blocking finding, should stop the merge |
-| Setup interview | the term in `clarify` | setup questions, interview questions |
-| Kit check vs project check | define "project check" once | undefined uses |
+| The six risk areas | Personal or sensitive data, Money, Sign-in and permissions, Automatic action, Irreplaceable live data, Regulated decisions | the three other sets of names |
+| A finding that should stop a merge | worth stopping for | blocking finding, should stop the merge |
+| Setup interview | interview | setup questions, interview questions |
+| Kit check vs project check | project check (a project's automated checks) | undefined uses |
 
 ## Invocation Modes
 

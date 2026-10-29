@@ -46,7 +46,7 @@ before editing.
 ## How changes are made
 
 One agreed, visible slice at a time, on a short-lived branch, through a pull
-request a person decides to merge. A pull request aims at `main`, never at
+request a person decides to merge. A pull request targets `main`, never
 `stable`.
 
 A sentence in a skill earns its place only if a machine enforces it, a replay
@@ -54,8 +54,8 @@ shows it changes the outcome, or it carries a judgement. PHILOSOPHY.md says how
 to decide. A change to a canonical skill also regenerates the adapters, runs the
 validator, and records any borrowed idea in `docs/SOURCES.md`.
 
-A maintainer skill carries none of that bar. It still follows the writing rules
-and the validator, which keeps it out of a release.
+A maintainer skill does not have to clear that bar. It still follows the writing
+rules and must pass the validator, which keeps it out of a release.
 
 When a written instruction and a check disagree, trust the check, and say
 plainly that the two disagree.
@@ -65,7 +65,7 @@ plainly that the two disagree.
 - `.agents/tools/validate-kit.sh` checks the source, the adapters and the
   release boundaries.
 - `.agents/tests/run-all.sh` runs every check in `.agents/tests/` and names
-  each one that failed. Each check says what it guards on its second line.
+  each one that failed. Each check states on its second line what it guards.
 - `.agents/tests/replay/` holds conversations replayed against the kit and
   graded on behaviour. Its README says how to run them and what they cost.
 - `.agents/tests/seeded/` holds small products that each carry one planted
@@ -74,7 +74,7 @@ plainly that the two disagree.
 - `.agents/tests/mutate.sh` breaks one promise at a time and reports which
   checks noticed.
 - `.agents/tools/rehearse-merged-tree.sh` runs the validator and the suite on
-  a clean copy of what the branch holds. Run it before a branch goes up.
+  a clean copy of the branch. Run it before pushing the branch.
 - `.agents/tools/build-release.sh <version> <new-folder>` assembles a public
   release outside this repository.
 
