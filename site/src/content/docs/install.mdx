@@ -9,7 +9,7 @@ Open a terminal in your tool’s project folder, either a new empty folder or on
 
 ## Before you start
 
-You need Git, Python 3 and the GitHub CLI (`gh`), the command-line tool for GitHub. Sign in to `gh` before setup. Every route except the Claude Code plugin uses `npx`, which requires Node.js. The setup script checks Git, Python 3, GitHub sign-in and access to the project repository and its issues, where the work list lives.
+You need Git, Python 3 and the GitHub CLI (`gh`), the command-line tool for GitHub. Sign in to `gh` before setup. The shared installer uses `npx`, which requires Node.js. The setup script checks Git, Python 3, GitHub sign-in and access to the project repository and its issues, where the work list lives.
 
 The kit has six commands: `/setup-ai-build-kit`, `/shape`, `/implement`, `/setup-hosting`, `/maintain` and `/what-now`. See [supported agents](/ai-build-kit/agents/) for the evidence behind each agent’s support grade.
 
@@ -25,21 +25,21 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
     Setup checks whether GitHub Actions permissions are available. If you need to grant them, run `gh auth refresh -h github.com -s workflow` in your terminal, then restart Codex. On a Mac, start the new session through the launcher. Setup also offers once to add a function to `.zshrc` or `.bash_profile` so typing `codex` in a kit project starts the launcher. The offer names the file and the block to remove if you want to undo it. It changes nothing without your approval.
   </TabItem>
   <TabItem label="Cursor">
-    In a terminal opened in your project folder, run `npx skills add gwpicard/ai-build-kit`, select Cursor and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
+    In a terminal opened in your project folder, run `npx skills add gwpicard/ai-build-kit`, select Cursor, install the kit for this project and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
   </TabItem>
   <TabItem label="Gemini CLI">
-    In a terminal opened in your project folder, run `npx skills add gwpicard/ai-build-kit`, select Gemini CLI and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
+    In a terminal opened in your project folder, run `npx skills add gwpicard/ai-build-kit`, select Gemini CLI, install the kit for this project and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
   </TabItem>
   <TabItem label="GitHub Copilot">
-    In a terminal opened in your project folder, run `npx skills add gwpicard/ai-build-kit`, select GitHub Copilot and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
+    In a terminal opened in your project folder, run `npx skills add gwpicard/ai-build-kit`, select GitHub Copilot, install the kit for this project and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
   </TabItem>
   <TabItem label="Other agents">
-    In a terminal opened in your project folder, run `npx skills add gwpicard/ai-build-kit`, select your agent and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
+    In a terminal opened in your project folder, run `npx skills add gwpicard/ai-build-kit`, select your agent, install the kit for this project and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
   </TabItem>
 </Tabs>
 
 ## If installation fails
 
-The [full installation routes](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md#choose-one-installation-route) explain manual setup and the Claude Code plugin.
+See the [full installation routes](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md#choose-one-installation-route), or use the [manual fallback](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md#manual-fallback) if you cannot run `npx`.
 
 If Codex on a Mac reports `unable to get password from user`, run `python3 .agents/skills/setup-ai-build-kit/scripts/codex-with-github.py` in your project folder to start a new Codex session with GitHub access. The [Codex setup notes](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/references/codex-github.md) explain when to use this launcher.

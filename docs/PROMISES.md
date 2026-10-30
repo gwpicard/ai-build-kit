@@ -15,7 +15,7 @@
 |---|---|
 | A project check blocks the merge while a finding marked worth stopping for is unticked. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` |
 | Merge waits for project checks, a settled review, and a risk area whose caution is done or accepted. | `.agents/tests/merge-gate.sh` |
-| Secrets stay out of committed files and logs. On Claude Code, a secret in a tool's output is hidden before it reaches the agent. | `.agents/tests/secrets-gates.sh`; `.agents/tests/push-guard.sh` |
+| Secrets stay out of committed files and logs. On Claude Code, a secret in the output of Bash, Read or Grep is hidden before it reaches the agent. | `.agents/tests/secrets-gates.sh`; `.agents/tests/push-guard.sh` |
 | A secret never reaches the kit's saved records, and the refusal names the record, never the value. The kit's scripts apply across agents; Claude Code also checks records it writes by hand. | `.agents/tests/record-secrets.sh` |
 | A review record is valid only for the commit it read, and a hand edit to it blocks the merge. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` |
 | A review without approval from a second login is labelled unverified. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` |
@@ -37,7 +37,7 @@
 | A release upgrade carries existing project work forward. | `.agents/tests/upgrade-rehearsal.sh` |
 | An older path record moves to the risk record with approval, keeping every risk area, acceptance, date and word; declining leaves project records unchanged and records the refusal in maintenance notes. | `.agents/tests/risk-move-rehearsal.sh` |
 | A project check uses its shared review-box reader. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` |
-| The Claude Code read guard refuses environment files. | `.agents/tests/secrets-gates.sh`; `.claude/settings.json` |
+| The Claude Code read guard refuses environment files. | `.agents/tests/secrets-gates.sh`; `.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json` |
 | Claude Code reads its project settings and session hook. | `.agents/tests/session-start.sh`; `.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json` |
 
 ## Behaviour and judgement

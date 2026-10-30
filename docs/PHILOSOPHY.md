@@ -73,8 +73,8 @@ see GitHub. A hosted builder serves them better.
 
 ## The rule that settles arguments
 
-The work never requires reading code. Every check is something a person sees
-or tries, and every report lists what was tried and what happened. A developer
+The work never requires reading code. Every acceptance check is something a
+person sees or tries, and every report lists what was tried and what happened. A developer
 can read every change if they like. The kit never depends on it, because a
 process that works only while somebody reads the code stops working on the day
 nobody does.
@@ -156,7 +156,7 @@ kit reports plainly that it guarantees nothing, and it still helps.
 Some promises apply in every project, so they do not depend on what the person
 asks for. Each needs an enforcement mechanism and a check that fails if the
 mechanism is removed. The
-[source repository's mechanism list](https://github.com/gwpicard/ai-build-kit/blob/main/docs/MAINTAINING.md#the-backbone-and-its-mechanisms)
+[source repository's mechanism list](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/MAINTAINING.md#the-backbone-and-its-mechanisms)
 names each promise's mechanism, or marks it "none yet".
 
 1. A person approves each merge, unless they chose auto-merge with its limits.
@@ -165,8 +165,10 @@ names each promise's mechanism, or marks it "none yet".
 4. Checks pass before a merge.
 5. A review matches the code it read. A review the kit cannot verify is
    recorded as unverified, in plain words.
-6. On a proven recipe, every launch has a way back and a backup.
-7. Records say "accepted", never "done".
+6. On a proven recipe, `/setup-hosting` requires a confirmed backup and a named
+   rollback step before recording a live address. Later runs also require an
+   earlier build to return to. This cannot stop a host that deploys on merge.
+7. An accepted risk is recorded as "accepted", never as "done".
 
 Two kinds of check follow from this. An integrity check protects the backbone.
 It can stop the work, and it stops it even if the person insists, because the
@@ -227,7 +229,7 @@ check names it as a caution.
 `/maintain` checks the project's setup and records, and offers the upkeep that
 is due. It cannot repair badly written code.
 
-For the rule on service names, see [Keep it generic](MAINTAINING.md#keep-it-generic).
+For the rule on service names, see [Keep it generic](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/MAINTAINING.md#keep-it-generic).
 
 ## Keeping it honest
 
