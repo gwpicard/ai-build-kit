@@ -59,9 +59,23 @@ BARE = re.compile(r"(?<![A-Za-z0-9_./<-])([A-Za-z0-9_-]+\.md)\b")
 PROJECT_FILES = {"plan.md", "DESIGN.md", "WORKFLOW.md", "CLAUDE.md", "GEMINI.md",
                  "MAINTAINING.md", "setup-notes.md", "team.md"}
 CALL = re.compile(r"`([a-z][a-z-]*)`\s+skill\b")
-# Ignore path segments, URL paths and closing HTML tags. A full stop can end
-# a sentence, but a file extension makes this a path rather than a command.
-SLASH_COMMAND = re.compile(r"(?<![\w./:<])/(?P<name>[a-z][a-z0-9-]*)(?![\w/-]|\.[a-z0-9])")
+# A command is either inline code or follows an invocation verb. Bare paths
+# and HTTP routes have no invocation context.
+SLASH_COMMAND = re.compile(
+    r"(?:(?P<code>`)|\b(?:run|type|invoke|execute)\s+)/(?P<name>[a-z][a-z0-9-]*)"
+    r"(?=`|[\s\"']|[.,;:!?](?:\s|$)|$)", re.IGNORECASE)
+PATH_CONTEXT = re.compile(
+    r"\b(?:read|under|in|from|path|directory|folder|root|route|endpoint|GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s+$",
+    re.IGNORECASE)
+PATH_SUFFIX = re.compile(r"`\s+(?:HTTP\s+)?(?:route|endpoint|path|directory|folder|root)\b", re.IGNORECASE)
+
+
+def slash_commands(line):
+    for match in SLASH_COMMAND.finditer(line):
+        if match["code"] and (PATH_CONTEXT.search(line[:match.start()]) or
+                              PATH_SUFFIX.match(line[match.end():])):
+            continue
+        yield match
 
 
 def read(path):
@@ -166,7 +180,7 @@ def main(argv):
                     callers[name].add(skill)
             for lineno, line in enumerate(text.splitlines(), 1):
                 if path == os.path.join(skill_dir, "SKILL.md"):
-                    for match in SLASH_COMMAND.finditer(line):
+                    for match in slash_commands(line):
                         if match["name"] not in commands:
                             findings.append(("command", "%s:%d" % (rel, lineno),
                                              "/%s is not a command in the inventory" % match["name"]))

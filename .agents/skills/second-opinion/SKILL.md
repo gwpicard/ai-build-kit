@@ -17,8 +17,8 @@ Gemini reviewers have no shell, so include the packet text in the prompt.
 Exit 2 means an input is missing. Continue the review and carry the packet's
 `Review limits` into the result.
 The packet script runs `second-opinion/scripts/review-guard.sh snapshot` on
-the changed files; `gate.py record` runs its `check` after the review and
-refutation. Report any restored or other changed files, or that the guard
+the changed files and pre-existing uncommitted work; `gate.py record` runs its
+`check` after the review and refutation. Report any restored or other changed files, or that the guard
 could not run. For a review without a packet, run the same snapshot and check
 around it, naming the files under review.
 

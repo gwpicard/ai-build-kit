@@ -250,6 +250,7 @@ data=(target/'SKILL.md').read_bytes();(release/'.agents/skills/fix/SKILL.md').wr
 (release/'.ai-build-kit-version').write_text('v0.19.3\n')
 subprocess.run([sys.executable,str(tool),str(release)],check=True,capture_output=True)
 known=json.loads(record.read_text()); assert known['files']['.agents/skills/fix/SKILL.md']==[hashlib.sha256(data).hexdigest()[:16]]
+assert known['skill_paths']['v0.19.3'] == ['fix/SKILL.md']
 first=record.read_bytes();subprocess.run([sys.executable,str(tool),str(release)],check=True,capture_output=True);assert record.read_bytes()==first
 print('  ok: the recorder keeps skill hashes and a second run changes nothing')
 PY

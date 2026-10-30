@@ -65,6 +65,31 @@ fi
 git checkout -q -- app.txt
 rm -f stray.txt
 
+# Existing edits outside the branch diff keep the same Git status when a
+# reviewer overwrites them. Compare their bytes, including untracked work.
+printf 'The person changed this.\n' > app.txt
+printf 'The person staged this.\n' > 'staged notes.txt'
+git add 'staged notes.txt'
+printf 'The person has not saved this.\n' > 'untracked notes.txt'
+cp app.txt "$WORK/person-app"
+cp 'staged notes.txt' "$WORK/person-staged"
+cp 'untracked notes.txt' "$WORK/person-untracked"
+guard snapshot masterplan.md >/dev/null
+printf 'Reviewer overwrite.\n' > app.txt
+printf 'Reviewer overwrite.\n' > 'staged notes.txt'
+rm 'untracked notes.txt'
+out=$(guard check) && rc=0 || rc=$?
+if [ "$rc" -eq 1 ] && cmp -s app.txt "$WORK/person-app" \
+  && cmp -s 'staged notes.txt' "$WORK/person-staged" \
+  && cmp -s 'untracked notes.txt' "$WORK/person-untracked" \
+  && printf '%s\n' "$out" | grep -qx 'restored	app.txt' \
+  && printf '%s\n' "$out" | grep -qx 'restored	staged notes.txt' \
+  && printf '%s\n' "$out" | grep -qx 'restored	untracked notes.txt'; then
+  pass "modified, staged and untracked work outside the review is restored and named"
+else
+  fail "pre-existing work was lost or unreported: exit $rc: $out"
+fi
+
 out=$(guard check 2>&1) && rc=0 || rc=$?
 [ "$rc" -eq 2 ] && pass "a check with no snapshot exits 2" || fail "a check with no snapshot gave exit $rc"
 guard snapshot >/dev/null 2>&1 && rc=0 || rc=$?

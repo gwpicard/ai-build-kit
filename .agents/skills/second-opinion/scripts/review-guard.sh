@@ -9,13 +9,13 @@
 #
 # Usage, from the project root:
 #   review-guard.sh snapshot FILE...   before the review: keep a copy of each
-#                                      file under review, and the project's
-#                                      Git status
+#                                      file under review and all pre-existing
+#                                      uncommitted files, plus Git status
 #   review-guard.sh check              after the review: compare
 #
 # check exits:
 #   0  nothing changed
-#   1  something changed. Each file under review that changed, or went, is put
+#   1  something changed. Each snapshotted file that changed, or went, is put
 #      back from its copy and named on a "restored" line. Any other change in
 #      the working tree is named on a "changed" line and left as it is.
 #   2  it could not run: no snapshot, or a copy could not be read
@@ -41,7 +41,25 @@ case "${1:-}" in
     rm -rf "$GUARD"
     mkdir -p "$GUARD/files" || exit 2
     : > "$GUARD/list"
-    for file in "$@"; do
+    python3 - "$@" > "$GUARD/paths" <<'PY' || exit 2
+import subprocess
+import sys
+
+paths = set(sys.argv[1:])
+if subprocess.run(["git", "rev-parse", "--is-inside-work-tree"],
+                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+    for args in (["ls-files", "--modified", "--deleted", "--others", "--exclude-standard", "-z"],
+                 ["diff", "--cached", "--name-only", "--no-renames", "-z"]):
+        raw = subprocess.check_output(["git", *args])
+        paths.update(p.decode("utf-8", "surrogateescape") for p in raw.split(b"\0") if p)
+for path in sorted(paths):
+    if path.startswith(".agents/tmp/"):
+        continue
+    if "\n" in path or "\t" in path:
+        sys.exit("review-guard: a filename contains a tab or newline; snapshot could not be kept")
+    print(path)
+PY
+    while IFS= read -r file; do
       case "$file" in
         /*|../*|*/../*) echo "review-guard: $file is not inside the project" >&2; exit 2 ;;
       esac
@@ -52,9 +70,9 @@ case "${1:-}" in
       else
         printf 'absent\t-\t%s\n' "$file" >> "$GUARD/list"
       fi
-    done
+    done < "$GUARD/paths"
     status > "$GUARD/status-before"
-    echo "review-guard: kept $(grep -c . "$GUARD/list") file(s) under review"
+    echo "review-guard: kept $(grep -c . "$GUARD/list") file(s) before review"
     exit 0
     ;;
   check)

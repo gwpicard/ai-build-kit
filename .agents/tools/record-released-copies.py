@@ -100,6 +100,7 @@ def main(argv):
         record = {"versions": [], "files": {}}
     versions = set(record.get("versions", []))
     known = {path: set(hashes) for path, hashes in record.get("files", {}).items()}
+    skill_paths = record.get("skill_paths", {})
     for source in argv:
         if os.path.isdir(source):
             files = from_folder(source)
@@ -109,7 +110,10 @@ def main(argv):
             raise SystemExit("record-released-copies: no such archive or folder: %s" % source)
         if not files:
             raise SystemExit("record-released-copies: %s holds none of the kit's own files" % source)
-        versions.add(version_of(source, files))
+        version = version_of(source, files)
+        versions.add(version)
+        skill_paths[version] = sorted(path[len(".agents/skills/"):] for path in files
+                                      if path.startswith(".agents/skills/"))
         for path, data in files.items():
             known.setdefault(path, set()).add(digest(data))
 
@@ -119,6 +123,7 @@ def main(argv):
     out = {
         "comment": COMMENT,
         "versions": sorted(versions, key=order),
+        "skill_paths": {version: skill_paths[version] for version in sorted(skill_paths, key=order)},
         "files": {path: sorted(hashes) for path, hashes in sorted(known.items())},
     }
     text = json.dumps(out, indent=1, sort_keys=False) + "\n"

@@ -168,13 +168,18 @@ T="$WORK/slash-commands"
 plant "$T"
 printf 'Run `/alpha`, then /beta. Read /private/tmp/log, https://example.invalid/path and </details>.\n' \
   >> "$T/.agents/skills/alpha/SKILL.md"
+printf 'Read /etc and /tmp. The /health route returns 200. GET /health and POST /events are HTTP routes.\n' \
+  >> "$T/.agents/skills/alpha/SKILL.md"
+printf 'Read `/etc`. Put logs in `/tmp`. The `/health` route returns 200. GET `/status`.\n' \
+  >> "$T/.agents/skills/alpha/SKILL.md"
 out=$(run --strict "$T") && rc=0 || rc=$?
 [ "$rc" -eq 0 ] && [ -z "$out" ] \
   && pass "inventory commands pass and paths are not read as commands" \
   || fail "valid slash references were misread (exit $rc): $out"
-printf 'Run `/invented-command`.\n' >> "$T/.agents/skills/alpha/SKILL.md"
+printf 'Run `/invented-command`. Then run /another-command.\n' >> "$T/.agents/skills/alpha/SKILL.md"
 out=$(run --strict "$T") && rc=0 || rc=$?
 [ "$rc" -eq 1 ] && printf '%s\n' "$out" | grep -q '^command.*alpha/SKILL.md.*/invented-command is not a command in the inventory$' \
+  && printf '%s\n' "$out" | grep -q '^command.*alpha/SKILL.md.*/another-command is not a command in the inventory$' \
   && pass "a slash command outside the inventory fails with its file and line" \
   || fail "an unknown slash command was missed (exit $rc): $out"
 

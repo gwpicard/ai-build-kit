@@ -23,16 +23,31 @@ def unreadable(error):
     raise error
 
 
+def generated(path):
+    return (any(part in {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache"}
+                for part in path.parts) or path.suffix in {".pyc", ".pyo"})
+
+
 def changed_files(skills, record):
-    known = json.loads(record.read_text(encoding="utf-8"))["files"]
+    data = json.loads(record.read_text(encoding="utf-8"))
+    version = (skills / "maintain" / "VERSION").read_text(encoding="utf-8").strip()
+    if version not in data.get("versions", []):
+        raise ValueError("could not check: no released baseline for " + version)
+    expected = data.get("skill_paths", {}).get(version)
+    if not expected:
+        raise ValueError("could not check: no installed-file inventory for " + version)
+    known = data["files"]
     if not isinstance(known, dict) or not known:
         raise ValueError("the released-copies record has no files")
     prefixes = (".agents/skills/", ".claude/skills/")
-    names = {path[len(prefix):].split("/")[0] for path in known for prefix in prefixes
-             if path.startswith(prefix)}
+    names = {path.split("/")[0] for path in expected}
     if not names:
         raise ValueError("the released-copies record has no skills")
     changed = set()
+    for relative in expected:
+        path = skills / relative
+        if not path.exists() and not generated(Path(relative)):
+            changed.add(str(path.absolute()))
     for name in sorted(names):
         folder = skills / name
         if not folder.exists():
@@ -41,9 +56,11 @@ def changed_files(skills, record):
             # Skill-folder links are normal installations. A link inside a
             # skill is unrecognised and is never traversed.
             links = [item for item in dirs if (Path(directory) / item).is_symlink()]
-            dirs[:] = sorted(item for item in dirs if item not in links)
+            dirs[:] = sorted(item for item in dirs if item not in links and not generated(Path(item)))
             for item in sorted(files + links):
                 path = Path(directory) / item
+                if generated(path.relative_to(skills)):
+                    continue
                 relative = path.relative_to(skills).as_posix()
                 hashes = set()
                 for prefix in prefixes:
@@ -68,8 +85,8 @@ def main():
         for path in changed:
             print("local-edit\t" + path)
         if changed:
-            print("say\tlocal-edits\tThese installed files differ from every recorded released copy. "
-                  "Updating would replace them. Shall I overwrite the named files?")
+            print("say\tlocal-edits\tThese installed files differ from recorded released copies or are missing. "
+                  "Updating would replace or recreate them. Shall I replace or recreate the named files?")
         if args.run is None:
             return 1 if changed else 0
         approved = {str(Path(path).absolute()) for path in args.overwrite}

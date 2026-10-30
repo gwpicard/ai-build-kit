@@ -18,12 +18,15 @@ release's `maintain/scripts/kit-released-copies.json` from its tag into ignored
 `.agents/tmp/kit-released-copies-next.json`. The installed record can predate
 its own release's files.
 Run `scripts/kit-local-edits.py --record <downloaded record> --skills <installed skills folder>`.
-It reads every file in the kit's installed skill folders, including committed
-edits. Exit 0 adds nothing to the offer. Exit 1: name each `local-edit` file,
+It compares installed files and missing paths with the installed release's
+record, including committed edits and ignoring generated caches. Exit 0 adds
+nothing to the offer. Exit 1: name each `local-edit` file,
 give the `say` line and require approval naming those files before replacement.
 With that approval, rerun with `--approved --overwrite <file>` for each file
 and `--run <update command>`; it checks again before running the command.
 Without approval, leave those files in place. Exit 2, or a failed download:
 report that local edits could not be checked and do not replace the skills.
+A missing release baseline or file inventory is inconclusive, never evidence
+of local edits.
 For plugin routes, the skills folder is in the installed plugin, outside the
 project. Check the selected route's folder before its plugin update too.
