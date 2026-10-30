@@ -63,7 +63,7 @@ CALL = re.compile(r"`([a-z][a-z-]*)`\s+skill\b")
 # Only retired names and explicit kit commands belong to this check.
 SLASH_COMMAND = re.compile(
     r"(?<![A-Za-z0-9_./<:-])/(?P<name>(?:ai-build-kit:)?[a-z][a-z0-9-]*)"
-    r"(?![A-Za-z0-9_/-])")
+    r"(?=`|[\s\"']|[.,;:!?](?:\s|$)|$)")
 
 
 def slash_commands(line, retired, commands):

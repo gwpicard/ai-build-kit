@@ -176,6 +176,8 @@ printf 'Read `/etc`. Put logs in `/tmp`. The `/health` route returns 200. GET `/
   >> "$T/.agents/skills/alpha/SKILL.md"
 printf 'Run `/host`. Use /invented-command. Run /ai-build-kit:alpha.\n' \
   >> "$T/.agents/skills/alpha/SKILL.md"
+printf 'Read /ship.md and /plan/log. Run /other-tool:ship.\n' \
+  >> "$T/.agents/skills/alpha/SKILL.md"
 out=$(run --strict "$T") && rc=0 || rc=$?
 [ "$rc" -eq 0 ] && [ -z "$out" ] \
   && pass "current commands, paths, routes and other tools commands pass" \
