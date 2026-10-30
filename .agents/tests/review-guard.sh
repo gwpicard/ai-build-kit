@@ -90,6 +90,90 @@ else
   fail "pre-existing work was lost or unreported: exit $rc: $out"
 fi
 
+# Staged bytes differ from the working file before the review.
+printf 'The person staged this version.\n' > app.txt
+git add app.txt
+printf 'The person kept a later working version.\n' > app.txt
+cp app.txt "$WORK/partial-working"
+git show :app.txt > "$WORK/partial-staged"
+git ls-files -s > "$WORK/index-before"
+git status --porcelain > "$WORK/status-before"
+[ "$(git status --porcelain -- app.txt)" = 'MM app.txt' ] || fail "fixture is not partially staged"
+guard snapshot masterplan.md >/dev/null
+printf 'Reviewer overwrite and stage.\n' > app.txt
+git add app.txt
+printf 'Reviewer overwrite and stage.\n' > 'staged notes.txt'
+git add 'staged notes.txt' 'untracked notes.txt'
+out=$(guard check) && rc=0 || rc=$?
+git show :app.txt > "$WORK/partial-after"
+git ls-files -s > "$WORK/index-after"
+git status --porcelain > "$WORK/status-after"
+if [ "$rc" -eq 1 ] && cmp -s app.txt "$WORK/partial-working" \
+  && cmp -s "$WORK/partial-staged" "$WORK/partial-after" \
+  && cmp -s "$WORK/index-before" "$WORK/index-after" \
+  && cmp -s "$WORK/status-before" "$WORK/status-after" \
+  && printf '%s\n' "$out" | grep -qx 'restored	app.txt'; then
+  pass "a partially staged file and other staged entries regain their working bytes, index and status"
+else
+  fail "staged work was lost or falsely reported as restored: exit $rc: $out"
+fi
+
+guard snapshot masterplan.md >/dev/null
+git add app.txt
+out=$(guard check) && rc=0 || rc=$?
+git ls-files -s > "$WORK/index-after"
+[ "$rc" -eq 1 ] && cmp -s "$WORK/index-before" "$WORK/index-after" \
+  && cmp -s app.txt "$WORK/partial-working" \
+  && printf '%s\n' "$out" | grep -qx 'restored	app.txt' \
+  && pass "an index-only reviewer change is restored while working bytes stay intact" \
+  || fail "an index-only change gave exit $rc: $out"
+
+# A pre-existing deletion must remain absent in both the working tree and index.
+rm app.txt
+git add app.txt
+guard snapshot masterplan.md >/dev/null
+printf 'Reviewer recreated and staged this.\n' > app.txt
+git add app.txt
+out=$(guard check) && rc=0 || rc=$?
+[ "$rc" -eq 1 ] && [ ! -e app.txt ] && [ -z "$(git ls-files -s -- app.txt)" ] \
+  && printf '%s\n' "$out" | grep -qx 'restored	app.txt' \
+  && pass "a staged deletion remains absent after the reviewer recreates and stages it" \
+  || fail "a staged deletion gave exit $rc: $out"
+
+# A symlink to a directory is compared by target, without reading its contents.
+mkdir target-directory
+printf 'Target content.\n' > target-directory/note.txt
+ln -s target-directory directory-link
+guard snapshot masterplan.md >/dev/null
+out=$(guard check) && rc=0 || rc=$?
+[ "$rc" -eq 0 ] && [ -z "$out" ] && [ "$(readlink directory-link)" = target-directory ] \
+  && pass "an unchanged untracked directory symlink is not reported as a reviewer change" \
+  || fail "an unchanged directory symlink gave exit $rc: $out"
+guard snapshot masterplan.md >/dev/null
+rm directory-link
+ln -s missing-directory directory-link
+git add directory-link
+out=$(guard check) && rc=0 || rc=$?
+[ "$rc" -eq 1 ] && [ "$(readlink directory-link)" = target-directory ] \
+  && [ -z "$(git ls-files -s -- directory-link)" ] \
+  && printf '%s\n' "$out" | grep -qx 'restored	directory-link' \
+  && pass "a changed symlink target and its staged entry are restored" \
+  || fail "a changed directory symlink gave exit $rc: $out"
+
+guard snapshot target-directory >/dev/null
+out=$(guard check) && rc=0 || rc=$?
+[ "$rc" -eq 0 ] && [ "$out" = 'skipped	target-directory	directory' ] \
+  && pass "an unchanged directory is skipped with a note" \
+  || fail "a directory gave exit $rc: $out"
+
+# A gitlink is a submodule even when no checkout is present.
+git update-index --add --cacheinfo "160000,$(git rev-parse HEAD),module"
+guard snapshot masterplan.md >/dev/null
+out=$(guard check) && rc=0 || rc=$?
+[ "$rc" -eq 0 ] && [ "$out" = 'skipped	module	submodule' ] \
+  && pass "an unchanged submodule is skipped with a note" \
+  || fail "a submodule gave exit $rc: $out"
+
 out=$(guard check 2>&1) && rc=0 || rc=$?
 [ "$rc" -eq 2 ] && pass "a check with no snapshot exits 2" || fail "a check with no snapshot gave exit $rc"
 guard snapshot >/dev/null 2>&1 && rc=0 || rc=$?

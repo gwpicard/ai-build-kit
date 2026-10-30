@@ -230,7 +230,7 @@ describe() {
     command-loads-command) echo "a command reaches into another command's references instead of calling a background skill" ;;
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
-    unknown-slash-command) echo "a skill entry point directs the person to a command outside the inventory" ;;
+    unknown-slash-command) echo "a skill entry point directs the person to a retired command" ;;
     recipe-framework-major) echo "a recipe accepts a framework without a pinned major version" ;;
     recipe-worker-coolify-only) echo "a recipe outside Coolify accepts the Python document worker" ;;
     recipe-fits-category) echo "a recipe accepts a category outside the research list" ;;
@@ -927,7 +927,7 @@ assert old in s, "three-attempt cap not found"
 open(p, "w").write(s.replace(old, "if [ \"$count\" -ge 99 ]; then", 1))'
       ;;
     unknown-slash-command)
-      printf '\n%s\n' 'Run `/not-a-kit-command`.' >> "$tree/.agents/skills/live-copy/SKILL.md"
+      printf '\n%s\n' 'Run `/ship`.' >> "$tree/.agents/skills/live-copy/SKILL.md"
       (cd "$tree" && ./.agents/tools/build-adapters.sh >/dev/null 2>&1)
       ;;
     background-one-caller)
@@ -1327,9 +1327,9 @@ open(p, "w").write(s.replace(old, "    # mutation skips the review guard", 1))'
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "cp -p \"$GUARD/files/$file\" \"$file\" || exit 2"
+old = "                shutil.copy2(GUARD / entry[\"copy\"], path)"
 assert old in s, "review draft restoration not found"
-open(p, "w").write(s.replace(old, ": # mutation leaves the review edit", 1))'
+open(p, "w").write(s.replace(old, "                pass # mutation leaves the review edit", 1))'
       ;;
     merge-behind-main)
       edit "$tree/.agents/skills/merge/scripts/merge.py" '

@@ -1,110 +1,164 @@
 #!/usr/bin/env sh
 # review-guard.sh: keep a review from changing the work it reviews.
 #
-# A reviewer runs in the same project folder as the work, and in some coding
-# agents it can run commands, so nothing but its brief stops it editing a file.
-# At founding the masterplan under review is not even saved yet, so an edit
-# would change the person's draft with no record of it. Run this around every
-# review that shares the folder.
-#
 # Usage, from the project root:
-#   review-guard.sh snapshot FILE...   before the review: keep a copy of each
-#                                      file under review and all pre-existing
-#                                      uncommitted files, plus Git status
-#   review-guard.sh check              after the review: compare
+#   review-guard.sh snapshot FILE...   keep the files under review and all
+#                                      pre-existing uncommitted work and index entries
+#   review-guard.sh check              compare and restore files and index entries
 #
-# check exits:
-#   0  nothing changed
-#   1  something changed. Each snapshotted file that changed, or went, is put
-#      back from its copy and named on a "restored" line. Any other change in
-#      the working tree is named on a "changed" line and left as it is.
-#   2  it could not run: no snapshot, or a copy could not be read
-#
-# snapshot exits 0 once the copies are kept, and 2 when it cannot keep them.
-# The copies sit in .agents/tmp/review-guard/, which the project keeps out of
-# Git, and each check removes them.
+# check exits 0 when unchanged, 1 for reviewer changes, and 2 if it cannot run.
+# A restored line means both the working file and index match the snapshot.
+# Other working-tree changes are named and left for the person. Directories
+# and submodules are skipped with a note. Copies in .agents/tmp/review-guard/
+# are removed after a completed check and kept if restoration fails.
 
-set -u
-
-GUARD=.agents/tmp/review-guard
-
-status() {
-  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    git status --porcelain --untracked-files=all 2>/dev/null | grep -v '\.agents/tmp/' || true
-  fi
-}
-
-case "${1:-}" in
-  snapshot)
-    shift
-    [ "$#" -gt 0 ] || { echo "review-guard: name the files under review" >&2; exit 2; }
-    rm -rf "$GUARD"
-    mkdir -p "$GUARD/files" || exit 2
-    : > "$GUARD/list"
-    python3 - "$@" > "$GUARD/paths" <<'PY' || exit 2
+exec python3 - "$@" <<'PY'
+import json
+import os
+from pathlib import Path
+import shutil
+import stat
 import subprocess
 import sys
 
-paths = set(sys.argv[1:])
-if subprocess.run(["git", "rev-parse", "--is-inside-work-tree"],
-                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
-    for args in (["ls-files", "--modified", "--deleted", "--others", "--exclude-standard", "-z"],
-                 ["diff", "--cached", "--name-only", "--no-renames", "-z"]):
-        raw = subprocess.check_output(["git", *args])
-        paths.update(p.decode("utf-8", "surrogateescape") for p in raw.split(b"\0") if p)
-for path in sorted(paths):
-    if path.startswith(".agents/tmp/"):
-        continue
-    if "\n" in path or "\t" in path:
-        sys.exit("review-guard: a filename contains a tab or newline; snapshot could not be kept")
-    print(path)
+GUARD = Path(".agents/tmp/review-guard")
+
+
+def git(*args, **kwargs):
+    return subprocess.check_output(["git", *args], **kwargs)
+
+
+def status():
+    if not in_git:
+        return []
+    return [line for line in git("status", "--porcelain", "--untracked-files=all").decode(
+        "utf-8", "surrogateescape").splitlines() if ".agents/tmp/" not in line]
+
+
+def index(path):
+    return git("ls-files", "-s", "-z", "--", path).decode("utf-8", "surrogateescape") if in_git else ""
+
+
+def kind(path, staged):
+    if any(entry.startswith("160000 ") for entry in staged.split("\0")):
+        return "submodule"
+    if path.is_symlink():
+        return "symlink"
+    if path.is_dir():
+        return "directory"
+    if path.is_file():
+        return "regular"
+    if not path.exists():
+        return "absent"
+    raise ValueError("unsupported file type: %s" % path)
+
+
+def matches(path, entry):
+    if kind(path, index(str(path))) != entry["kind"]:
+        return False
+    if entry["kind"] == "regular":
+        return (path.read_bytes() == (GUARD / entry["copy"]).read_bytes()
+                and stat.S_IMODE(path.stat().st_mode) == entry["mode"])
+    if entry["kind"] == "symlink":
+        return os.readlink(path) == entry["target"]
+    return True
+
+
+def restore_index(path, staged):
+    if in_git:
+        git("update-index", "--force-remove", "--", str(path))
+        if staged:
+            git("update-index", "-z", "--index-info", input=staged.encode("utf-8", "surrogateescape"))
+
+
+def snapshot(paths):
+    if not paths:
+        raise ValueError("name the files under review")
+    paths = set(paths)
+    if in_git:
+        for args in (("ls-files", "--modified", "--deleted", "--others", "--exclude-standard", "-z"),
+                     ("diff", "--cached", "--name-only", "--no-renames", "-z")):
+            paths.update(p.decode("utf-8", "surrogateescape") for p in git(*args).split(b"\0") if p)
+    entries = []
+    if GUARD.exists():
+        shutil.rmtree(GUARD)
+    (GUARD / "files").mkdir(parents=True)
+    for name in sorted(paths):
+        path = Path(name)
+        if path.is_absolute() or ".." in path.parts:
+            raise ValueError("%s is not inside the project" % name)
+        if "\n" in name or "\t" in name:
+            raise ValueError("a filename contains a tab or newline; snapshot could not be kept")
+        if path.is_relative_to(".agents/tmp"):
+            continue
+        staged = index(name)
+        entry = {"path": name, "index": staged, "kind": kind(path, staged)}
+        if entry["kind"] == "regular":
+            entry["copy"] = "files/%d" % len(entries)
+            entry["mode"] = stat.S_IMODE(path.stat().st_mode)
+            shutil.copy2(path, GUARD / entry["copy"])
+        elif entry["kind"] == "symlink":
+            entry["target"] = os.readlink(path)
+        entries.append(entry)
+    (GUARD / "snapshot.json").write_text(json.dumps({"entries": entries, "status": status()}))
+    print("review-guard: kept %d path(s) before review" % len(entries))
+    return 0
+
+
+def check():
+    if not (GUARD / "snapshot.json").is_file():
+        raise ValueError("no snapshot to compare with")
+    saved = json.loads((GUARD / "snapshot.json").read_text())
+    changed = False
+    for entry in saved["entries"]:
+        name = entry["path"]
+        path = Path(name)
+        if entry["kind"] in ("directory", "submodule"):
+            print("skipped\t%s\t%s" % (name, entry["kind"]))
+            continue
+        working_matches = matches(path, entry)
+        if working_matches and index(name) == entry["index"]:
+            continue
+        changed = True
+        if not working_matches:
+            if path.is_dir() and not path.is_symlink():
+                raise ValueError("cannot restore %s over a directory; snapshot kept" % name)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if path.is_symlink():
+                path.unlink()
+            if entry["kind"] == "absent":
+                if path.exists():
+                    path.unlink()
+            elif entry["kind"] == "regular":
+                shutil.copy2(GUARD / entry["copy"], path)
+            else:
+                if path.exists():
+                    path.unlink()
+                path.symlink_to(entry["target"])
+        restore_index(path, entry["index"])
+        if not matches(path, entry) or index(name) != entry["index"]:
+            raise ValueError("could not restore %s; snapshot kept" % name)
+        print("restored\t%s" % name)
+    for line in status():
+        if line not in saved["status"]:
+            print("changed\t%s" % line)
+            changed = True
+    shutil.rmtree(GUARD)
+    return int(changed)
+
+
+in_git = subprocess.run(["git", "rev-parse", "--is-inside-work-tree"],
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+try:
+    action = sys.argv[1] if len(sys.argv) > 1 else ""
+    if action == "snapshot":
+        result = snapshot(sys.argv[2:])
+    elif action == "check":
+        result = check()
+    else:
+        raise ValueError("usage: review-guard.sh snapshot FILE... | check")
+except (OSError, ValueError, subprocess.CalledProcessError) as error:
+    print("review-guard: %s" % error, file=sys.stderr)
+    result = 2
+sys.exit(result)
 PY
-    while IFS= read -r file; do
-      case "$file" in
-        /*|../*|*/../*) echo "review-guard: $file is not inside the project" >&2; exit 2 ;;
-      esac
-      if [ -f "$file" ]; then
-        mkdir -p "$GUARD/files/$(dirname -- "$file")" || exit 2
-        cp -p "$file" "$GUARD/files/$file" || exit 2
-        printf 'present\t%s\t%s\n' "$(cksum < "$file" | tr ' ' ':')" "$file" >> "$GUARD/list"
-      else
-        printf 'absent\t-\t%s\n' "$file" >> "$GUARD/list"
-      fi
-    done < "$GUARD/paths"
-    status > "$GUARD/status-before"
-    echo "review-guard: kept $(grep -c . "$GUARD/list") file(s) before review"
-    exit 0
-    ;;
-  check)
-    [ -f "$GUARD/list" ] || { echo "review-guard: no snapshot to compare with" >&2; exit 2; }
-    changed=0
-    while IFS="$(printf '\t')" read -r state sum file; do
-      [ -n "$file" ] || continue
-      if [ "$state" = present ]; then
-        if [ -f "$file" ] && cmp -s "$file" "$GUARD/files/$file"; then
-          continue
-        fi
-        mkdir -p "$(dirname -- "$file")" || exit 2
-        cp -p "$GUARD/files/$file" "$file" || exit 2
-        echo "restored	$file"
-        changed=1
-      elif [ -e "$file" ]; then
-        echo "changed	$file	it did not exist before the review"
-        changed=1
-      fi
-    done < "$GUARD/list"
-    status > "$GUARD/status-after"
-    new=$(grep -vxF -f "$GUARD/status-before" "$GUARD/status-after" 2>/dev/null || true)
-    [ -s "$GUARD/status-before" ] || new=$(cat "$GUARD/status-after")
-    if [ -n "$new" ]; then
-      printf '%s\n' "$new" | while IFS= read -r line; do echo "changed	$line"; done
-      changed=1
-    fi
-    rm -rf "$GUARD"
-    exit "$changed"
-    ;;
-  *)
-    echo "usage: review-guard.sh snapshot FILE... | check" >&2
-    exit 2
-    ;;
-esac

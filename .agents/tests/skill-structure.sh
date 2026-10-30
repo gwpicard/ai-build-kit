@@ -29,6 +29,9 @@ words() {
 plant() {
   T="$1"
   mkdir -p "$T/.agents/tools" "$T/.agents/agents"
+  mkdir -p "$T/.agents/skills/maintain/scripts"
+  cp "$ROOT/.agents/skills/maintain/scripts/kit-retired-skills.json" \
+    "$T/.agents/skills/maintain/scripts/kit-retired-skills.json"
   printf '%s\n' "command alpha" "command beta" "background gamma" "background delta" \
     "agent helper" > "$T/.agents/tools/kit-inventory.txt"
   for skill in alpha beta; do
@@ -162,8 +165,7 @@ else
   fail "the report-only mode changed its exit or printed nothing (exit $rc)"
 fi
 
-# Slash commands in entry points come from the inventory, without mistaking
-# URLs, paths or HTML closing tags for commands.
+# Only retired names and explicit unknown kit commands are rejected.
 T="$WORK/slash-commands"
 plant "$T"
 printf 'Run `/alpha`, then /beta. Read /private/tmp/log, https://example.invalid/path and </details>.\n' \
@@ -172,16 +174,20 @@ printf 'Read /etc and /tmp. The /health route returns 200. GET /health and POST 
   >> "$T/.agents/skills/alpha/SKILL.md"
 printf 'Read `/etc`. Put logs in `/tmp`. The `/health` route returns 200. GET `/status`.\n' \
   >> "$T/.agents/skills/alpha/SKILL.md"
+printf 'Run `/host`. Use /invented-command. Run /ai-build-kit:alpha.\n' \
+  >> "$T/.agents/skills/alpha/SKILL.md"
 out=$(run --strict "$T") && rc=0 || rc=$?
 [ "$rc" -eq 0 ] && [ -z "$out" ] \
-  && pass "inventory commands pass and paths are not read as commands" \
+  && pass "current commands, paths, routes and other tools commands pass" \
   || fail "valid slash references were misread (exit $rc): $out"
-printf 'Run `/invented-command`. Then run /another-command.\n' >> "$T/.agents/skills/alpha/SKILL.md"
+printf 'Use /ship, `/plan` and /ai-build-kit:deploy.\n' >> "$T/.agents/skills/alpha/SKILL.md"
 out=$(run --strict "$T") && rc=0 || rc=$?
-[ "$rc" -eq 1 ] && printf '%s\n' "$out" | grep -q '^command.*alpha/SKILL.md.*/invented-command is not a command in the inventory$' \
-  && printf '%s\n' "$out" | grep -q '^command.*alpha/SKILL.md.*/another-command is not a command in the inventory$' \
-  && pass "a slash command outside the inventory fails with its file and line" \
-  || fail "an unknown slash command was missed (exit $rc): $out"
+[ "$rc" -eq 1 ] && [ "$(printf '%s\n' "$out" | grep -c '^command')" -eq 3 ] \
+  && printf '%s\n' "$out" | grep -q '^command.*alpha/SKILL.md.*/ship is retired or not a command in the inventory$' \
+  && printf '%s\n' "$out" | grep -q '^command.*alpha/SKILL.md.*/plan is retired or not a command in the inventory$' \
+  && printf '%s\n' "$out" | grep -q '^command.*alpha/SKILL.md.*/ai-build-kit:deploy is retired or not a command in the inventory$' \
+  && pass "retired names and an explicit unknown kit command fail with file and line" \
+  || fail "a retired or unknown kit command was missed (exit $rc): $out"
 
 # An unreadable inventory is exit 2, never a pass.
 T="$WORK/noinventory"
