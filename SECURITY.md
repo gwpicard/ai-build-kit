@@ -36,6 +36,7 @@ is no response-time commitment.
 ## What is out of scope
 
 The coding agents the kit runs on, and the services a project connects to,
-belong to their own vendors. A problem in Claude Code, Cursor, Gemini CLI,
-GitHub, or a service your project uses should go to that vendor. If the kit
-tells people to use one of them in an unsafe way, that part is ours.
+belong to their own vendors. A problem in Claude Code, Codex, Cursor, Gemini
+CLI, GitHub Copilot, GitHub, or a service your project uses should go to that
+vendor. If the kit tells people to use one of them in an unsafe way, that part
+is ours.

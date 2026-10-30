@@ -1,6 +1,6 @@
 ---
 name: second-opinion
-description: Review a piece from its review packet in a fresh context. Judge the agreed result, what the change may have broken, and whether the evidence is real.
+description: Review a piece from its review packet or the founding masterplan in a fresh context. Judge the agreed result, what the change may have broken, and whether the evidence is real.
 user-invocable: false
 ---
 
@@ -8,16 +8,30 @@ user-invocable: false
 
 Report first. Fix only what the person approves.
 
-Run `gate.py brief --base <start commit> --piece <number>` and act on its exit
+For a piece, run the `quality-checks` skill's
+`scripts/gate.py` with `brief --base <start commit> --piece <number>` and act on its exit
 code. Review the packet it writes. It is the
 full brief for this review, including the change, `project-check` and, where
 reported, `recipe-check` evidence for type and lint checks.
 Gemini reviewers have no shell, so include the packet text in the prompt.
 Exit 2 means an input is missing. Continue the review and carry the packet's
 `Review limits` into the result.
-Use the reviewer agent in a fresh context. If the coding agent cannot start
-agents, run `.agents/agents/reviewer.md` headless with the packet text in its
-prompt. Use the refuter agent the same way for its separate pass.
+
+At founding, review `masterplan.md` against the agreed scope and setup notes,
+using the questions below for the proposed work. No piece, base commit or
+pull request is needed. Put findings and review limits in the completion
+report instead of running `gate.py record`.
+
+Use the reviewer agent in a fresh context. If its brief is not installed,
+start an ordinary fresh subagent, tell it to load this `second-opinion` skill,
+and give it the packet, or the masterplan and setup notes. Tell it to return
+only JSON findings, change no files and start no agents. For refutation, use
+a separate fresh subagent loading this skill with the packet and one finding;
+ask it only to disprove that finding and return `refuted` and an explanation.
+Where subagents cannot start, run the same brief and inputs headless with
+`claude -p`, `codex exec` or `gemini -p`. If none can run, give the person an
+instruction naming the installed skill and inputs to paste into a clean chat.
+Never present a same-session pass as independent.
 
 Ask only:
 
@@ -27,7 +41,7 @@ Ask only:
   outside service is involved?
 
 Do not judge risk to people. Founding settles that. Do not review screens,
-settings, the whole project or a masterplan in this review.
+settings or the whole project in this review.
 
 Return findings as JSON for `gate.py record`, with one object per finding:
 
@@ -49,7 +63,7 @@ what and what goes wrong. The script drops findings without either form of
 evidence. Mark whether each supported finding is worth stopping for.
 
 For each finding marked worth stopping for, ask a second fresh reviewer to try
-to refute it. Mark a refuted finding `refuted` in the JSON. Then run
+to refute it. Mark a refuted finding `refuted` in the JSON. For a piece, run
 `gate.py record --pr <number>` with the findings and act on its exit code.
 Exit 1 means stopping findings were recorded as open boxes, or the pull
 request moved on after the packet; exit 0 means none remain. The record names

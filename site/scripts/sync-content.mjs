@@ -36,7 +36,8 @@ function tocFrontmatter(markdown) {
   return headings.length < 3 ? 'tableOfContents: false\n' : '';
 }
 const agentsIntro = 'The table shows each coding agent’s support grade and the evidence behind it. A grade reflects testing of the kit on that agent, not the safety of tools built with it.';
-const knownLimits = section(compatibility, '## Known limits', '## GitHub access');
+const knownLimits = section(compatibility, '## Known limits', '## GitHub access')
+  .replaceAll('](#github-access-in-codex)', '](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md#github-access-in-codex)');
 const agentsBody = `${agentsIntro}\n\n${gradeContext}\n\n${gradeTable}\n\n${knownLimits}\n\n[Read the full agent support notes](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md).`;
 await writeFile(path.join(generatedDir, 'agents.md'), `---\ntitle: Supported agents\nslug: agents\ndraft: false\n${tocFrontmatter(agentsBody)}---\n\n${agentsBody}`);
 

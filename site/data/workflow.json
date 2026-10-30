@@ -64,7 +64,7 @@
       {
         "script": "mark-ready.sh",
         "path": ".agents/skills/records/scripts/mark-ready.sh",
-        "description": "The readiness script adds the ready label, meaning the piece is ready to build, only when it has acceptance criteria under Done when, records its risk areas and records decisions for open-question labels such as needs-answers. Projects with code also require a Reaches line, which lists the code areas the piece may change."
+        "description": "The readiness script adds the ready label, meaning the piece is ready to build, only when it has acceptance criteria under Done when, records its risk areas and records decisions for the open-question labels needs-clarification, needs-prototype or needs-research. Projects with code also require a Reaches line, which lists the code areas the piece may change."
       },
       {
         "script": "quality.py",
@@ -147,11 +147,6 @@
         "description": "The review packet contains the change and supporting evidence. The review record identifies the version reviewed."
       },
       {
-        "script": "review-guard.sh",
-        "path": ".agents/skills/second-opinion/scripts/review-guard.sh",
-        "description": "The review protection script restores changed or deleted files that it copied before the review; it reports other changes without restoring them."
-      },
-      {
         "script": "check-review.sh",
         "path": ".agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh",
         "description": "The review check fails the project check while a finding marked worth stopping for remains unresolved or the review record identifies a different version."
@@ -197,7 +192,7 @@
     "id": "live",
     "title": "Set up or check the live copy",
     "checks_anchor": "set-up-or-check-the-live-copy",
-    "summary": "On a recipe, the launch script blocks recording a live address until the backup and way back are confirmed.",
+    "summary": "On a recipe, the launch script blocks recording a live address until a backup is confirmed and the recipe has a way back. Later runs also need a confirmed earlier build to return to.",
     "command": "/setup-hosting",
     "skills": [
       "fit-check",
@@ -219,7 +214,7 @@
       {
         "script": "live-check.sh",
         "path": ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh",
-        "description": "The live check compares the live version with the main branch on Vercel or Coolify without changing the live copy."
+        "description": "The live check compares the live version with the main branch without changing the live copy."
       },
       {
         "script": "live-check.sh",

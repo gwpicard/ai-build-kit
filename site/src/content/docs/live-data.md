@@ -12,7 +12,7 @@ This check is not the same as restoring a backup to the live service. A live res
 
 ## Previews
 
-A preview can use live data if the recipe shares the production database with preview deployments. Check the recipe before using real data in a preview. Keep test data separate from live data where the recipe provides that option.
+Both recipes point previews at a separate Supabase project rather than the live database. No real run has yet proven that previews stay off live data. Keep test data separate from live data and check the preview settings before using it.
 
 ## Limits and service terms
 
