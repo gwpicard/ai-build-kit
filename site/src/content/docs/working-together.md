@@ -16,7 +16,7 @@ The kit reproduces a fault before changing code. `/shape` records a repeatable f
 
 The evidence depends on the change. A behaviour change needs a test that fails before the change and passes afterwards. A screen change can be checked by trying it. A fact about an outside service needs a source. Work involving a backup, restore, migration or deployment needs an operational rehearsal. The report names what passed, failed or could not be checked, and what remains a human judgement.
 
-For work in a named risk area, the kit may offer to break the changed code in a throwaway copy and check whether the tests notice. This optional check reports how many breaks the tests caught and missed. A miss in a named risk area is raised for your decision. The kit adds a test only to protect promised behaviour, not to improve the count.
+For changes in a named risk area, the kit breaks the changed code in a throwaway copy and checks whether the tests notice. It reports how many breaks the tests caught and missed, or whether the check could not run. A miss in a named risk area holds the merge until you decide how to handle it. The kit adds a test only to protect promised behaviour, not to improve the count.
 
 ## Automatic runs
 

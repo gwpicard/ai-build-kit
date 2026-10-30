@@ -30,7 +30,7 @@ of each skill to maintain.
 
 Each numbered release has a matching tag and reviewed notes. `/maintain` reads
 the latest published notes before offering an update. The repository also holds
-the kit's maintainer tools; they do not ship in the release archive.
+the kit's maintainer tools; most do not ship in the release archive.
 
 ## How much has been proved on each agent
 
@@ -94,8 +94,8 @@ have no person in them, so a failure they show is a lead to check by hand.
 The last time every case was measured together was 25 August 2026. Some cases
 have been measured again since, on a changed kit, and the rest have not.
 
-Every Claude Code run on record was on a commit of `main` between two
-releases, not on a published release. The record names each commit, so a rate
+Every Claude Code run on record was on an unreleased commit of `main` or a
+feature branch between two releases. The record names each commit, so a rate
 can be traced to the exact kit it measured. No rate yet describes a release you
 can install. From now on, a run that keeps an agent at Tested is recorded
 against a published release or the commit that release was cut from.
@@ -111,7 +111,7 @@ skills installed into the project, which is the shared installer's route.
   and grade a Codex conversation, against a stand-in for Codex and without a
   model. That proves the harness wiring, but provides no evidence about how the
   kit behaves in a graded run. The founding and first-upload run described under
-  GitHub access in Codex is recorded, and it was not graded.
+  [GitHub access in Codex](#github-access-in-codex) is recorded, and it was not graded.
 - The kit ships no Codex command files. Codex finds the skills in
   `.agents/skills/`, and you start a command by naming it.
 - Codex has no result redaction, so a secret that a tool prints reaches the agent.
@@ -295,8 +295,8 @@ That command replaces the installed skill files outright. Anyone who has edited
 one of the kit's skills in their own project loses that edit, without being
 asked and without being told. This is why `maintain` looks for local edits
 before it updates anything, and why a project rule belongs in `AGENTS.md`.
-Updates leave that file alone except when a command is renamed; then the kit
-changes its command list only with approval.
+Updates change that file only with approval, for a renamed command or a new
+safety rule.
 
 An Agent Plugins installation belongs to the coding agent that installed it,
 so use that agent's own plugin update command. When the agent has none,
@@ -362,7 +362,7 @@ never type them.
 Each agent has one brief in `.agents/agents/`. The kit generates a file for
 each coding agent that reads its own: `.claude/agents/`, which Cursor and VS
 Code also read, `.codex/agents/`, `.gemini/agents/` and `.github/agents/`.
-A whole copy of the kit and the Claude Code plugin carry them. The shared
+The release archive and the Claude Code plugin carry them. The shared
 skills installer and the Agent Plugins folder carry skills only, so there the
 command starts an ordinary subagent and tells it which skill to load.
 
@@ -372,18 +372,20 @@ coding agent:
 | Coding agent | What keeps a read-only agent from changing files |
 |---|---|
 | Claude Code | Its tool list has no editing tool. A review agent keeps the command line, because a review runs commands, so a check after the review puts back anything under review that changed and tells you. |
-| Cursor | `readonly: true` in the agent's file: no edits, and no command that changes anything. |
+| Cursor | Only the `.claude/agents/` copy carries `readonly: true`, which disallows edits and commands that change files. The `.codex/agents/` copy has no read-only setting. |
 | Gemini CLI | Its tool list contains only reading and searching tools, with no command line. |
 | GitHub Copilot | Its tool list holds reading, searching and the web, with no editing or commands. |
 | Codex | Nothing in the agent's file. Codex keeps the session's own sandbox and approval settings for every agent, so only the agent's brief and the check after the review enforce it. |
 
-VS Code reads agents from both `.github/agents/` and `.claude/agents/`, and
-Cursor from `.claude/agents/` and `.codex/agents/`. Each may list the kit's
-agents twice. They are the same agents, and either copy runs the same brief.
+VS Code reads agents from both `.github/agents/` and `.claude/agents/` and may
+list the kit's agents twice. Both copies run the same brief. Cursor lists
+`.claude/agents/` and `.codex/agents/` as project locations, but whether it
+reads the kit's TOML files in the latter has not been checked.
 
 Where a coding agent cannot start a subagent at all, the command runs the same
-brief headless, with `claude -p`, `codex exec` or `gemini -p`. Failing that,
-you open a clean chat and paste the one line the command gives you.
+brief headless, with `claude -p`, `codex exec` or `gemini -p`. If that cannot
+run, the reviewer needs a clean chat where you paste the line the command
+gives you. The builder and researcher continue in the main session.
 
 ## Manual fallback
 

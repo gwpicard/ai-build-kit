@@ -26,13 +26,13 @@ If a session stopped part-way through, start with `/what-now` to see what remain
 | Keys and passwords | Git-ignored files made from `.env.example`; live values belong in the host's settings |
 | Risk record and accepted risks | The risk section of `masterplan.md`; see [project records and risk](/ai-build-kit/records/) |
 | Hosting recipe | The `Recipe:` line in the stack section of `AGENTS.md` |
-| Commands the agent must not run | The project's blocked-command list and the coding agent's own settings |
+| Commands the agent must not run | The "Dangerous actions" section of `AGENTS.md` and the coding agent's own settings |
 
 Use `/maintain` to update installed kit skills. A kit update replaces those files.
 
 ## End a tool
 
-Before retiring a tool, `/maintain` prepares an export and reads it back, then helps you tell users. It takes access, credentials, data retention, scheduled jobs, services, billing and repository archiving one step at a time. Before each step that removes access, deletes a credential, switches off a service or archives the repository, it explains the effect and whether the step can be undone. It requires your approval for that step.
+Before retiring a tool, `/maintain` prepares an export and reads it back, then helps you tell users. It takes access, credentials, data retention, scheduled jobs, webhooks, services, billing and repository archiving one step at a time. Before every step, it explains the effect and whether the step can be undone, then requires your approval naming that step. If you decline, it leaves that part running and listed as open.
 
 ## What remains yours
 
