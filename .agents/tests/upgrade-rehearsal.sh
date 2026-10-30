@@ -44,6 +44,51 @@ def check(skills,p,code):
 def apply(skills,p,step):
     run([sys.executable,skills/'maintain/scripts/upgrade-check.py','--apply',step,p])
 
+# The pre-update read must find even committed edits before an installer can
+# replace them. Use an actual recorded release file on each installation layout.
+local_check = source/'maintain/scripts/kit-local-edits.py'
+record = source/'maintain/scripts/kit-released-copies.json'
+replacement = work/'replace.py'
+put(replacement, 'import pathlib,sys\npathlib.Path(sys.argv[1]).write_text("updated by installer\\n")\n')
+for layout in ('.agents/skills', '.claude/skills', 'plugin/skills'):
+    p = work/('local-edits-'+layout.split('/')[0].lstrip('.'))
+    skills = p/layout
+    target = skills/'setup-ai-build-kit/scripts/bootstrap-project.sh'
+    copy(fixture/'bootstrap-project.sh.txt', target)
+    command = [sys.executable, local_check, '--record', record, '--skills', skills]
+    assert run(command) == ''  # No extra warning or offer for an untouched installation.
+    before = target.read_bytes()
+    run(command+['--run', sys.executable, replacement, target], code=1)
+    assert target.read_bytes() == before
+    target.write_bytes(before+b'\n# Local project change\n')
+    run(['git','init','-q','-b','main'],p)
+    run(['git','add','-f',str(target.relative_to(p))],p)
+    run(['git','-c','user.name=upgrade rehearsal','-c','user.email=rehearsal@example.invalid',
+         'commit','-qm','Customise installed skill'],p)
+    edited = target.read_bytes()
+    offer = run(command,code=1)
+    assert 'local-edit\t'+str(target) in offer and 'say\tlocal-edits\t' in offer, offer
+    run(command+['--approved','--run',sys.executable,replacement,target],code=1)
+    run(command+['--approved','--overwrite',str(skills/'another-file'),
+                 '--run',sys.executable,replacement,target],code=1)
+    assert target.read_bytes() == edited
+    run(command+['--approved','--overwrite',str(target),
+                 '--run',sys.executable,replacement,target])
+    assert target.read_text() == 'updated by installer\n'
+    print('  ok: '+layout+' names committed skill edits and requires approval for their replacement')
+
+# A different released copy is accepted; additions and unreadable records cannot pass silently.
+copy(fixture/'bootstrap-project.sh.txt', target)
+extra = target.parent/'my-notes.txt'
+put(extra,'Project-specific notes\n')
+assert 'local-edit\t'+str(extra) in run(command,code=1)
+invalid = work/'invalid-record.json'
+put(invalid,'{}')
+run([sys.executable,local_check,'--record',invalid,'--skills',skills,
+     '--approved','--overwrite',str(extra),'--run',sys.executable,replacement,target],code=2)
+assert target.read_bytes() == before
+print('  ok: added files are named and an unreadable record cannot authorise replacement')
+
 # Stand in for the installer's own removal, including linked agent copies.
 npx=work/'bin/npx'
 put(npx, '''#!/usr/bin/env python3

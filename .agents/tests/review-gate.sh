@@ -158,6 +158,19 @@ JSON
 ) && code=0 || code=$?
 [ "$code" -eq 2 ] && pass "record exits 2 when review input cannot be read" || fail "record invalid input returned $code: $out"
 
+# Exercise the packet's guard calls, rather than calling the guard ourselves.
+out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GATE_QUALITY_SCRIPT="$WORK/quality.py" python3 "$GATE" brief --base "$BASE" --piece 7 2>&1) || fail "guard packet failed: $out"
+cp "$PROJECT/app.py" "$WORK/before-review"
+printf 'reviewer changed the tracked file\n' > "$PROJECT/app.py"
+out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" python3 "$GATE" record --pr 9 2>&1 <<'JSON'
+[]
+JSON
+) && code=0 || code=$?
+[ "$code" -eq 0 ] && cmp -s "$PROJECT/app.py" "$WORK/before-review" \
+  && printf '%s' "$out" | grep -q 'restored.*app.py' \
+  && pass "the packet and record restore a reviewer's edit and report it" \
+  || fail "review guard call missing or ineffective: $code: $out"
+
 run_check() {
   body=$1
   view_fail=${2:-0}

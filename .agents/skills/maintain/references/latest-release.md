@@ -12,3 +12,18 @@ on a clean checkpoint. Record `upgrade-offered|latest|<latest VERSION>` in
 that the offer still stands, even on monthly visits. Exit 0: at most one
 short line. Exit 3: say the check could not run; never call the kit current.
 Exit 4: more than one update route is active; ask which to keep.
+
+Before offering replacement, use `gh api` to download the proposed public
+release's `maintain/scripts/kit-released-copies.json` from its tag into ignored
+`.agents/tmp/kit-released-copies-next.json`. The installed record can predate
+its own release's files.
+Run `scripts/kit-local-edits.py --record <downloaded record> --skills <installed skills folder>`.
+It reads every file in the kit's installed skill folders, including committed
+edits. Exit 0 adds nothing to the offer. Exit 1: name each `local-edit` file,
+give the `say` line and require approval naming those files before replacement.
+With that approval, rerun with `--approved --overwrite <file>` for each file
+and `--run <update command>`; it checks again before running the command.
+Without approval, leave those files in place. Exit 2, or a failed download:
+report that local edits could not be checked and do not replace the skills.
+For plugin routes, the skills folder is in the installed plugin, outside the
+project. Check the selected route's folder before its plugin update too.

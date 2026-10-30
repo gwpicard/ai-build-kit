@@ -291,12 +291,12 @@ it. `maintain` offers to remove each one with `npx skills remove`, which
 removes the folder, its links and its lockfile entry. It runs that command only
 with the person's approval.
 
-That command replaces the installed skill files outright. Anyone who has edited
-one of the kit's skills in their own project loses that edit, without being
-asked and without being told. This is why `maintain` looks for local edits
-before it updates anything, and why a project rule belongs in `AGENTS.md`.
-Updates change that file only with approval, for a renamed command or a new
-safety rule.
+That command replaces the installed skill files outright. Before replacement,
+`maintain` compares them with the released copies recorded by the proposed
+release, including edits already committed. It names files that match no
+recorded copy and asks before overwriting them. A project rule belongs in
+`AGENTS.md`; updates change it only with approval, for a renamed command or
+a new safety rule.
 
 An Agent Plugins installation belongs to the coding agent that installed it,
 so use that agent's own plugin update command. When the agent has none,
@@ -350,7 +350,7 @@ Some work goes better in a fresh context that has not seen the conversation so
 far. The kit has four agents for that, and a command starts each one; you
 never type them.
 
-- `reviewer` looks at a masterplan, a piece's change or the whole build with
+- `reviewer` looks at the founding masterplan or a piece's change with
   the `second-opinion` skill. It has not seen how the work was built.
 - `builder` builds one ready piece with the `build-piece` skill, one piece at
   a time, during `/implement auto`.
@@ -362,20 +362,21 @@ never type them.
 Each agent has one brief in `.agents/agents/`. The kit generates a file for
 each coding agent that reads its own: `.claude/agents/`, which Cursor and VS
 Code also read, `.codex/agents/`, `.gemini/agents/` and `.github/agents/`.
-The release archive and the Claude Code plugin carry them. The shared
-skills installer and the Agent Plugins folder carry skills only, so there the
-command starts an ordinary subagent and tells it which skill to load.
+The release archive and the Claude Code plugin carry them. The shared skills
+installer and the Agent Plugins folder carry skills only. For a review on
+those routes, `second-opinion` starts an ordinary fresh subagent and tells it
+to load the `second-opinion` skill with the same review inputs.
 
 The reviewer, refuter and researcher only read. Enforcement depends on the
 coding agent:
 
 | Coding agent | What keeps a read-only agent from changing files |
 |---|---|
-| Claude Code | Its tool list has no editing tool. A review agent keeps the command line, because a review runs commands, so a check after the review puts back anything under review that changed and tells you. |
+| Claude Code | Its tool list has no editing tool. A review agent keeps the command line, because a review runs commands. The review guard restores changed files under review and reports other changes; if it cannot run, the agent reports that limit. |
 | Cursor | Only the `.claude/agents/` copy carries `readonly: true`, which disallows edits and commands that change files. The `.codex/agents/` copy has no read-only setting. |
 | Gemini CLI | Its tool list contains only reading and searching tools, with no command line. |
 | GitHub Copilot | Its tool list holds reading, searching and the web, with no editing or commands. |
-| Codex | Nothing in the agent's file. Codex keeps the session's own sandbox and approval settings for every agent, so only the agent's brief and the check after the review enforce it. |
+| Codex | Nothing in the agent's file. Codex keeps the session's own sandbox and approval settings for every agent. The brief instructs the agent to read only; the review guard restores changed files under review and reports other changes, or reports that it could not run. |
 
 VS Code reads agents from both `.github/agents/` and `.claude/agents/` and may
 list the kit's agents twice. Both copies run the same brief. Cursor lists

@@ -675,7 +675,7 @@ else
     note "the skills are out of shape, reported only until the check turns strict:"
     printf '%s\n' "$structure_out" | sed 's/^/    /' >&2
   else
-    pass "no command loads another's files, each background skill has its callers, and each file keeps its word budget"
+    pass "skill entry points name only inventory commands, no command loads another's files, background skills have callers, and files keep their word budgets"
   fi
 fi
 

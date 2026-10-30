@@ -73,6 +73,7 @@ product-named
 command-loads-command
 command-over-budget
 background-one-caller
+unknown-slash-command
 recipe-framework-major
 recipe-worker-coolify-only
 recipe-fits-category
@@ -117,6 +118,7 @@ first-upload-ignores-shared-history
 upload-piece-skips-pull-request
 strength-config-lost
 review-gate-leaves-draft-edited
+review-guard-call-missing
 attempt-cap
 merge-behind-main
 promises-list-stale
@@ -228,6 +230,7 @@ describe() {
     command-loads-command) echo "a command reaches into another command's references instead of calling a background skill" ;;
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
+    unknown-slash-command) echo "a skill entry point directs the person to a command outside the inventory" ;;
     recipe-framework-major) echo "a recipe accepts a framework without a pinned major version" ;;
     recipe-worker-coolify-only) echo "a recipe outside Coolify accepts the Python document worker" ;;
     recipe-fits-category) echo "a recipe accepts a category outside the research list" ;;
@@ -272,6 +275,7 @@ describe() {
     upload-piece-skips-pull-request) echo "the upload script no longer opens the pull request" ;;
     strength-config-lost) echo "the Python mutation check no longer tells mutmut which code to break" ;;
     review-gate-leaves-draft-edited) echo "the review gate leaves an edited draft in place" ;;
+    review-guard-call-missing) echo "recording a review skips the file guard" ;;
     attempt-cap) echo "the piece attempt cap rises, so a fourth attempt is allowed" ;;
     merge-behind-main) echo "merge accepts a pull request branch behind main" ;;
     promises-list-stale) echo "the promise list can name a checker that does not exist" ;;
@@ -364,6 +368,7 @@ checks_for() {
     command-loads-command) echo "validate-kit" ;;
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
+    unknown-slash-command) echo "validate-kit" ;;
     recipe-framework-major|recipe-worker-coolify-only|recipe-fits-category|recipe-starter-path|recipe-deferred-launch-script) echo "recipes" ;;
     starter-copy-overwrites) echo "starter-copy-rehearsal" ;;
     read-only-db-privilege) echo "read-only-database" ;;
@@ -384,6 +389,7 @@ checks_for() {
     upload-piece-skips-pull-request) echo "upload-piece" ;;
     strength-config-lost) echo "test-strength-rehearsal" ;;
     review-gate-leaves-draft-edited) echo "review-guard" ;;
+    review-guard-call-missing) echo "review-gate" ;;
     attempt-cap) echo "autonomy-boundaries" ;;
     merge-behind-main) echo "merge-gate" ;;
     promises-list-stale) echo "promises-list-rehearsal" ;;
@@ -920,6 +926,10 @@ old = "if [ \"$count\" -ge 3 ]; then"
 assert old in s, "three-attempt cap not found"
 open(p, "w").write(s.replace(old, "if [ \"$count\" -ge 99 ]; then", 1))'
       ;;
+    unknown-slash-command)
+      printf '\n%s\n' 'Run `/not-a-kit-command`.' >> "$tree/.agents/skills/live-copy/SKILL.md"
+      (cd "$tree" && ./.agents/tools/build-adapters.sh >/dev/null 2>&1)
+      ;;
     background-one-caller)
       # A rule folded back into one caller leaves its background skill with a
       # single user, which then earns no place of its own.
@@ -1302,6 +1312,15 @@ s = open(p).read()
 old = "  [ -f \"$ROOT/$path\" ] || fail \"named checker is missing: $path\""
 assert old in s, "named script existence check not found"
 open(p, "w").write(s.replace(old, "  : # mutation ignores missing checkers", 1))'
+      ;;
+    review-guard-call-missing)
+      edit "$tree/.agents/skills/quality-checks/scripts/gate.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "    review_guard(\"check\")"
+assert old in s, "review guard call not found"
+open(p, "w").write(s.replace(old, "    # mutation skips the review guard", 1))'
       ;;
     review-gate-leaves-draft-edited)
       edit "$tree/.agents/skills/second-opinion/scripts/review-guard.sh" '
