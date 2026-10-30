@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # skill-structure.sh: run check-structure.py on a planted tree and prove each of
-# its three rules fires, and stays quiet on a tree that keeps them.
+# its rules fire, and stays quiet on a tree that keeps them.
 #
 # If this breaks, a command can grow its own copy of a shared rule, or reach
 # into another command's references, and nothing says so. That is how a cut to
@@ -161,6 +161,22 @@ if [ "$rc" -eq 0 ] && [ -n "$out" ]; then
 else
   fail "the report-only mode changed its exit or printed nothing (exit $rc)"
 fi
+
+# Slash commands in entry points come from the inventory, without mistaking
+# URLs, paths or HTML closing tags for commands.
+T="$WORK/slash-commands"
+plant "$T"
+printf 'Run `/alpha`, then /beta. Read /private/tmp/log, https://example.invalid/path and </details>.\n' \
+  >> "$T/.agents/skills/alpha/SKILL.md"
+out=$(run --strict "$T") && rc=0 || rc=$?
+[ "$rc" -eq 0 ] && [ -z "$out" ] \
+  && pass "inventory commands pass and paths are not read as commands" \
+  || fail "valid slash references were misread (exit $rc): $out"
+printf 'Run `/invented-command`.\n' >> "$T/.agents/skills/alpha/SKILL.md"
+out=$(run --strict "$T") && rc=0 || rc=$?
+[ "$rc" -eq 1 ] && printf '%s\n' "$out" | grep -q '^command.*alpha/SKILL.md.*/invented-command is not a command in the inventory$' \
+  && pass "a slash command outside the inventory fails with its file and line" \
+  || fail "an unknown slash command was missed (exit $rc): $out"
 
 # An unreadable inventory is exit 2, never a pass.
 T="$WORK/noinventory"

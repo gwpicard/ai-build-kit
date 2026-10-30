@@ -15,6 +15,7 @@ agent under .agents/agents/, and prints one line for each thing out of shape:
     callers   NAME       a background skill with fewer than two callers and no
                          agent that loads it
     words     FILE       a file over its word budget
+    command   FILE:LINE  a skill entry point names a slash command outside the inventory
 
 Rules:
 
@@ -28,6 +29,8 @@ Rules:
 3. A command's SKILL.md holds at most 400 words, a background skill's at most
    800, and any file under a `references/` folder at most 600. Frontmatter
    is not counted.
+4. Slash commands in SKILL.md entry points must be in the inventory. Reference
+   files can name another tool's commands, such as a hosting companion's.
 
 Without --strict it prints what it finds and exits 0, so a slice can land the
 check before the tree meets it. With --strict it exits 1 when anything prints.
@@ -56,6 +59,9 @@ BARE = re.compile(r"(?<![A-Za-z0-9_./<-])([A-Za-z0-9_-]+\.md)\b")
 PROJECT_FILES = {"plan.md", "DESIGN.md", "WORKFLOW.md", "CLAUDE.md", "GEMINI.md",
                  "MAINTAINING.md", "setup-notes.md", "team.md"}
 CALL = re.compile(r"`([a-z][a-z-]*)`\s+skill\b")
+# Ignore path segments, URL paths and closing HTML tags. A full stop can end
+# a sentence, but a file extension makes this a path rather than a command.
+SLASH_COMMAND = re.compile(r"(?<![\w./:<])/(?P<name>[a-z][a-z0-9-]*)(?![\w/-]|\.[a-z0-9])")
 
 
 def read(path):
@@ -159,6 +165,11 @@ def main(argv):
                 if name in callers and name != skill:
                     callers[name].add(skill)
             for lineno, line in enumerate(text.splitlines(), 1):
+                if path == os.path.join(skill_dir, "SKILL.md"):
+                    for match in SLASH_COMMAND.finditer(line):
+                        if match["name"] not in commands:
+                            findings.append(("command", "%s:%d" % (rel, lineno),
+                                             "/%s is not a command in the inventory" % match["name"]))
                 window = line + " " + (text.splitlines()[lineno] if lineno < len(text.splitlines()) else "")
                 for match in LOAD.finditer(window):
                     if match.start() >= len(line):
