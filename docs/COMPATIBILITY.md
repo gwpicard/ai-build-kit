@@ -291,12 +291,12 @@ it. `maintain` offers to remove each one with `npx skills remove`, which
 removes the folder, its links and its lockfile entry. It runs that command only
 with the person's approval.
 
-That command replaces the installed skill files outright. Anyone who has edited
-one of the kit's skills in their own project loses that edit, without being
-asked and without being told. This is why `maintain` looks for local edits
-before it updates anything, and why a project rule belongs in `AGENTS.md`.
-Updates leave that file alone except when a command is renamed; then the kit
-changes its command list only with approval.
+That command replaces the installed skill files outright. Before replacement,
+`maintain` compares them with the released copies recorded by the proposed
+release, including edits already committed. It names files that match no
+recorded copy and asks before overwriting them. A project rule belongs in
+`AGENTS.md`; updates change it only with approval, for a renamed command or
+a new safety rule.
 
 An Agent Plugins installation belongs to the coding agent that installed it,
 so use that agent's own plugin update command. When the agent has none,

@@ -3,6 +3,8 @@
 1. Finish the kit update as `kit-update.md` directs, with `--monthly`. It owns
    the route, approval, version and project-check steps. Do not replace the
    project's own files.
+   Before replacing skills, follow `latest-release.md`'s local-edit check and
+   require its file-specific approval where needed.
    Use `claude plugin marketplace update ai-build-kit` then
    `claude plugin update ai-build-kit@ai-build-kit --scope <scope>` for Claude.
    For an Agent Plugins installation, use its update command or offer the
