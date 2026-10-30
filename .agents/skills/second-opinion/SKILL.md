@@ -21,6 +21,7 @@ the changed files; `gate.py record` runs its `check` after the review and
 refutation. Report any restored or other changed files, or that the guard
 could not run. For a review without a packet, run the same snapshot and check
 around it, naming the files under review.
+
 At founding, review `masterplan.md` against the agreed scope and setup notes,
 using the questions below for the proposed work. No piece, base commit or
 pull request is needed. Snapshot `masterplan.md` before review and check it

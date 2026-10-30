@@ -15,7 +15,7 @@ Exit 4: more than one update route is active; ask which to keep.
 
 Before offering replacement, download the proposed release's
 `maintain/scripts/kit-released-copies.json` into ignored `.agents/tmp/` with
-`gh api -H 'Accept: application/vnd.github.raw+json' 'repos/gwpicard/ai-build-kit/contents/.agents/skills/maintain/scripts/kit-released-copies.json?ref=<latest VERSION>'`.
+`gh api -H 'Accept: application/vnd.github.raw+json' 'repos/gwpicard/ai-build-kit/contents/.agents/skills/maintain/scripts/kit-released-copies.json?ref=<latest VERSION>' > .agents/tmp/kit-released-copies-next.json`.
 Run `scripts/kit-local-edits.py --record <downloaded record> --skills <installed skills folder>`.
 It reads every file in the kit's installed skill folders, including committed
 edits. Exit 0 adds nothing to the offer. Exit 1: name each `local-edit` file,

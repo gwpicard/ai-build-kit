@@ -69,7 +69,7 @@ def review_guard(action, files=()):
     if out.strip():
         print(out.strip())
     if code == 1:
-        print("The review changed files. Files under review were restored; other changes are listed above.")
+        print("The review changed files. Restored files and other changes are listed above.")
     elif code:
         print("The review could not be checked for file changes.", file=sys.stderr)
         if err.strip():

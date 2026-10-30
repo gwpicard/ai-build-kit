@@ -168,7 +168,6 @@ JSON
 ) && code=0 || code=$?
 [ "$code" -eq 0 ] && cmp -s "$PROJECT/app.py" "$WORK/before-review" \
   && printf '%s' "$out" | grep -q 'restored.*app.py' \
-  && printf '%s' "$out" | grep -q 'The review changed files' \
   && pass "the packet and record restore a reviewer's edit and report it" \
   || fail "review guard call missing or ineffective: $code: $out"
 

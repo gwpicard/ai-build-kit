@@ -67,7 +67,7 @@ for layout in ('.agents/skills', '.claude/skills', 'plugin/skills'):
          'commit','-qm','Customise installed skill'],p)
     edited = target.read_bytes()
     offer = run(command,code=1)
-    assert 'local-edit\t'+str(target) in offer and 'Shall I overwrite the named files?' in offer, offer
+    assert 'local-edit\t'+str(target) in offer and 'say\tlocal-edits\t' in offer, offer
     run(command+['--approved','--run',sys.executable,replacement,target],code=1)
     run(command+['--approved','--overwrite',str(skills/'another-file'),
                  '--run',sys.executable,replacement,target],code=1)
