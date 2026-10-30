@@ -3,7 +3,7 @@
   "name": "ai-build-kit",
   "displayName": "AI Build Kit",
   "description": "Build and maintain internal tools with a coding agent, without reading code.",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "author": {
     "name": "Guillaume Picard"
   },
