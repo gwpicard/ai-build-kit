@@ -63,6 +63,20 @@ def piece(number):
     return raw["title"], so.group(1).strip() if so else None, done.group(1).strip() if done else None
 
 
+def review_guard(action, files=()):
+    guard = Path(__file__).resolve().parents[2] / "second-opinion" / "scripts" / "review-guard.sh"
+    code, out, err = run(["sh", str(guard), action, *files])
+    if out.strip():
+        print(out.strip())
+    if code == 1:
+        print("The review changed files. Files under review were restored; other changes are listed above.")
+    elif code:
+        print("The review could not be checked for file changes.", file=sys.stderr)
+        if err.strip():
+            print(err.strip(), file=sys.stderr)
+    return code
+
+
 def brief(args):
     limits = []
     sections = []
@@ -88,6 +102,10 @@ def brief(args):
     sections.extend(["", "## Full change", diff if code == 0 and diff else "[unavailable]"])
     if code or not diff:
         limits.append("full change could not be read" + (": " + error.strip() if error else ""))
+    code, paths, _ = run(["git", "diff", "--name-only", "-z", args.base + "...HEAD"])
+    files = paths.rstrip("\0").split("\0") if code == 0 and paths else ["masterplan.md"]
+    if review_guard("snapshot", files):
+        limits.append("review file snapshot could not be kept")
 
     reads = [("Reach", [sys.executable, str(QUALITY), "reach", "--base", args.base, "--piece", str(args.piece)]),
              ("Tests read", [sys.executable, str(QUALITY), "tests", "--base", args.base, "--piece", str(args.piece)]),
@@ -190,6 +208,7 @@ def test_passes(name):
 
 
 def record(args):
+    review_guard("check")
     try:
         data = json.load(sys.stdin)
     except (json.JSONDecodeError, UnicodeError) as error:
