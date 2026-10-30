@@ -9,7 +9,7 @@ user-invocable: false
 Report first. Fix only what the person approves.
 
 For a piece, run the `quality-checks` skill's
-`scripts/gate.py brief --base <start commit> --piece <number>` and act on its exit
+`scripts/gate.py` with `brief --base <start commit> --piece <number>` and act on its exit
 code. Review the packet it writes. It is the
 full brief for this review, including the change, `project-check` and, where
 reported, `recipe-check` evidence for type and lint checks.
