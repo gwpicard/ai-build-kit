@@ -73,6 +73,7 @@ product-named
 command-loads-command
 command-over-budget
 background-one-caller
+unknown-slash-command
 recipe-framework-major
 recipe-worker-coolify-only
 recipe-fits-category
@@ -228,6 +229,7 @@ describe() {
     command-loads-command) echo "a command reaches into another command's references instead of calling a background skill" ;;
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
+    unknown-slash-command) echo "a skill entry point directs the person to a retired command" ;;
     recipe-framework-major) echo "a recipe accepts a framework without a pinned major version" ;;
     recipe-worker-coolify-only) echo "a recipe outside Coolify accepts the Python document worker" ;;
     recipe-fits-category) echo "a recipe accepts a category outside the research list" ;;
@@ -364,6 +366,7 @@ checks_for() {
     command-loads-command) echo "validate-kit" ;;
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
+    unknown-slash-command) echo "validate-kit" ;;
     recipe-framework-major|recipe-worker-coolify-only|recipe-fits-category|recipe-starter-path|recipe-deferred-launch-script) echo "recipes" ;;
     starter-copy-overwrites) echo "starter-copy-rehearsal" ;;
     read-only-db-privilege) echo "read-only-database" ;;
@@ -919,6 +922,10 @@ s = open(p).read()
 old = "if [ \"$count\" -ge 3 ]; then"
 assert old in s, "three-attempt cap not found"
 open(p, "w").write(s.replace(old, "if [ \"$count\" -ge 99 ]; then", 1))'
+      ;;
+    unknown-slash-command)
+      printf '\n%s\n' 'Run `/ship`.' >> "$tree/.agents/skills/live-copy/SKILL.md"
+      (cd "$tree" && ./.agents/tools/build-adapters.sh >/dev/null 2>&1)
       ;;
     background-one-caller)
       # A rule folded back into one caller leaves its background skill with a

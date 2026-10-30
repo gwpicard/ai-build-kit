@@ -15,6 +15,7 @@ agent under .agents/agents/, and prints one line for each thing out of shape:
     callers   NAME       a background skill with fewer than two callers and no
                          agent that loads it
     words     FILE       a file over its word budget
+    command   FILE:LINE  a skill entry point names a retired or unknown kit command
 
 Rules:
 
@@ -28,12 +29,15 @@ Rules:
 3. A command's SKILL.md holds at most 400 words, a background skill's at most
    800, and any file under a `references/` folder at most 600. Frontmatter
    is not counted.
+4. SKILL.md entry points cannot name a retired kit command or an unknown
+   /ai-build-kit:<name> command. Other slash tokens are outside this check.
 
 Without --strict it prints what it finds and exits 0, so a slice can land the
 check before the tree meets it. With --strict it exits 1 when anything prints.
 It exits 2 when the inventory or the skills folder cannot be read.
 """
 
+import json
 import os
 import re
 import sys
@@ -56,6 +60,20 @@ BARE = re.compile(r"(?<![A-Za-z0-9_./<-])([A-Za-z0-9_-]+\.md)\b")
 PROJECT_FILES = {"plan.md", "DESIGN.md", "WORKFLOW.md", "CLAUDE.md", "GEMINI.md",
                  "MAINTAINING.md", "setup-notes.md", "team.md"}
 CALL = re.compile(r"`([a-z][a-z-]*)`\s+skill\b")
+# Only retired names and explicit kit commands belong to this check.
+SLASH_COMMAND = re.compile(
+    r"(?<![A-Za-z0-9_./<:-])/(?P<name>(?:ai-build-kit:)?[a-z][a-z0-9-]*)"
+    r"(?=`|[\s\"')\]}*]|[.,;:!?](?:\s|$)|$)")
+
+
+def slash_commands(line, retired, commands):
+    for match in SLASH_COMMAND.finditer(line):
+        name = match["name"]
+        if name.startswith("ai-build-kit:"):
+            if name.split(":", 1)[1] not in commands:
+                yield match
+        elif name in retired:
+            yield match
 
 
 def read(path):
@@ -130,8 +148,10 @@ def main(argv):
     agents_root = os.path.join(root, ".agents", "agents")
     try:
         kinds = inventory(root)
-    except (OSError, ValueError) as error:
-        print("could not read the inventory: %s" % error, file=sys.stderr)
+        retired = set(json.loads(read(os.path.join(
+            skills_root, "maintain", "scripts", "kit-retired-skills.json")))["skills"])
+    except (OSError, ValueError, KeyError) as error:
+        print("could not read the inventory or retired skills: %s" % error, file=sys.stderr)
         return 2
     if not os.path.isdir(skills_root):
         print("could not read %s" % skills_root, file=sys.stderr)
@@ -159,6 +179,10 @@ def main(argv):
                 if name in callers and name != skill:
                     callers[name].add(skill)
             for lineno, line in enumerate(text.splitlines(), 1):
+                if path == os.path.join(skill_dir, "SKILL.md"):
+                    for match in slash_commands(line, retired, commands):
+                        findings.append(("command", "%s:%d" % (rel, lineno),
+                                         "/%s is retired or not a command in the inventory" % match["name"]))
                 window = line + " " + (text.splitlines()[lineno] if lineno < len(text.splitlines()) else "")
                 for match in LOAD.finditer(window):
                     if match.start() >= len(line):

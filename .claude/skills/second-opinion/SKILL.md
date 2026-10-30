@@ -1,6 +1,6 @@
 ---
 name: second-opinion
-description: Review a piece from its review packet in a fresh context. Judge the agreed result, what the change may have broken, and whether the evidence is real.
+description: Review a piece from its review packet or the founding masterplan in a fresh context. Judge the agreed result, what the change may have broken, and whether the evidence is real.
 user-invocable: false
 ---
 <!-- GENERATED from .agents/skills/second-opinion/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->

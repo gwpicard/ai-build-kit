@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # skill-structure.sh: run check-structure.py on a planted tree and prove each of
-# its three rules fires, and stays quiet on a tree that keeps them.
+# its rules fire, and stays quiet on a tree that keeps them.
 #
 # If this breaks, a command can grow its own copy of a shared rule, or reach
 # into another command's references, and nothing says so. That is how a cut to
@@ -29,6 +29,9 @@ words() {
 plant() {
   T="$1"
   mkdir -p "$T/.agents/tools" "$T/.agents/agents"
+  mkdir -p "$T/.agents/skills/maintain/scripts"
+  cp "$ROOT/.agents/skills/maintain/scripts/kit-retired-skills.json" \
+    "$T/.agents/skills/maintain/scripts/kit-retired-skills.json"
   printf '%s\n' "command alpha" "command beta" "background gamma" "background delta" \
     "agent helper" > "$T/.agents/tools/kit-inventory.txt"
   for skill in alpha beta; do
@@ -161,6 +164,43 @@ if [ "$rc" -eq 0 ] && [ -n "$out" ]; then
 else
   fail "the report-only mode changed its exit or printed nothing (exit $rc)"
 fi
+
+# Only retired names and explicit unknown kit commands are rejected.
+T="$WORK/slash-commands"
+plant "$T"
+printf 'Run `/alpha`, then /beta. Read /private/tmp/log, https://example.invalid/path and </details>.\n' \
+  >> "$T/.agents/skills/alpha/SKILL.md"
+printf 'Read /etc and /tmp. The /health route returns 200. GET /health and POST /events are HTTP routes.\n' \
+  >> "$T/.agents/skills/alpha/SKILL.md"
+printf 'Read `/etc`. Put logs in `/tmp`. The `/health` route returns 200. GET `/status`.\n' \
+  >> "$T/.agents/skills/alpha/SKILL.md"
+printf 'Run `/host`. Use /invented-command. Run /ai-build-kit:alpha.\n' \
+  >> "$T/.agents/skills/alpha/SKILL.md"
+printf 'Read /ship.md and /plan/log. Run /other-tool:ship. Also (/ship.md), **/plan/log** and [/other-tool:ship](https://example.invalid).\n' \
+  >> "$T/.agents/skills/alpha/SKILL.md"
+out=$(run --strict "$T") && rc=0 || rc=$?
+[ "$rc" -eq 0 ] && [ -z "$out" ] \
+  && pass "current commands, paths, routes and other tools commands pass" \
+  || fail "valid slash references were misread (exit $rc): $out"
+printf 'Use /ship, `/plan` and /ai-build-kit:deploy.\n' >> "$T/.agents/skills/alpha/SKILL.md"
+out=$(run --strict "$T") && rc=0 || rc=$?
+[ "$rc" -eq 1 ] && [ "$(printf '%s\n' "$out" | grep -c '^command')" -eq 3 ] \
+  && printf '%s\n' "$out" | grep -q '^command.*alpha/SKILL.md.*/ship is retired or not a command in the inventory$' \
+  && printf '%s\n' "$out" | grep -q '^command.*alpha/SKILL.md.*/plan is retired or not a command in the inventory$' \
+  && printf '%s\n' "$out" | grep -q '^command.*alpha/SKILL.md.*/ai-build-kit:deploy is retired or not a command in the inventory$' \
+  && pass "retired names and an explicit unknown kit command fail with file and line" \
+  || fail "a retired or unknown kit command was missed (exit $rc): $out"
+
+# Markdown and sentence punctuation do not hide a command.
+for command in '(/ship)' '**/plan**' '[/ai-build-kit:deploy](https://example.invalid)'; do
+  T="$WORK/wrapped-command"
+  plant "$T"
+  printf 'Use %s.\n' "$command" >> "$T/.agents/skills/alpha/SKILL.md"
+  out=$(run --strict "$T") && rc=0 || rc=$?
+  [ "$rc" -eq 1 ] && [ "$(printf '%s\n' "$out" | grep -c '^command')" -eq 1 ] \
+    && pass "wrapped command is rejected: $command" \
+    || fail "wrapped command was missed (exit $rc): $command: $out"
+done
 
 # An unreadable inventory is exit 2, never a pass.
 T="$WORK/noinventory"
