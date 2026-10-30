@@ -40,7 +40,8 @@
   "v1.2.1",
   "v1.2.2",
   "v1.2.3",
-  "v1.2.4"
+  "v1.2.4",
+  "v1.2.5"
  ],
  "files": {
   ".agents/agents/builder.md": [
@@ -53,6 +54,7 @@
    "47df7c8ec2ae8f05"
   ],
   ".agents/agents/reviewer.md": [
+   "17231656c9d20a5e",
    "801940c5bf7cfb5c"
   ],
   ".agents/guard/blocked-commands.md": [
@@ -251,6 +253,7 @@
   ".agents/skills/live-copy/SKILL.md": [
    "425ff40efa660ca6",
    "43b31a51421ce4b7",
+   "50ca77994091b9ac",
    "695ff1a21f906c03"
   ],
   ".agents/skills/maintain/SKILL.md": [
@@ -293,6 +296,7 @@
    "576845201b93694d",
    "613ff7316ed55807",
    "635d5dd5a4ace775",
+   "69bcb4b0ee66bc1e",
    "6a3af52fc45d4d44",
    "6bf25061d3caea72",
    "743d13342ab3ea39",
@@ -399,6 +403,7 @@
   ".agents/skills/maintain/scripts/kit-released-copies.json": [
    "0af4bd54ce8bd0b4",
    "1bd1e75cc479c79f",
+   "27081ddd8fc3debc",
    "36a8fee974e7a555",
    "50f41d06a065881e",
    "656f9b3a61b66abb",
@@ -631,7 +636,8 @@
    "1c79518b9886d3cd"
   ],
   ".agents/skills/repair/scripts/reset-attempt.sh": [
-   "699fb5651e1eec88"
+   "699fb5651e1eec88",
+   "b02ba93c2f33fbde"
   ],
   ".agents/skills/research/SKILL.md": [
    "461021a000a725b1"
@@ -646,6 +652,7 @@
    "35217a23093f05eb",
    "62ec469b909cf3cf",
    "64d9cca29274aec5",
+   "650b829ccd94b27f",
    "6952c3d48cb8815d",
    "6c2ad7fd3561223b",
    "9c4e7b2d80b57ef0",
@@ -703,6 +710,7 @@
    "3cd39c4045a42a47",
    "4081ec852344ba3a",
    "4ce87aa373279aac",
+   "5700a7e380b49f7d",
    "642e7a480d4f0bd4",
    "653fed05de9eea58",
    "719b6bc5dc09ddb4",
@@ -1063,6 +1071,7 @@
    "ee61abd3b81e0888"
   ],
   ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/scripts/live-check.sh": [
+   "79b2ea94511d21c1",
    "874598e6113cbebb"
   ],
   ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/scripts/logs.sh": [
@@ -1649,6 +1658,7 @@
    "04e2c210ada31617",
    "73554304c2a5eab0",
    "832e2f31a69821ba",
+   "8aef8448e759c263",
    "a120e4ba68e4c350",
    "a7266b4aeea4e350",
    "b01df6612b6e7f61",
@@ -1699,6 +1709,7 @@
    "588f5d8e92b8639c",
    "613ff7316ed55807",
    "635d5dd5a4ace775",
+   "69bcb4b0ee66bc1e",
    "6a3af52fc45d4d44",
    "6bf25061d3caea72",
    "743d13342ab3ea39",
@@ -1727,6 +1738,7 @@
   ],
   ".claude-plugin/marketplace.json": [
    "0b86f26db22874f7",
+   "8f819a26a76a57e0",
    "e99df026e891cfcc"
   ],
   ".claude-plugin/plugin.json": [
@@ -1739,6 +1751,7 @@
    "310da0e753ae794a",
    "3438217a1e7f9f24",
    "357e24cf07fad3d8",
+   "377b2e0cb086659e",
    "3b18352d3cb5a3e5",
    "58423d246f153cc0",
    "5d9dccd5cbdcd2db",
@@ -1780,7 +1793,8 @@
    "4cdd9d711db0848d"
   ],
   ".claude/agents/reviewer.md": [
-   "3f42522001c8fa4a"
+   "3f42522001c8fa4a",
+   "7cad32c4130189e4"
   ],
   ".claude/commands/build.md": [
    "33d486d721829d46",
@@ -1911,7 +1925,8 @@
    "4563bdb80c3e9b91",
    "984df389256d4271",
    "d77d792276bb0505",
-   "e0dfee0fcfedeb99"
+   "e0dfee0fcfedeb99",
+   "f6e90126dae15eaf"
   ],
   ".claude/skills/section-builder/SKILL.md": [
    "0ec677c714091f2e",
@@ -1932,7 +1947,8 @@
    "f148a465b981915b"
   ],
   ".codex/agents/reviewer.toml": [
-   "4c365f9e0b77e7b4"
+   "4c365f9e0b77e7b4",
+   "9ab6f872de95ef31"
   ],
   ".cursor/commands/build.md": [
    "40d0ca7c764f6818"
@@ -1986,7 +2002,8 @@
    "3aa34be6f7d13273"
   ],
   ".gemini/agents/reviewer.md": [
-   "25f8c67c53aadd96"
+   "25f8c67c53aadd96",
+   "784642b01befb8c3"
   ],
   ".gemini/commands/build.toml": [
    "04de3708f5f70373",
@@ -2040,6 +2057,7 @@
   ".github/ISSUE_TEMPLATE/bug-report.yml": [
    "109a44a2a231fbb1",
    "7476b622e22fb2f2",
+   "937042fc73d778cd",
    "d316fdced0ffe1e2"
   ],
   ".github/ISSUE_TEMPLATE/config.yml": [
@@ -2058,6 +2076,7 @@
    "adad228808b0f4ab"
   ],
   ".github/agents/reviewer.agent.md": [
+   "590f1924e7f789da",
    "e032e4a5d8b04ea0"
   ],
   ".github/copilot-instructions.md": [
@@ -2137,6 +2156,7 @@
    "8679c6f95e125003",
    "891d17aa90b40b87",
    "9a1172da8e320c91",
+   "a3ef01c7ed622358",
    "b4c1d67853983993",
    "b72cda2441619633",
    "bd789723ab644be5",
@@ -2148,6 +2168,7 @@
   ],
   "SECURITY.md": [
    "1da16b689fb5ab22",
+   "91a9f415e147a177",
    "a436925ed1c3efb5"
   ],
   "WORKFLOW.md": [
@@ -2210,6 +2231,7 @@
    "9fb85106ecb2cca5",
    "aaf9aabfc46bedd7",
    "abd527692d01a979",
+   "ac5f65faff6325a4",
    "aeda967acc5d0514",
    "b1451215de17f58e",
    "b1913f6aa79f567a",
@@ -2381,6 +2403,7 @@
   "agent-plugin/skills/live-copy/SKILL.md": [
    "425ff40efa660ca6",
    "43b31a51421ce4b7",
+   "50ca77994091b9ac",
    "695ff1a21f906c03"
   ],
   "agent-plugin/skills/maintain/SKILL.md": [
@@ -2421,6 +2444,7 @@
    "576845201b93694d",
    "613ff7316ed55807",
    "635d5dd5a4ace775",
+   "69bcb4b0ee66bc1e",
    "6a3af52fc45d4d44",
    "6bf25061d3caea72",
    "743d13342ab3ea39",
@@ -2525,6 +2549,7 @@
   "agent-plugin/skills/maintain/scripts/kit-released-copies.json": [
    "0af4bd54ce8bd0b4",
    "1bd1e75cc479c79f",
+   "27081ddd8fc3debc",
    "36a8fee974e7a555",
    "50f41d06a065881e",
    "656f9b3a61b66abb",
@@ -2757,7 +2782,8 @@
    "1c79518b9886d3cd"
   ],
   "agent-plugin/skills/repair/scripts/reset-attempt.sh": [
-   "699fb5651e1eec88"
+   "699fb5651e1eec88",
+   "b02ba93c2f33fbde"
   ],
   "agent-plugin/skills/research/SKILL.md": [
    "461021a000a725b1"
@@ -2772,6 +2798,7 @@
    "35217a23093f05eb",
    "62ec469b909cf3cf",
    "64d9cca29274aec5",
+   "650b829ccd94b27f",
    "6c2ad7fd3561223b",
    "9c4e7b2d80b57ef0",
    "af8a2dc28a3d204b",
@@ -2827,6 +2854,7 @@
    "3cd39c4045a42a47",
    "4081ec852344ba3a",
    "4ce87aa373279aac",
+   "5700a7e380b49f7d",
    "642e7a480d4f0bd4",
    "653fed05de9eea58",
    "719b6bc5dc09ddb4",
@@ -3187,6 +3215,7 @@
    "ee61abd3b81e0888"
   ],
   "agent-plugin/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/scripts/live-check.sh": [
+   "79b2ea94511d21c1",
    "874598e6113cbebb"
   ],
   "agent-plugin/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/scripts/logs.sh": [
@@ -3763,6 +3792,7 @@
    "0d35a86fe229ab00",
    "0dc3fc030d68c86a",
    "187e34e604c32871",
+   "1f6b8ec6c08a117c",
    "24680ccab5b1f1e2",
    "47c558d07fef7c0b",
    "4c3ec5364659fffc",
@@ -3797,6 +3827,7 @@
    "9db9ec0bff410539",
    "ac37770a34ef3c48",
    "b5fe919ad8dd29bb",
+   "b8276f25433bb97f",
    "d3d64b59f2cd0a43",
    "d6a04fa348f49ace",
    "dbc0897d896f24a0",
@@ -3806,6 +3837,7 @@
   ],
   "docs/SOURCES.md": [
    "0e0ed6993d4f60fe",
+   "18e56af3d2bf0dba",
    "275c4b5413ec4cfd",
    "3b30a34cac5e6660",
    "44dea72b9f04552f",
