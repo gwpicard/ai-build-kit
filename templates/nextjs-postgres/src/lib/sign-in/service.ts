@@ -2,7 +2,7 @@ import "server-only";
 import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { genericOAuth, magicLink } from "better-auth/plugins";
-import { appRoles, type DatabaseIdentity } from "../db/identity";
+import { userRoles, type UserRole, type DatabaseIdentity } from "../db/identity";
 import { type SignInConfig, validateConfig } from "./config";
 import { directoryProvider } from "./directory";
 import { signInStorage } from "./storage";
@@ -47,7 +47,7 @@ export function createSignIn(config: SignInConfig, sendLink: (email: string, url
   });
   async function identity(headers: Headers): Promise<DatabaseIdentity | null> {
     const session = await auth.api.getSession({ headers });
-    if (!session || !appRoles.includes(session.user.role as DatabaseIdentity["role"])
+    if (!session || !userRoles.includes(session.user.role as UserRole)
       || !await storage.allowedUser(session.user.id)) return null;
     return Object.freeze({ userId: session.user.id, role: session.user.role }) as DatabaseIdentity;
   }

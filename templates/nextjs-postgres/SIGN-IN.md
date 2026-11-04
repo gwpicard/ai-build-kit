@@ -42,7 +42,8 @@ An email suffix is never the access check. Google's
 explains why the request parameter alone does not restrict access.
 
 New directory users receive `member`. Their later sign-ins preserve the role
-stored in the database. Account linking is off, including automatic linking by
+stored in the database. Sessions accept only `admin`, `member`, `viewer` and
+`unassigned`; `system` belongs to the fixed jobs identity. Account linking is off, including automatic linking by
 email. Changing directories or resolving an existing email collision requires
 an explicit account migration. Staff roles are assigned by a trusted
 administrator through the project's administration process; this template has
@@ -130,10 +131,10 @@ The existing CI workflow runs these tests through `npm run check`.
 
 `npm run check:sign-in-review` compares the current SHA-256 digest with
 `reviews/sign-in.json`. The digest covers the module, auth routes, sign-in
-migration, package manifest and lockfile, and the boundary and review scripts.
+migration, user-role definitions, package manifest and lockfile, and the boundary and review scripts.
 It includes file names and contents, so additions and deletions change it.
 `npm run check` runs this before the other checks. A fault test changes code,
-a dependency lockfile and the migration, and adds a file; each fails with the
+a dependency lockfile, the user-role definitions and the migration, and adds a file; each fails with the
 old record.
 
 After a change, the `second-opinion` step must review those files and the fresh
@@ -151,3 +152,20 @@ The business schema and permission helper need no library-specific changes.
 Run the same OIDC, invitation and session tests against the replacement before
 recording its second opinion. A real directory registration and SMTP delivery
 still need a host-side trial; the local stub does not establish those results.
+
+## Integration review
+
+The integration with files and jobs keeps user roles separate from the jobs
+system role. The session check uses the user-role list, and the review digest
+covers that list so changing it requires another review. Both storage adapters
+are exercised with real company sign-in sessions against the local provider.
+Queued test handlers obtain the current session identity separately from the
+payload. A role change applies on the next attempt; queue access does not give
+the handler system privileges. The starter's production worker still handles
+only its fixed system tasks and exposes no user-job submission endpoint.
+
+The authentication catalogue names users, sessions, accounts, verification
+records and invitations explicitly. Effective table and column privileges are
+checked for both app and authentication roles, including grants inherited from
+PUBLIC. The authentication role is also checked for access to business and
+queue tables, schema creation, role membership and callable functions.

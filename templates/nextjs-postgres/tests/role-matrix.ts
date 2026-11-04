@@ -1,7 +1,7 @@
 import type { AppRole } from "../src/lib/db/identity";
 
 export type Scope = "self" | "other";
-export const tables = ["records", "withheld", "audit.events"] as const;
+export const tables = ["records", "files", "withheld", "audit.events"] as const;
 export type Table = (typeof tables)[number];
 type Permissions = { read: Scope[]; insert: Scope[]; update: Scope[]; delete: Scope[] };
 const none: Permissions = { read: [], insert: [], update: [], delete: [] };
@@ -12,9 +12,10 @@ const all: Permissions = {
 
 // Expectations are independent of the SQL policies. Every role covers every table.
 export const roleMatrix: Record<AppRole, Record<Table, Permissions>> = {
-  admin: { records: all, withheld: none, "audit.events": { ...none, read: ["self", "other"] } },
-  member: { records: { read: ["self"], insert: ["self"], update: ["self"], delete: ["self"] },
+  admin: { files: all, records: all, withheld: none, "audit.events": { ...none, read: ["self", "other"] } },
+  member: { files: { read: ["self"], insert: ["self"], update: ["self"], delete: ["self"] }, records: { read: ["self"], insert: ["self"], update: ["self"], delete: ["self"] },
     withheld: none, "audit.events": none },
-  viewer: { records: { ...none, read: ["self"] }, withheld: none, "audit.events": none },
-  unassigned: { records: none, withheld: none, "audit.events": none },
+  viewer: { files: { ...none, read: ["self"] }, records: { ...none, read: ["self"] }, withheld: none, "audit.events": none },
+  system: { files: none, records: none, withheld: none, "audit.events": none },
+  unassigned: { files: none, records: none, withheld: none, "audit.events": none },
 };

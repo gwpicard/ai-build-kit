@@ -203,6 +203,7 @@ def run_steps(steps, copy, context, log):
         env["GITHUB_OUTPUT"] = str(outputs)
         for key, setting in (step.get("env") or {}).items():
             if setting.replace(" ", "") == "${{github.token}}":
+                env.pop(key, None)
                 continue
             env[key] = substitute(setting, context)
         script = substitute(step["run"], context)

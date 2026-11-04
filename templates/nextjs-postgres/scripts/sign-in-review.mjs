@@ -16,7 +16,7 @@ export async function signInDigest(root = project) {
   }
   await walk('src/lib/sign-in');
   await walk('src/app/api/auth');
-  files.push('db/migrations/002_sign_in.sql', 'package.json', 'package-lock.json',
+  files.push('src/lib/db/identity.ts', 'db/migrations/002_sign_in.sql', 'package.json', 'package-lock.json',
     'scripts/database-boundary.mjs', 'scripts/sign-in-review.mjs');
   const hash = createHash('sha256');
   for (const name of files.sort()) {

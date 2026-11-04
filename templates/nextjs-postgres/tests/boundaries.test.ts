@@ -24,15 +24,37 @@ test("every record table forces RLS, every business table is audited, and the ma
     expect(row.rls, row.name).toBe(true);
     expect(row.forced, row.name).toBe(true);
     expect(row.owner, row.name).toBe("tool_owner");
-    if (row.schema !== "sign_in" && row.schema !== "audit" && `${row.schema}.${row.name}` !== "private.schema_migrations") {
+    if ((row.schema === "sign_in" && row.name === "invitations" || !["sign_in", "job_queue", "job_runtime"].includes(row.schema)) && row.schema !== "audit" && `${row.schema}.${row.name}` !== "private.schema_migrations") {
       expect(row.audited, row.name).toBe(true);
     }
   }
-  const appTables = metadata.rows.filter((row) => row.schema !== "sign_in" && `${row.schema}.${row.name}` !== "private.schema_migrations")
+  const appTables = metadata.rows.filter((row) => !["sign_in", "job_queue", "job_runtime"].includes(row.schema) && `${row.schema}.${row.name}` !== "private.schema_migrations")
     .map((row) => row.schema === "public" ? row.name : `${row.schema}.${row.name}`).sort();
   expect([...tables].sort()).toEqual(appTables);
   expect(Object.keys(roleMatrix).sort()).toEqual([...appRoles].sort());
   for (const role of appRoles) expect(Object.keys(roleMatrix[role]).sort()).toEqual(appTables);
+});
+
+test("the jobs catalogue contains only reviewed tables and queue statistics partitions", async () => {
+  const { rows } = await inspect((client) => client.query(`SELECT n.nspname AS schema, c.relname AS name,
+    (SELECT pn.nspname || '.' || parent.relname FROM pg_inherits i
+      JOIN pg_class parent ON parent.oid=i.inhparent
+      JOIN pg_namespace pn ON pn.oid=parent.relnamespace WHERE i.inhrelid=c.oid) AS parent
+    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname IN ('job_queue', 'job_runtime') AND c.relkind IN ('r', 'p')`));
+  const reviewed = ["bam", "instance", "job", "job_common", "job_dependency", "queue", "queue_stats",
+    "schedule", "subscription", "version", "warning"].map((name) => `job_queue.${name}`)
+    .concat(["job_runtime.heartbeats", "job_runtime.schedules"]);
+  expect(rows.filter((row) => !/^queue_stats_[0-9]{8}$/.test(row.name))
+    .map((row) => `${row.schema}.${row.name}`).sort()).toEqual(reviewed.sort());
+  for (const row of rows.filter((row) => /^queue_stats_[0-9]{8}$/.test(row.name))) {
+    expect(row.schema).toBe("job_queue");
+    expect(row.parent).toBe("job_queue.queue_stats");
+  }
+  const schemas = await inspect((client) => client.query(`SELECT nspname FROM pg_namespace
+    WHERE nspname NOT LIKE 'pg_%' AND nspname <> 'information_schema'
+      AND has_schema_privilege('tool_app', oid, 'CREATE')`));
+  expect(schemas.rows).toEqual([]);
 });
 
 test("the app role owns no tables, bypasses no row rules and has no role memberships", async () => {
@@ -67,30 +89,48 @@ test("effective app privileges match every table, including privileges outside R
   for (const row of metadata.rows) {
     const name = `${row.schema}.${row.name}`;
     const expected = name === "private.schema_migrations" || (row.schema === "sign_in" && row.name !== "invitations") ? []
-      : row.schema === "audit" ? ["SELECT"] : ["DELETE", "INSERT", "SELECT", "UPDATE"];
+      : row.schema === "audit" ? ["SELECT"]
+      : name === "public.files" ? ["DELETE", "SELECT"] : ["DELETE", "INSERT", "SELECT", "UPDATE"];
     expect(row.privileges, name).toEqual(expected);
   }
 });
 
-test("the app has no unreviewed views, materialised views, sequences or callable functions", async () => {
+test("effective file column grants permit insertion and title changes only", async () => {
+  const metadata = await inspect((client) => client.query(`SELECT a.attname AS name,
+    ARRAY(SELECT privilege FROM unnest(ARRAY['SELECT', 'INSERT', 'UPDATE', 'REFERENCES']) AS privilege
+      WHERE has_column_privilege('tool_app', a.attrelid, a.attnum, privilege)
+      ORDER BY privilege) AS privileges
+    FROM pg_attribute a WHERE a.attrelid='public.files'::regclass
+      AND a.attnum > 0 AND NOT a.attisdropped ORDER BY a.attname`));
+  expect(metadata.rows).toEqual([
+    { name: "id", privileges: ["INSERT", "SELECT"] },
+    { name: "owner_id", privileges: ["INSERT", "SELECT"] },
+    { name: "storage_scope", privileges: ["INSERT", "SELECT"] },
+    { name: "title", privileges: ["INSERT", "SELECT", "UPDATE"] },
+  ]);
+});
+
+test.each(["tool_app", "tool_auth"])("%s has no unreviewed views, materialised views, sequences or callable functions", async (role) => {
   const relations = await inspect((client) => client.query(`SELECT n.nspname AS schema,
     c.relname AS name, c.relkind AS kind
     FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
     WHERE n.nspname NOT IN ('pg_catalog', 'information_schema') AND n.nspname NOT LIKE 'pg_%'
-      AND c.relkind IN ('v', 'm', 'S', 'f') AND has_schema_privilege('tool_app', n.oid, 'USAGE')
-      AND CASE WHEN c.relkind='S' THEN has_sequence_privilege('tool_app', c.oid, 'SELECT, UPDATE, USAGE')
-        ELSE has_table_privilege('tool_app', c.oid, 'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER, MAINTAIN')
-          OR has_any_column_privilege('tool_app', c.oid, 'SELECT, INSERT, UPDATE, REFERENCES') END
-    ORDER BY n.nspname, c.relname`));
+      AND c.relkind IN ('v', 'm', 'S', 'f') AND has_schema_privilege($1, n.oid, 'USAGE')
+      AND CASE WHEN c.relkind='S' THEN has_sequence_privilege($1, c.oid, 'SELECT, UPDATE, USAGE')
+        ELSE has_table_privilege($1, c.oid, 'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER, MAINTAIN')
+          OR has_any_column_privilege($1, c.oid, 'SELECT, INSERT, UPDATE, REFERENCES') END
+    ORDER BY n.nspname, c.relname`, [role]));
   expect(relations.rows).toEqual([]);
   const functions = await inspect((client) => client.query(`SELECT n.nspname AS schema, p.proname AS name,
     pg_get_function_identity_arguments(p.oid) AS arguments, p.prosecdef AS security_definer
     FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
     WHERE n.nspname NOT IN ('pg_catalog', 'information_schema') AND n.nspname NOT LIKE 'pg_%'
-      AND has_schema_privilege('tool_app', n.oid, 'USAGE')
-      AND has_function_privilege('tool_app', p.oid, 'EXECUTE')
-    ORDER BY n.nspname, p.proname, arguments`));
-  expect(functions.rows).toEqual([]);
+      AND has_schema_privilege($1, n.oid, 'USAGE')
+      AND has_function_privilege($1, p.oid, 'EXECUTE')
+    ORDER BY n.nspname, p.proname, arguments`, [role]));
+  expect(functions.rows).toEqual(role === "tool_auth" ? [] : [
+    { schema: "job_queue", name: "job_now", arguments: "", security_definer: false },
+  ]);
 });
 
 test("the audit function runs as the owner with a fixed search path and restricted execution", async () => {
@@ -198,4 +238,33 @@ test("test sign-in refuses production even when Vitest is present", () => {
   vi.stubEnv("VITEST", "false");
   try { expect(() => testIdentity(user, "admin")).toThrow("only in Vitest"); }
   finally { vi.unstubAllEnvs(); }
+});
+
+
+test("sign-in effective table and column privileges cover both roles and every schema", async () => {
+  const { rows } = await inspect((client) => client.query(`SELECT r.role, n.nspname AS schema, c.relname AS name,
+    a.attname AS column,
+    ARRAY(SELECT privilege FROM unnest(ARRAY['SELECT', 'INSERT', 'UPDATE', 'DELETE',
+      'TRUNCATE', 'REFERENCES', 'TRIGGER', 'MAINTAIN']) privilege
+      WHERE has_table_privilege(r.role, c.oid, privilege) ORDER BY privilege) AS table_privileges,
+    ARRAY(SELECT privilege FROM unnest(ARRAY['SELECT', 'INSERT', 'UPDATE', 'REFERENCES']) privilege
+      WHERE has_column_privilege(r.role, c.oid, a.attnum, privilege) ORDER BY privilege) AS column_privileges
+    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+    JOIN pg_attribute a ON a.attrelid=c.oid AND a.attnum>0 AND NOT a.attisdropped
+    CROSS JOIN (VALUES ('tool_app'), ('tool_auth')) r(role)
+    WHERE n.nspname NOT IN ('pg_catalog', 'information_schema') AND n.nspname NOT LIKE 'pg_%'
+      AND c.relkind IN ('r', 'p') AND (r.role='tool_auth' OR n.nspname='sign_in')`));
+  expect(rows.length).toBeGreaterThan(0);
+  for (const row of rows) {
+    const expected = row.schema !== "sign_in" ? [] : row.name === "invitations"
+      ? row.role === "tool_auth" ? ["SELECT"] : ["DELETE", "INSERT", "SELECT", "UPDATE"]
+      : row.role === "tool_auth" ? ["DELETE", "INSERT", "SELECT", "UPDATE"] : [];
+    const label = `${row.role} ${row.schema}.${row.name}.${row.column}`;
+    expect(row.table_privileges, label).toEqual(expected);
+    expect(row.column_privileges, label).toEqual(expected.filter((privilege) => privilege !== "DELETE"));
+  }
+  const schemas = await inspect((client) => client.query(`SELECT nspname FROM pg_namespace
+    WHERE nspname NOT LIKE 'pg_%' AND nspname <> 'information_schema'
+      AND has_schema_privilege('tool_auth', oid, 'CREATE')`));
+  expect(schemas.rows).toEqual([]);
 });

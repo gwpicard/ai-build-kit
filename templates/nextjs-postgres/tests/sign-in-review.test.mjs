@@ -7,7 +7,7 @@ import { signInDigest, checkSignInReview } from '../scripts/sign-in-review.mjs';
 test('an unreviewed edit, added file or dependency change fails the sign-in review check', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'sign-in-review-'));
   try {
-    for (const name of ['src/lib/sign-in', 'src/app/api/auth', 'db/migrations', 'scripts']) {
+    for (const name of ['src/lib/db', 'src/lib/sign-in', 'src/app/api/auth', 'db/migrations', 'scripts']) {
       await cp(name, path.join(root, name), { recursive: true });
     }
     for (const name of ['package.json', 'package-lock.json']) await cp(name, path.join(root, name));
@@ -16,7 +16,7 @@ test('an unreviewed edit, added file or dependency change fails the sign-in revi
       date: '2026-11-04', evidence: ['Test fixture only'] };
     await writeFile(path.join(root, 'reviews/sign-in.json'), JSON.stringify(record));
     await expect(checkSignInReview(root)).resolves.toBeUndefined();
-    for (const name of ['src/lib/sign-in/service.ts', 'package-lock.json', 'db/migrations/002_sign_in.sql']) {
+    for (const name of ['src/lib/db/identity.ts', 'src/lib/sign-in/service.ts', 'package-lock.json', 'db/migrations/002_sign_in.sql']) {
       const file = path.join(root, name);
       const original = await readFile(file, 'utf8');
       await writeFile(file, `${original}\n`);

@@ -2,16 +2,19 @@
   "review": "second-opinion",
   "outcome": "pass",
   "date": "2026-11-04",
-  "digest": "ca5781a89cf3f29457f4af7fa2eb2a18f72501d55820e20a91af0ca747d95aee",
+  "digest": "e103b98003a2393b2a61298620186326321a6f2d45a5b76930f5853c04e5f270",
   "evidence": [
-    "A fresh review inspected the module, HTTP routes, migration, database grants, lint boundary and digest check; no stopping authentication or permission findings remained.",
-    "Fresh npm test passed all six files and 183 tests against the OIDC stub and disposable Postgres. The review independently reran the original 178-test suite and the final 28 sign-in tests.",
-    "Installed Better Auth 1.7.16 source was checked for OAuth verification, direct ID-token sign-in, account linking and atomic magic-link consumption.",
-    "The documentation finding was corrected: access and refresh tokens are encrypted, while retained ID-token claims remain readable.",
-    "A follow-up review and separate refutation confirmed the foreign Microsoft guest finding. The idp allowlist resolves it; the follow-up review reran all 28 sign-in tests successfully."
+    "A separate fresh context reviewed all digest inputs, the merged identity boundaries, migrations, effective privileges, dependency advisories and execution evidence; no stopping findings remained.",
+    "The reviewer ran 72 non-database boundary and digest tests successfully. Supplied evidence showed 293 application tests, 44 storage integration tests, the production build and one browser test passing.",
+    "Real stub-provider sessions exercised both storage adapters and queued test effects. Viewer and unassigned role changes restricted the next attempt; production jobs retained their fixed system identity.",
+    "All 22 planted privilege faults were detected. Both baseline and restored permission suites passed 26 tests; the row-policy fault was also detected and restored.",
+    "The sign-in change restricts session identities to user roles after system jobs introduced the system role. The review digest also covers the user-role definitions.",
+    "The jobs configuration documentation was corrected to include the website sign-in settings. The advisory review found only tooling paths; flagged CLI dependencies remain present but unused in the production image."
   ],
   "limits": [
-    "No real directory registration or SMTP delivery was exercised.",
-    "The digest checks content correspondence, not reviewer identity; GitHub review independence is unverified."
+    "No real company directory registration, SMTP delivery or hosted storage permissions were exercised.",
+    "User-authorised queued handlers are integration examples; the production worker exposes only fixed system tasks and no user-job submission endpoint.",
+    "The reviewer reran non-database tests and read supplied execution logs for the other checks.",
+    "The digest verifies content correspondence, not reviewer identity; GitHub review independence is unverified."
   ]
 }

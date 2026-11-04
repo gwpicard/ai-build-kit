@@ -7,8 +7,8 @@ included in a public kit. The existing starter and recipes are unchanged.
 It keeps the existing TypeScript, Next.js 16, Tailwind, shadcn, Vitest,
 Playwright and ESLint base. It needs Node.js 22.23.2 and Docker Compose for the
 local database. The root page is a placeholder. The [sign-in module](SIGN-IN.md) supplies
-company sign-in and email links for invited outsiders. `/api/health` currently checks only the web process. Database
-and worker health belong to a later change.
+company sign-in and email links for invited outsiders. [Jobs and schedules](JOBS.md)
+describes the worker, protected timer route and database and heartbeat health check.
 
 ## Try it locally
 
@@ -22,6 +22,7 @@ npm run db:bootstrap
 npm run db:migrate
 npm run check
 npm run test:policy-fault
+npm run test:privilege-fault
 npm test
 npm run dev
 ```
@@ -42,7 +43,8 @@ with a transaction advisory lock and rejects changes to an applied file.
 Repeat it to check that applying migrations twice is harmless. A live database
 needs separately provisioned roles and a rehearsed migration with a backup.
 The app receives `DATABASE_URL` and the restricted `AUTH_DATABASE_URL`; keep
-the migration and administrator URLs out of its environment.
+the migration and administrator URLs out of its environment. The worker needs
+only `DATABASE_URL` and the jobs configuration.
 
 The starter workflow runs its checks against a Postgres service. The source
 repository also runs them from this folder. CI uses trust authentication on
@@ -108,11 +110,12 @@ creation and truncation.
 
 The example `records` table lets members read and change their own records,
 viewers read their own records, and administrators read and change all
-records. An unassigned role has no access. `withheld` demonstrates denial when
+records. An unassigned role has no access. The fixed jobs system identity has narrower
+permissions described in [Jobs and schedules](JOBS.md#permissions-and-duplicate-effects). `withheld` demonstrates denial when
 a table has SQL grants but no policy. Tests check that its seeded rows remain
 invisible to every app role.
 
-Triggers on both business tables write inserts, updates and deletes to
+Triggers on the business tables write inserts, updates and deletes to
 `audit.events`, with actor, before and after values, and a timestamp. The
 function has a fixed search path and runs as the owner, which has only an
 insert policy on the forced audit table. The app has only an administrator
@@ -137,3 +140,100 @@ The script restores the saved policy in `finally`; run `npm test` afterwards
 to check the restored database. Keep the database disposable: a terminated
 process cannot run its restoration code. If interrupted, start a fresh local
 database and apply its migrations again.
+
+
+## Private files
+
+`src/lib/files/index.ts` exports `files()`, the server's permission-checked file
+port. Its five actions are `save(identity, title, bytes)`, `fetch(identity, id)`,
+`temporaryLink(identity, id)`, `delete(identity, id)` and `list(identity)`.
+`save` returns the new file record; `fetch` returns bytes; `list` returns only
+records the caller may read in the configured store. These operations need the
+same verified server identity as database queries. Server code obtains that identity from `sessionIdentity(headers)`. The starter
+has no file HTTP route.
+
+The `files` table forces row-level security. Members manage their own files,
+viewers read their own files, administrators manage all files, and unassigned
+users and the jobs system identity have no access. Every
+metadata change writes an audit event. The app can update a title, but cannot
+change a file's ID, owner or storage location. Object keys come from generated
+IDs rather than filenames. Metadata includes a hash of the storage location,
+so switching stores cannot issue links for records from the previous store.
+Moving files between stores needs a separate migration.
+
+App code imports the file port, never a storage SDK or adapter. ESLint rejects
+SDK imports, re-exports, CommonJS and dynamic imports outside the two exact
+adapter files. It also rejects app imports of the adapters, except from the
+file port. Administration scripts and tests remain outside this app boundary;
+the local fixture script creates private test storage.
+
+Choose storage through environment variables. `FILES_ADAPTER` defaults to `s3`;
+`FILES_LINK_SECONDS` defaults to 60 and accepts whole seconds from 1 to 300.
+Configuration is validated when `files()` is created, before any operation.
+HTTPS is required except for loopback emulators outside production.
+
+| Adapter | Configuration |
+| --- | --- |
+| S3 | `FILES_S3_BUCKET`, `FILES_S3_REGION`; optional `FILES_S3_ENDPOINT` and `FILES_S3_FORCE_PATH_STYLE=true` for compatible stores. The SDK credential chain reads `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, optional `AWS_SESSION_TOKEN`, or workload credentials. |
+| Azure Blob | `FILES_AZURE_ACCOUNT`, `FILES_AZURE_ACCOUNT_KEY`, `FILES_AZURE_CONTAINER`; optional `FILES_AZURE_ENDPOINT`, otherwise the account's standard HTTPS Blob endpoint. |
+
+The host must supply a private bucket or container and credentials restricted
+to the tool's storage. This module creates no hosted storage and grants no
+public access. Keep anonymous reads and listing disabled, including through
+bucket policies, account settings, gateways and CDNs. The local tests prove
+these settings for the emulators; they do not verify a hosted store's access.
+The Azure SDK is pinned to 12.29.1, whose Blob API version matches Azurite
+3.35.0. The AWS SDK and request presigner are pinned to 3.1161.0. The Azure
+adapter uses an account key to sign blob-scoped, read-only SAS links,
+following the [service SAS API](https://learn.microsoft.com/en-us/azure/storage/blobs/sas-service-create-javascript).
+The S3 adapter uses the SDK's
+[request presigner](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-s3-request-presigner/).
+
+Only a successful row-rule read can issue a temporary link. Links allow anyone
+holding them to read that one file until expiry, including after a role change;
+do not log, persist or share them. Downloads use attachment disposition and
+`Cache-Control: no-store`. Expiry prevents a new request after the deadline;
+it cannot retract bytes already downloaded or interrupt an accepted download.
+
+Postgres and object storage do not share a transaction. A failed upload rolls
+back its metadata, and a failed object deletion rolls back the metadata
+deletion. A process crash, partial upload or failed database commit can leave
+an orphaned object or a metadata record whose object is missing. Orphans stay
+private; recovery needs a reconciliation of metadata and objects using separate
+administration credentials. `save` buffers bytes in memory. Set upload size
+limits at the eventual HTTP route for the tool's workload.
+
+Run `npm run test:files` with Docker available. It creates a separate disposable
+Postgres database, RustFS 1.0.4 (an S3-compatible server) and Azurite 3.35.0 on
+random loopback ports. It generates test credentials in memory and removes its
+own containers afterwards. No `.env` or existing service is used. The same
+suite exercises all five adapter actions against both servers, follows listing
+pages, denies unsigned GET, HEAD and listing requests, and proves expiry with
+real HTTP requests. It checks link and byte access for every role and owner
+scope, denied writes, immutable storage locations and a removed read policy.
+The ordinary `npm test` suite also covers file row rules, configuration and the
+ESLint boundary. `npm run check` includes both suites, so CI runs the container
+tests as part of the starter check.
+
+The shared storage suite also claims a queued file job, reads its input through
+`files()` and writes one audited result through `withDatabase()`. Its handler
+receives an identity from a real sign-in session separately from the payload. It proves that
+the queue's fixed system identity and another user cannot read that file, while
+the owner can process it and replay the result without a second audit event.
+Changing that user to viewer or unassigned changes the next attempt's file and
+record permissions, even when the payload claims administrator access.
+The example worker and timer retain their existing record-only handlers; a
+project that adds file processing must choose its verified identity and row
+policies explicitly. Queue access grants no access to user files.
+
+`npm run test:privilege-fault` plants excessive grants on records, files, the
+queue and runtime tables, a writable file ownership column, a public trigger
+grant, a privileged queue function, schema creation and owner membership. Sign-in
+table and column grants are checked for both database roles across all schemas;
+authentication tables have a separate exact catalogue. Each
+must fail its named catalogue assertion. The script restores each fault in
+`finally` and runs the boundary suite before and after the faults. Like the
+policy check, it requires a disposable local database.
+
+Dependency advisory findings and their runtime reach are recorded in
+[Dependency audit](DEPENDENCIES.md).

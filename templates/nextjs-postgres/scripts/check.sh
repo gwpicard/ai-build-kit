@@ -5,5 +5,6 @@ npm run check:sign-in-review
 npm run typecheck
 npm run lint
 npm test
+npm run test:files
 npm run build
 npm run test:e2e

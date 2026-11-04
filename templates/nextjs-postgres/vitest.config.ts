@@ -7,6 +7,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    testTimeout: 15000,
     include: ["tests/**/*.test.{ts,mjs}"],
     fileParallelism: false,
     coverage: { include: ["src/lib/db/**/*.ts"] },

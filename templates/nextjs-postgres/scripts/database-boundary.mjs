@@ -36,6 +36,12 @@ const databaseBoundary = {
       const internalSignIn = resolved.startsWith(signInRoot)
         && !['index', 'index.ts', 'index.js'].includes(path.relative(signInRoot, resolved));
       if (!inSignIn && (authPackage || internalSignIn)) context.report({ node, messageId: 'auth' });
+      const queueLibrary = /^pg-boss(?:\/|$)/.test(source)
+        || /(?:^|\/)node_modules\/pg-boss(?:\/|$)/.test(resolved.replaceAll('\\', '/'));
+      if (queueLibrary
+        && path.relative(projectRoot, file).replaceAll('\\', '/') !== 'src/lib/jobs/queue.ts') {
+        context.report({ node, messageId: 'connection' });
+      }
       if (helper) return;
       if (source === 'module' || source === 'node:module') {
         context.report({ node, messageId: 'loader' });

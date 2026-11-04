@@ -1,17 +1,18 @@
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 import betterTailwindcss from "eslint-plugin-better-tailwindcss";
+import storageBoundary from "./scripts/storage-boundary.mjs";
 import databaseBoundary from "./scripts/database-boundary.mjs";
 
 const config = [
   ...nextVitals,
   ...nextTypescript,
-  { ignores: [".next/**", "node_modules/**", "next-env.d.ts", ".agents/**", ".claude/**"] },
+  { ignores: [".next/**", "dist/**", "node_modules/**", "next-env.d.ts", ".agents/**", ".claude/**"] },
   {
     files: ["**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}"],
     ignores: ["scripts/**", "tests/**", "eslint.config.mjs"],
-    plugins: { database: { rules: { boundary: databaseBoundary } } },
-    rules: { "database/boundary": "error" },
+    plugins: { database: { rules: { boundary: databaseBoundary } }, storage: { rules: { boundary: storageBoundary } } },
+    rules: { "database/boundary": "error", "storage/boundary": "error" },
   },
   {
     files: ["src/**/*.{js,jsx,ts,tsx}"],
