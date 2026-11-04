@@ -61,6 +61,9 @@ screen before a visual change.
 
 ## 3. Build the agreed slice
 
+For adopted code, follow `quality-checks/references/adoption-safety-net.md`
+before editing an area its safety net does not cover.
+
 Build only the agreed behaviour end to end. Avoid speculative abstraction;
 groundwork is its own piece or an expand-then-contract sequence that keeps the checks green,
 ordered ahead.

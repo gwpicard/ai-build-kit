@@ -21,6 +21,9 @@ Translate internal facts:
   none` means the kit cannot check recipe launch steps.
 - A `review identity: shared` line: say later reviews are recorded as
   unverified, because the agent and the reviewer use one GitHub login.
+- An adopted tool: include the safety-net script's results and named coverage
+  gaps, including its statement that recorded behaviour is not approved
+  behaviour and may record a fault. Report a check that could not run plainly.
 
 Include only relevant sections, with no placeholders. Read the checkpoint back
 and use its reference at the very end. If there is no checkpoint beyond the
