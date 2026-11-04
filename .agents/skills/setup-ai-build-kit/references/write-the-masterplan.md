@@ -13,12 +13,13 @@ description. Where it has no placeholders, it is somebody's real file: leave it
 exactly as it is and say in one line that the description went into
 masterplan.md and AGENTS.md.
 
-If the project has `scripts/found-handover.mjs`, follow
+Fill the masterplan from the notes and the conversation. If the project has
+`scripts/found-handover.mjs`, follow
 [the plain Postgres handover path](plain-postgres-handover.md) before removing
-the setup notes.
+the setup notes, so its generated hosting section uses the completed plan.
 
-Fill the masterplan from the notes and the conversation, then delete
-`.agents/tmp/setup-notes.md`.
+Delete `.agents/tmp/setup-notes.md` once the masterplan and any handover checks
+are complete.
 
 Read the connections section back in plain words, and let the team confirm
 each outside connection: their email, their calendar, whatever it reaches.
