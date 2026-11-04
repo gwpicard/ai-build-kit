@@ -38,10 +38,12 @@ test("every record table forces RLS, every business table is audited, and the ma
 test("the app role owns no tables, bypasses no row rules and has no role memberships", async () => {
   const metadata = await inspect((client) => client.query(`SELECT rolsuper, rolbypassrls, rolcreatedb, rolcreaterole,
     (SELECT count(*)::int FROM pg_class WHERE relowner=r.oid) AS owned,
-    (SELECT count(*)::int FROM pg_auth_members WHERE member=r.oid) AS memberships
+    (SELECT count(*)::int FROM pg_auth_members WHERE member=r.oid) AS memberships,
+    (SELECT pg_get_userbyid(nspowner) FROM pg_namespace WHERE nspname='public') AS schema_owner,
+    has_schema_privilege('tool_app', 'public', 'CREATE') AS schema_create
     FROM pg_roles r WHERE rolname='tool_app'`));
   expect(metadata.rows).toEqual([{ rolsuper: false, rolbypassrls: false, rolcreatedb: false,
-    rolcreaterole: false, owned: 0, memberships: 0 }]);
+    rolcreaterole: false, owned: 0, memberships: 0, schema_owner: "tool_owner", schema_create: false }]);
   const connection = await withDatabase(testIdentity(user, "admin"), (db) =>
     sql<{ name: string }>`select current_user as name`.execute(db));
   expect(connection.rows).toEqual([{ name: "tool_app" }]);

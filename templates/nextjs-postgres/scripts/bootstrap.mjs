@@ -14,6 +14,7 @@ try {
     } else if (roles.rowCount !== 2) {
       throw new Error('Local roles are only partly configured');
     }
+    await client.query('ALTER SCHEMA public OWNER TO tool_owner');
     await client.query(`DO $$ BEGIN
       EXECUTE format('REVOKE CREATE, TEMPORARY ON DATABASE %I FROM PUBLIC', current_database());
       EXECUTE format('GRANT CREATE ON DATABASE %I TO tool_owner', current_database());

@@ -30,7 +30,8 @@ The example credentials in `.env.example` are for a disposable local database.
 Compose binds it to loopback and keeps its data in memory. Stopping and removing
 the container loses its data. Use it only for development and tests.
 
-`db:bootstrap` creates the two local database roles. It refuses remote
+`db:bootstrap` creates the two local database roles and gives the owner role
+ownership of the public schema, so migrations can manage its grants. It refuses remote
 connections, production mode and databases other than `tool_test` or
 `tool_dev`. It requires all three URLs to point at the same database. Do not
 use this script to provision a live database.
