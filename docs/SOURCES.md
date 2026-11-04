@@ -41,6 +41,14 @@ This list identifies ideas used in the kit and the files that implement them.
 | [Claude Code subagents](https://code.claude.com/docs/en/sub-agents) | Define each agent in a short file that specifies its tools and skills. | `.agents/agents/*.md`. |
 | ["How we vibe code at a FAANG"](https://www.reddit.com/r/vibecoding/comments/1myakhd/how_we_vibe_code_at_a_faang/) | Read a plan closely before building. | Shaping and the requirements coverage review, `.agents/skills/shape/SKILL.md`, `.agents/skills/records/references/coverage-read.md`. |
 
+## Docker cleanup
+
+[Docker object labels](https://docs.docker.com/engine/manage-resources/labels/)
+and the [Engine API](https://docs.docker.com/reference/api/engine/) describe the
+creation-time labels and filtered inventory used by
+`.agents/skills/maintain/scripts/docker-resources.py` and `docker_proxy.py`.
+The private socket labels SDK-created resources before they reach the daemon.
+
 ## Checks and evidence
 
 | Source | Contribution | Where it is in the kit |

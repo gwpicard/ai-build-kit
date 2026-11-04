@@ -1,6 +1,9 @@
 services:
   postgres:
     image: postgres:17.6-alpine
+    labels:
+      ai-build-kit.run: ${CODEX_RUN_ID:?Run checks through scripts/docker-run.sh}
+      ai-build-kit.scope: ${ABK_DOCKER_SCOPE:?Run checks through scripts/docker-run.sh}
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?Copy .env.example to .env first}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
@@ -14,3 +17,8 @@ services:
       retries: 30
     tmpfs:
       - /var/lib/postgresql/data
+networks:
+  default:
+    labels:
+      ai-build-kit.run: ${CODEX_RUN_ID:?Run checks through scripts/docker-run.sh}
+      ai-build-kit.scope: ${ABK_DOCKER_SCOPE:?Run checks through scripts/docker-run.sh}

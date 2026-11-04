@@ -19,17 +19,6 @@ jobs:
     env:
       CI: "true"
       NEXT_TELEMETRY_DISABLED: "1"
-    services:
-      postgres:
-        image: postgres:17.6-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: tool_test
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports: ["55432:5432"]
-        options: >-
-          --health-cmd "pg_isready -U postgres -d tool_test"
-          --health-interval 2s --health-timeout 3s --health-retries 30
     steps:
       - name: Read the project files
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -43,19 +32,11 @@ jobs:
           cache-dependency-path: templates/nextjs-postgres/package-lock.json
       - name: Install the locked packages
         run: npm ci
-      - name: Prepare a disposable database
-        run: |
-          cp .env.example .env
-          npm run db:bootstrap
-          npm run db:migrate
-          npm run db:migrate
       - name: Install the browser
         run: npx --no-install playwright install --with-deps chromium
-      - name: Check the starter
-        run: npm run check
-      - name: Prove a removed policy fails its generated test
-        run: npm run test:policy-fault
-      - name: Prove excessive privileges fail their catalogue checks
-        run: npm run test:privilege-fault
-      - name: Check the restored policy and privileges
-        run: npm test
+      - name: Check the starter and its deliberate permission faults
+        run: |
+          sh scripts/docker-run.sh -- node scripts/test-database.mjs sh -c '
+            npm run check && npm run test:policy-fault &&
+            npm run test:privilege-fault && npm test
+          '

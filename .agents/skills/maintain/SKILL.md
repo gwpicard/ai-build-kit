@@ -45,6 +45,8 @@ its sentence and stop.
    monthly routine's first step does it instead. In Codex, offer its
    session-start GitHub check.
 
+Run `scripts/docker-resources.py sweep`; remove listed Docker leftovers only with approval.
+
 ## Due routines
 
 When monthly work is due, load `references/monthly.md` and follow it in order.

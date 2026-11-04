@@ -5,14 +5,13 @@
 # Usage: restore.sh
 #
 # It dumps the live project three times with `supabase db dump --linked`:
-# roles, structure, and data. It stops the project's own local database with
-# `supabase stop`, since the restore uses the same ports. In a throwaway
+# roles, structure, and data. In a throwaway
 # folder outside the project it runs `supabase init`, copies the linked
 # project's `supabase/.temp/*-version` files across, so the local services
 # run the live project's versions, and runs `supabase start` with the full
 # stack. It loads the three files as `supabase_admin` in one transaction, then
 # compares each table's rows in `data.sql` with `select count(*)` locally.
-# `supabase stop --no-backup` then removes the local copy. The minutes from
+# The exit trap removes the labelled local copy. The minutes from
 # the first dump to the last count are the restore time.
 #
 # Putting a backup back onto the live project starts from the Supabase
@@ -32,27 +31,39 @@ docker info >/dev/null 2>&1 ||
   cl_cannot "The project is not linked to its database on this computer, so the restore could not be tried."
 cl_password
 
+cleanup_tools="$here/../../../../maintain/scripts"
+if [ -z "${ABK_DOCKER_SCOPE:-}" ]; then
+  exec sh "$cleanup_tools/docker-run.sh" --proxy -- sh "$0" "$@"
+fi
+
 project=$(pwd -P)
 started=$(date +%s)
 work=$(mktemp -d)
 local_db=postgresql://supabase_admin:postgres@127.0.0.1:54322/postgres
 finish() {
   if [ -d "$work/copy/supabase" ]; then
-    (cd "$work/copy" && supabase stop --no-backup >/dev/null 2>&1) || true
+    python3 "$cleanup_tools/docker-resources.py" clean || return 1
   fi
-  rm -rf "$work"
+  rm -R "$work"
 }
 trap finish EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 supabase db dump --linked --role-only -f "$work/roles.sql" >&2 &&
   supabase db dump --linked -f "$work/schema.sql" >&2 &&
   supabase db dump --linked --data-only --use-copy -x storage.buckets_vectors -x storage.vector_indexes -f "$work/data.sql" >&2 ||
   cl_cannot "The live database could not be dumped, so the restore could not be tried."
 
-supabase stop >&2 || true
 mkdir -p "$work/copy"
 (cd "$work/copy" && supabase init >&2) ||
   cl_cannot "A throwaway local database could not be set up, so the restore could not be tried."
+python3 - "$work/copy/supabase/config.toml" "$COMPOSE_PROJECT_NAME" <<'PYTHON'
+from pathlib import Path
+import re, sys
+p = Path(sys.argv[1])
+p.write_text(re.sub(r'^project_id = .*$', 'project_id = "' + sys.argv[2] + '"', p.read_text(), flags=re.M))
+PYTHON
 mkdir -p "$work/copy/supabase/.temp"
 for version in "$project"/supabase/.temp/*-version; do
   [ -f "$version" ] && cp "$version" "$work/copy/supabase/.temp/"

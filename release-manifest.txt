@@ -300,3 +300,12 @@ agent-plugin|
 
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml|
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml
+
+.agents/skills/maintain/scripts/docker-run.sh|
+.agents/skills/maintain/scripts/docker-run.sh|agent-plugin/skills/maintain/scripts/docker-run.sh
+.agents/skills/maintain/scripts/docker-resources.py|
+.agents/skills/maintain/scripts/docker-resources.py|agent-plugin/skills/maintain/scripts/docker-resources.py
+.agents/skills/maintain/scripts/docker_proxy.py|
+.agents/skills/maintain/scripts/docker_proxy.py|agent-plugin/skills/maintain/scripts/docker_proxy.py
+.agents/skills/setup-hosting/recipes/parts/scripts/database-check.sh|
+.agents/skills/setup-hosting/recipes/parts/scripts/database-check.sh|agent-plugin/skills/setup-hosting/recipes/parts/scripts/database-check.sh
