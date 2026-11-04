@@ -25,7 +25,7 @@ GUARD = Path(".agents/tmp/review-guard")
 
 
 def git(*args, **kwargs):
-    return subprocess.check_output(["git", *args], **kwargs)
+    return subprocess.check_output(["git", "--literal-pathspecs", *args], **kwargs)
 
 
 def status():
@@ -51,6 +51,12 @@ def kind(path, staged):
     if not path.exists():
         return "absent"
     raise ValueError("unsupported file type: %s" % path)
+
+
+def check_parents(path):
+    for parent in reversed(path.parents):
+        if parent.is_symlink():
+            raise ValueError("cannot restore %s through symlink %s; snapshot kept" % (path, parent))
 
 
 def matches(path, entry):
@@ -91,6 +97,7 @@ def snapshot(paths):
             raise ValueError("a filename contains a tab or newline; snapshot could not be kept")
         if path.is_relative_to(".agents/tmp"):
             continue
+        check_parents(path)
         staged = index(name)
         entry = {"path": name, "index": staged, "kind": kind(path, staged)}
         if entry["kind"] == "regular":
@@ -116,6 +123,7 @@ def check():
         if entry["kind"] in ("directory", "submodule"):
             print("skipped\t%s\t%s" % (name, entry["kind"]))
             continue
+        check_parents(path)
         working_matches = matches(path, entry)
         if working_matches and index(name) == entry["index"]:
             continue

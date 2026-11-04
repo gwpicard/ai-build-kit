@@ -181,4 +181,61 @@ guard snapshot >/dev/null 2>&1 && rc=0 || rc=$?
 guard snapshot ../outside.md >/dev/null 2>&1 && rc=0 || rc=$?
 [ "$rc" -eq 2 ] && pass "a file outside the project is refused" || fail "a file outside the project gave exit $rc"
 
+# A reviewer must not redirect restoration into another folder.
+for replacement in different identical absent; do
+  P="$WORK/parent-$replacement"
+  mkdir -p "$P/folder" "$WORK/outside-$replacement"
+  cd "$P"
+  git init -q
+  printf 'The person wrote this.\n' > folder/note.txt
+  if [ "$replacement" = identical ]; then
+    cp folder/note.txt "$WORK/outside-$replacement/note.txt"
+  elif [ "$replacement" = different ]; then
+    printf 'Another personal draft.\n' > "$WORK/outside-$replacement/note.txt"
+  fi
+  guard snapshot folder/note.txt >/dev/null
+  mv folder "$WORK/original-$replacement"
+  ln -s "$WORK/outside-$replacement" folder
+  out=$(guard check 2>&1) && rc=0 || rc=$?
+  if [ "$replacement" = absent ]; then
+    intact=$([ ! -e "$WORK/outside-$replacement/note.txt" ] && echo yes || echo no)
+  elif [ "$replacement" = identical ]; then
+    intact=$(cmp -s "$WORK/outside-$replacement/note.txt" "$WORK/original-$replacement/note.txt" && echo yes || echo no)
+  else
+    intact=$([ "$(cat "$WORK/outside-$replacement/note.txt")" = 'Another personal draft.' ] && echo yes || echo no)
+  fi
+  [ "$rc" -eq 2 ] && [ "$intact" = yes ] \
+    && [ -f .agents/tmp/review-guard/snapshot.json ] \
+    && printf '%s\n' "$out" | grep -q 'symlink' \
+    && pass "a symlinked parent preserves the $replacement target and keeps the snapshot" \
+    || fail "a symlinked parent was followed ($replacement): exit $rc: $out"
+done
+
+# Git must treat metacharacters as literal filenames, including index reads.
+P="$WORK/literal-paths"
+mkdir -p "$P"
+cd "$P"
+git init -q
+for name in '*' '[ab]' ':(glob)*'; do
+  printf 'Original working bytes.\n' > "$name"
+  git --literal-pathspecs add -- "$name"
+done
+git -c user.name=Rehearsal -c user.email=rehearsal@example.invalid commit -qm "Literal filenames"
+git update-index --add --cacheinfo "160000,$(git rev-parse HEAD),module"
+git ls-files -s -z > "$WORK/literal-index"
+guard snapshot '*' '[ab]' ':(glob)*' >/dev/null
+for name in '*' '[ab]' ':(glob)*'; do
+  printf 'Reviewer bytes.\n' > "$name"
+  git --literal-pathspecs add -- "$name"
+done
+out=$(guard check) && rc=0 || rc=$?
+git ls-files -s -z > "$WORK/literal-index-after"
+[ "$rc" -eq 1 ] && cmp -s "$WORK/literal-index" "$WORK/literal-index-after" \
+  && [ "$(cat '*')" = 'Original working bytes.' ] \
+  && [ "$(cat '[ab]')" = 'Original working bytes.' ] \
+  && [ "$(cat ':(glob)*')" = 'Original working bytes.' ] \
+  && printf '%s\n' "$out" | grep -Fxq 'restored	*' \
+  && pass "Git metacharacters name literal files whose bytes and index are restored" \
+  || fail "a literal filename was skipped or misread: exit $rc: $out"
+
 exit "$FAIL"

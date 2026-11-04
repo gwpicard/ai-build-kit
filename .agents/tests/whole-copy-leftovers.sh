@@ -253,6 +253,25 @@ known=json.loads(record.read_text()); assert known['files']['.agents/skills/fix/
 assert known['skill_paths']['v0.19.3'] == ['fix/SKILL.md']
 first=record.read_bytes();subprocess.run([sys.executable,str(tool),str(release)],check=True,capture_output=True);assert record.read_bytes()==first
 print('  ok: the recorder keeps skill hashes and a second run changes nothing')
+# Source-only files copied by the shared installer need hashes too, without
+# making them required in an archive installation.
+source_only = tool_root/'.agents/skills/fix/source-only.txt'
+source_only.parent.mkdir(parents=True)
+source_only.write_text('Released source bytes\n')
+subprocess.run(['git', 'init', '-q', str(tool_root)], check=True)
+subprocess.run(['git', '-C', str(tool_root), 'add', str(source_only)], check=True)
+subprocess.run(['git', '-C', str(tool_root), '-c', 'user.name=Rehearsal',
+                '-c', 'user.email=rehearsal@example.invalid', 'commit', '-qm', 'Release source'], check=True)
+subprocess.run(['git', '-C', str(tool_root), 'tag', 'v0.19.3'], check=True)
+command = [sys.executable, str(tool), str(release), '--source-tag', 'v0.19.3']
+subprocess.run(command, check=True, capture_output=True)
+known = json.loads(record.read_text())
+assert known['files']['.agents/skills/fix/source-only.txt'] == [hashlib.sha256(source_only.read_bytes()).hexdigest()[:16]]
+assert known['skill_paths']['v0.19.3'] == ['fix/SKILL.md']
+first = record.read_bytes()
+subprocess.run(command, check=True, capture_output=True)
+assert record.read_bytes() == first
+print('  ok: tagged source-only files are recognised without requiring them on archive routes')
 PY
 
 # Released documents use the same removal decision and once-only notice as

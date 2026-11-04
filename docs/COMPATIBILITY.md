@@ -294,8 +294,10 @@ with the person's approval.
 That command replaces the installed skill files outright. Before replacement,
 `maintain` compares them with the released copies recorded by the proposed
 release, including edits already committed. It names files that match no
-recorded copy and asks before overwriting them. A project rule belongs in
-`AGENTS.md`; updates change it only with approval, for a renamed command or
+recorded copy and missing files from the release inventory, then asks before
+replacing or recreating them. If the baseline or inventory is unavailable,
+it reports that the comparison could not run and leaves the skills in place.
+A project rule belongs in `AGENTS.md`; updates change it only with approval, for a renamed command or
 a new safety rule.
 
 An Agent Plugins installation belongs to the coding agent that installed it,
@@ -372,11 +374,14 @@ briefs are installed, enforcement depends on the coding agent:
 
 | Coding agent | What keeps a read-only agent from changing files |
 |---|---|
-| Claude Code | Its tool list has no editing tool. A review agent keeps the command line, because a review runs commands. The review guard restores changed files under review and reports other changes; if it cannot run, the agent reports that limit. |
+| Claude Code | Its tool list has no editing tool. A review agent keeps the command line, because a review runs commands. The review guard restores changed files under review and pre-existing unsaved work, including staged entries, and reports other changes; if it cannot run, the agent reports that limit. |
 | Cursor | Only the `.claude/agents/` copy carries `readonly: true`, which disallows edits and commands that change files. The `.codex/agents/` copy has no read-only setting. |
 | Gemini CLI | Its tool list contains only reading and searching tools, with no command line. |
 | GitHub Copilot | Its tool list holds reading, searching and the web, with no editing or commands. |
-| Codex | Nothing in the agent's file. Codex keeps the session's own sandbox and approval settings for every agent. The brief instructs the agent to read only; the review guard restores changed files under review and reports other changes, or reports that it could not run. |
+| Codex | Nothing in the agent's file. Codex keeps the session's own sandbox and approval settings for every agent. The brief instructs the agent to read only; the review guard restores changed files under review and pre-existing unsaved work, including staged entries, and reports other changes, or reports that it could not run. |
+
+The guard refuses restoration through a symlinked parent folder and keeps its
+snapshot for recovery. It reports directories and submodules as skipped.
 
 VS Code reads agents from both `.github/agents/` and `.claude/agents/` and may
 list the kit's agents twice. Both copies run the same brief. Cursor lists

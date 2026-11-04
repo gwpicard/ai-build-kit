@@ -14,21 +14,26 @@ record it compares against:
 
 Usage:
 
-    record-released-copies.py SOURCE...
+    record-released-copies.py SOURCE... [--source-tag vX.Y.Z]
 
 Each SOURCE is a release archive (`ai-build-kit-vX.Y.Z.tar.gz`) or a folder
 holding an unpacked release. Its version is read from `.ai-build-kit-version`
 inside it, or from the archive's name. The record keeps what it already holds
 and adds each source, so running it again with the same archive changes
 nothing. Run it on the next branch after every release, with that release's
-archive, so the release after it recognises its files.
+archive, so the release after it recognises its files. Pass --source-tag with
+its Git tag too: the shared installer copies canonical skill files from that
+tag, including files absent from the archive. Their hashes are recognised,
+while the archive inventory remains the set required on every route.
 """
 
+import argparse
 import hashlib
 import io
 import json
 import os
 import re
+import subprocess
 import sys
 import tarfile
 
@@ -89,10 +94,10 @@ def version_of(source, files):
 
 
 def main(argv):
-    if not argv or any(a.startswith("-") for a in argv):
-        print(__doc__.strip().splitlines()[0], file=sys.stderr)
-        print("usage: record-released-copies.py SOURCE...", file=sys.stderr)
-        return 2
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("sources", nargs="+")
+    parser.add_argument("--source-tag", action="append", default=[])
+    args = parser.parse_args(argv)
     try:
         with open(RECORD, encoding="utf-8") as handle:
             record = json.load(handle)
@@ -101,7 +106,7 @@ def main(argv):
     versions = set(record.get("versions", []))
     known = {path: set(hashes) for path, hashes in record.get("files", {}).items()}
     skill_paths = record.get("skill_paths", {})
-    for source in argv:
+    for source in args.sources:
         if os.path.isdir(source):
             files = from_folder(source)
         elif os.path.isfile(source):
@@ -115,6 +120,19 @@ def main(argv):
         skill_paths[version] = sorted(path[len(".agents/skills/"):] for path in files
                                       if path.startswith(".agents/skills/"))
         for path, data in files.items():
+            known.setdefault(path, set()).add(digest(data))
+
+    for tag in args.source_tag:
+        if not re.fullmatch(r"v\d+\.\d+\.\d+", tag) or tag not in skill_paths:
+            raise SystemExit("record-released-copies: source tag needs its release archive: %s" % tag)
+        ref = "refs/tags/" + tag
+        names = subprocess.check_output(
+            ["git", "-C", ROOT, "ls-tree", "-r", "--name-only", "-z", ref, "--", ".agents/skills/"])
+        for raw in names.split(b"\0"):
+            if not raw:
+                continue
+            path = os.fsdecode(raw)
+            data = subprocess.check_output(["git", "-C", ROOT, "show", ref + ":" + path])
             known.setdefault(path, set()).add(digest(data))
 
     def order(version):

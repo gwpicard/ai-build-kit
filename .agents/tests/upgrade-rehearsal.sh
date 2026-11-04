@@ -44,6 +44,26 @@ def check(skills,p,code):
 def apply(skills,p,step):
     run([sys.executable,skills/'maintain/scripts/upgrade-check.py','--apply',step,p])
 
+# Frozen source-tag bytes model the shared installer's copy, independently of
+# the record being tested. The archive inventory omits this starter file.
+shared = work/'shared-source/.agents/skills'
+copy(root/'.agents/tests/fixtures/upgrade-v1.2.5/next-env.d.ts.txt',
+     shared/'setup-hosting/recipes/parts/starters/nextjs-supabase/next-env.d.ts')
+put(shared/'maintain/VERSION', 'v1.2.5\n')
+shared_record = json.loads((source/'maintain/scripts/kit-released-copies.json').read_text())
+copy(root/'.agents/tests/fixtures/upgrade-v1.2.5/setup-hosting.md.txt', shared/'setup-hosting/SKILL.md')
+shared_record['skill_paths']['v1.2.5'] = ['maintain/VERSION', 'setup-hosting/SKILL.md']
+shared_baseline = work/'shared-record.json'
+put(shared_baseline, json.dumps(shared_record))
+shared_command = [sys.executable, source/'maintain/scripts/kit-local-edits.py',
+                  '--skills', shared, '--record', shared_baseline]
+assert run(shared_command) == ''
+shared_file = shared/'setup-hosting/recipes/parts/starters/nextjs-supabase/next-env.d.ts'
+with shared_file.open('a') as handle:
+    handle.write('// Personal declaration\n')
+assert 'local-edit\t'+str(shared_file) in run(shared_command, code=1)
+print('  ok: an untouched shared-installer starter file is recognised and a personal edit is named')
+
 # The pre-update read must find even committed edits before an installer can
 # replace them. Use an actual recorded release file on each installation layout.
 local_check = source/'maintain/scripts/kit-local-edits.py'
