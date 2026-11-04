@@ -24,6 +24,10 @@ const databaseBoundary = {
       if (/^(?:tests|scripts)(?:\/|$)/.test(relative) || /^(?:tests|scripts)(?:\/|$)/.test(source)) {
         context.report({ node, messageId: 'identity' });
       }
+      if (/^pg-boss(?:\/|$)/.test(source)
+        && path.relative(projectRoot, file).replaceAll('\\', '/') !== 'src/lib/jobs/queue.ts') {
+        context.report({ node, messageId: 'connection' });
+      }
       if (helper) return;
       const rawDriver = /^(?:pg(?:-pool|-native)?(?:\/|$)|postgres(?:\/|$))/.test(source);
       const rawModule = /(?:^|\/)db\/(?:pool|client|raw)(?:\.|\/|$)/.test(source);

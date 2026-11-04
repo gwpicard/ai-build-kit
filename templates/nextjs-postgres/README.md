@@ -7,8 +7,8 @@ included in a public kit. The existing starter and recipes are unchanged.
 It keeps the existing TypeScript, Next.js 16, Tailwind, shadcn, Vitest,
 Playwright and ESLint base. It needs Node.js 22.23.2 and Docker Compose for the
 local database. The root page is a placeholder; it exposes no records or
-sign-in route. `/api/health` currently checks only the web process. Database
-and worker health belong to a later change.
+sign-in route. [Jobs and schedules](JOBS.md) describes the worker, protected
+timer route and heartbeat health check.
 
 ## Try it locally
 
@@ -41,8 +41,8 @@ one transaction and records their checksums. It serialises concurrent runs
 with a transaction advisory lock and rejects changes to an applied file.
 Repeat it to check that applying migrations twice is harmless. A live database
 needs separately provisioned roles and a rehearsed migration with a backup.
-The app receives only `DATABASE_URL`; keep both privileged URLs out of its
-environment.
+The app and worker receive only `DATABASE_URL`; keep both privileged URLs out
+of their environments.
 
 The starter workflow runs its checks against a Postgres service. The source
 repository also runs them from this folder. CI uses trust authentication on
@@ -107,7 +107,8 @@ creation and truncation.
 
 The example `records` table lets members read and change their own records,
 viewers read their own records, and administrators read and change all
-records. An unassigned role has no access. `withheld` demonstrates denial when
+records. An unassigned role has no access. The fixed jobs system identity has narrower
+permissions described in [Jobs and schedules](JOBS.md#permissions-and-duplicate-effects). `withheld` demonstrates denial when
 a table has SQL grants but no policy. Tests check that its seeded rows remain
 invisible to every app role.
 

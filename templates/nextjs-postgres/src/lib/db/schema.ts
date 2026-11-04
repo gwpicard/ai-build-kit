@@ -7,6 +7,16 @@ interface RecordRow {
 }
 
 export interface Database {
+  "job_runtime.schedules": {
+    name: string;
+    checked_at: Generated<Date>;
+  };
+  "job_runtime.heartbeats": {
+    id: string;
+    mode: "worker" | "timer";
+    seen_at: Generated<Date>;
+    stopped: boolean;
+  };
   records: RecordRow;
   withheld: RecordRow;
   "audit.events": {

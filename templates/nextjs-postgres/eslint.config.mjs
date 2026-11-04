@@ -6,7 +6,7 @@ import databaseBoundary from "./scripts/database-boundary.mjs";
 const config = [
   ...nextVitals,
   ...nextTypescript,
-  { ignores: [".next/**", "node_modules/**", "next-env.d.ts", ".agents/**", ".claude/**"] },
+  { ignores: [".next/**", "dist/**", "node_modules/**", "next-env.d.ts", ".agents/**", ".claude/**"] },
   {
     files: ["**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}"],
     ignores: ["scripts/**", "tests/**", "eslint.config.mjs"],

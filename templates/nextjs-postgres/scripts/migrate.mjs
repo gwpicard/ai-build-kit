@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import pg from 'pg';
+import { migrateJobs } from './migrate-jobs.mjs';
 import { reportFailure } from './local-database.mjs';
 
 try {
@@ -33,6 +34,7 @@ try {
       console.log(`Applied ${name}`);
     }
     await client.query('COMMIT');
+    await migrateJobs(client);
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;

@@ -24,11 +24,11 @@ test("every record table forces RLS, every business table is audited, and the ma
     expect(row.rls, row.name).toBe(true);
     expect(row.forced, row.name).toBe(true);
     expect(row.owner, row.name).toBe("tool_owner");
-    if (row.schema !== "audit" && `${row.schema}.${row.name}` !== "private.schema_migrations") {
+    if (!["job_queue", "job_runtime"].includes(row.schema) && row.schema !== "audit" && `${row.schema}.${row.name}` !== "private.schema_migrations") {
       expect(row.audited, row.name).toBe(true);
     }
   }
-  const appTables = metadata.rows.filter((row) => `${row.schema}.${row.name}` !== "private.schema_migrations")
+  const appTables = metadata.rows.filter((row) => !["job_queue", "job_runtime"].includes(row.schema) && `${row.schema}.${row.name}` !== "private.schema_migrations")
     .map((row) => row.schema === "public" ? row.name : `${row.schema}.${row.name}`).sort();
   expect([...tables].sort()).toEqual(appTables);
   expect(Object.keys(roleMatrix).sort()).toEqual([...appRoles].sort());
