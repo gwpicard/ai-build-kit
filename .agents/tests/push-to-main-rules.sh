@@ -26,7 +26,7 @@ trap 'rm -rf "$work"' EXIT
 
 echo "Push-to-main rule checks:"
 
-python3 - "$SETTINGS" "$work" > "$work/matcher.out" 2>&1 <<'PY' || {
+python3 - "$SETTINGS" "$work" "$ROOT" > "$work/matcher.out" 2>&1 <<'PY' || {
 import json
 import re
 import sys
@@ -223,6 +223,10 @@ def leave_out_each(group, check, label):
 
 # Skipping the push guard, and throwing away unsaved changes.
 discard_refused = [
+    "git clean -nd",
+    "git clean -n",
+    "git restore --staged .",
+    "git restore --staged app/sum.js",
     "git push --no-verify origin feature",
     "git push origin feature --no-verify",
     "git push -u origin feature --no-verify",
@@ -246,6 +250,8 @@ discard_refused = [
     "git switch --force main",
     "git switch --discard-changes main",
     "git switch main --discard-changes",
+    "git restore app/sum.js",
+    "git restore --source=HEAD app/sum.js",
     "git restore .",
     "git restore -- .",
     "git restore -- app/sum.js",
@@ -253,6 +259,10 @@ discard_refused = [
     "git restore --source=HEAD --staged --worktree .",
     "git restore -W app/sum.js",
     "git restore --staged -W app/sum.js",
+    "git clean",
+    "git clean -i",
+    "git clean -id",
+    "git clean --interactive",
     "git clean -f",
     "git clean -fd",
     "git clean -df",
@@ -265,6 +275,16 @@ discard_refused = [
     "git reset --hard HEAD~1",
     "git reset -q --hard",
     "git reset -q --hard HEAD",
+    "git stash",
+    "git stash push",
+    "git stash push -u -- app/sum.js",
+    "git stash save",
+    "git stash save checkpoint",
+    "git stash -u",
+    "git stash --include-untracked",
+    "git stash -a",
+    "git stash --keep-index",
+    "git stash -p",
     "git stash drop",
     "git stash drop stash@{1}",
     "git stash clear",
@@ -275,22 +295,20 @@ discard_allowed = [
     "git checkout -b feature-fix",
     "git switch main",
     "git switch -c fix-total",
-    "git restore --staged app/sum.js",
-    "git restore --staged .",
-    "git clean -n",
-    "git clean -nd",
     "git reset -q",
     "git reset HEAD app/sum.js",
     "git reset --soft HEAD~1",
-    "git stash",
     "git stash list",
+    "git stash show -p",
+    "git reset HEAD -- app/sum.js",
+    "git ls-files --others --exclude-standard",
     "git stash pop",
     "git push -u origin feature",
     "sh .agents/skills/repair/scripts/reset-attempt.sh",
 ]
 # Kept from the first founding settings, and in this repository's own, so
 # they are needed for parity rather than for any one spelling here.
-parity = {"Bash(git reset --hard:*)", "Bash(git clean -f:*)", "Bash(git clean -fd:*)"}
+parity = {"Bash(git reset --hard:*)"}
 discard_rules = [r for r in rules if r.startswith((
     "Bash(git checkout", "Bash(git restore", "Bash(git switch", "Bash(git clean",
     "Bash(git reset", "Bash(git stash", "Bash(git push --no-verify",
@@ -313,19 +331,32 @@ print("  ok: every way of skipping the guard or discarding changes is refused, a
 leave_out_each([r for r in discard_rules if r not in parity], discard_problems,
                "discard and guard rules")
 
-# A restore that names one file, or unstages, is not refused, since the
-# matcher cannot tell the two apart. It asks first instead.
-restore_ask = ["git restore app/sum.js", "git restore --staged .", "git restore --staged app/sum.js"]
-for command in restore_ask:
-    print("  %-7s %s" % ("asks" if denied(ask, command) else "runs", command))
-missing = [c for c in restore_ask if not denied(ask, c)]
-if missing:
-    print("these restores neither ask nor are refused: %s" % missing)
-    sys.exit(1)
-if [c for c in restore_ask if denied([r for r in ask if r != "Bash(git restore *)"], c)]:
-    print("a restore asks without the restore ask rule, so the check does not need it")
-    sys.exit(1)
-print("  ok: a restore of one file, or an unstage, asks first rather than being refused")
+# The portable guard and maintainer settings protect the same unsaved work.
+# This checks command coverage, not the wording of the recovery conversation.
+from pathlib import Path
+root = Path(sys.argv[3])
+blocked_forms = ("git stash", "git stash push", "git stash save", "git stash -u",
+                 "git checkout -- <path>", "git restore", "git reset --hard", "git clean")
+for relative in (".agents/guard/blocked-commands.md",
+                 ".agents/skills/setup-ai-build-kit/references/blocked-commands.md"):
+    text = (root / relative).read_text()
+    if relative.startswith(".agents/guard/"):
+        text = text.split("## Commands", 1)[1].split("## Standing restrictions", 1)[0]
+    else:
+        text = text.split("The blocked spellings include", 1)[1].split("These boundaries", 1)[0]
+    for form in blocked_forms:
+        if "`" + form + "`" not in text:
+            sys.exit("%s is missing blocked form %s" % (relative, form))
+maintainer = json.loads((root / ".claude/settings.json").read_text())["permissions"]["deny"]
+for command in discard_refused:
+    if command.startswith(("git stash", "git restore", "git clean", "git reset",
+                           "git checkout -- ", "git checkout HEAD -- ")):
+        if not denied(maintainer, command):
+            sys.exit("maintainer settings do not refuse " + command)
+for command in discard_allowed:
+    if denied(maintainer, command):
+        sys.exit("maintainer settings refuse " + command)
+print("  ok: portable guards and maintainer settings cover unsaved-work commands")
 
 
 # Reading another tool's stored login.
@@ -603,7 +634,7 @@ for command in (
 # The rules added after that release reach an older project too, and only
 # through the offer: nothing in the file changes until --apply.
 template=json.loads((root/'.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json').read_text())
-newer_deny=[r for r in template['permissions']['deny'] if r.startswith(('Edit(.claude/settings','Edit(**/.claude/settings','Write(.claude/settings','Write(**/.claude/settings','Read(','Bash(security','Bash(gh auth token','Bash(git checkout','Bash(git restore','Bash(git stash','Bash(git push --no-verify','Bash(git push * --no-verify','Bash(git switch','Bash(git clean -*','Bash(git clean * ','Bash(git reset * ','Bash(git *core.hooks','Bash(gh auth status','Bash(git credential','Bash(gh pr merge','Bash(gh api *pulls/*/merge','Bash(gh api *merges','Bash(gh api graphql *mergePullRequest','Bash(* > .claude/settings','Bash(* >> .claude/settings','Bash(tee .claude/settings','Bash(*')) and not r.startswith(('Read(**/.env','Read(!**/.env'))]
+newer_deny=[r for r in template['permissions']['deny'] if r.startswith(('Edit(.claude/settings','Edit(**/.claude/settings','Write(.claude/settings','Write(**/.claude/settings','Read(','Bash(security','Bash(gh auth token','Bash(git checkout','Bash(git restore','Bash(git stash','Bash(git push --no-verify','Bash(git push * --no-verify','Bash(git switch','Bash(git clean','Bash(git reset * ','Bash(git *core.hooks','Bash(gh auth status','Bash(git credential','Bash(gh pr merge','Bash(gh api *pulls/*/merge','Bash(gh api *merges','Bash(gh api graphql *mergePullRequest','Bash(* > .claude/settings','Bash(* >> .claude/settings','Bash(tee .claude/settings','Bash(*')) and not r.startswith(('Read(**/.env','Read(!**/.env'))]
 newer_ask=[r for r in template['permissions']['ask'] if 'merge' not in r.lower()]
 assert len(newer_deny)>=16 and len(newer_ask)>=13,(newer_deny,newer_ask)
 assert 'Edit(**/.claude/settings.json)' in newer_deny

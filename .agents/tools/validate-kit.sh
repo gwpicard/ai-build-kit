@@ -2348,7 +2348,7 @@ fi
 
 # Deny-list parity: permissions.deny must be exactly the set of entries that
 # mirror .agents/guard/blocked-commands.md's mechanically enforceable
-# patterns (git reset --hard, git push --force/-f, git clean -f/-fd, rm -rf).
+# patterns for unsaved work, forced pushes and recursive deletion.
 # An exact set comparison catches a missing OR an unexplained extra entry,
 # not just a missing substring. Both this repository's own Claude settings and
 # the settings founding gives a project are checked. Founded projects also
@@ -2359,14 +2359,21 @@ $ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.jso
 expected_deny="Bash(git reset --hard:*)
 Bash(git push --force:*)
 Bash(git push -f:*)
-Bash(git clean -f:*)
-Bash(git clean -fd:*)
-Bash(rm -rf:*)"
+Bash(rm -rf:*)
+Bash(git restore:*)
+Bash(git clean:*)
+Bash(git stash)
+Bash(git stash push:*)
+Bash(git stash save:*)
+Bash(git stash -*)
+Bash(git checkout -- *)
+Bash(git checkout * -- *)
+Bash(git reset * --hard*)
+Bash(git stash drop:*)
+Bash(git stash clear:*)"
 # Founded projects use the pre-push guard for main and replacing remote work.
 # Their text rules protect the guard and the other command boundaries.
 expected_deny_project="Bash(git reset --hard:*)
-Bash(git clean -f:*)
-Bash(git clean -fd:*)
 Bash(rm -rf:*)
 Write(**/.claude/settings.json)
 Edit(**/.claude/settings.json)
@@ -2406,7 +2413,6 @@ Bash(git *core.hooksPath*)
 Bash(git *core.hookspath*)
 Bash(git checkout .)
 Bash(git checkout * .)
-Bash(git restore .)
 Bash(git checkout -- *)
 Bash(git checkout * -- *)
 Bash(git checkout -f*)
@@ -2416,12 +2422,6 @@ Bash(git switch -f*)
 Bash(git switch * -f*)
 Bash(git switch *--force*)
 Bash(git switch *--discard-changes*)
-Bash(git restore -- *)
-Bash(git restore *--worktree*)
-Bash(git restore -W*)
-Bash(git restore * -W*)
-Bash(git clean -*f*)
-Bash(git clean * -*f*)
 Bash(git reset * --hard*)
 Bash(git stash drop:*)
 Bash(git stash clear:*)
@@ -2450,7 +2450,13 @@ Read(//**/.docker/config.json)
 Bash(gh pr merge:*)
 Bash(gh api *pulls/*/merge*)
 Bash(gh api *merges*)
-Bash(gh api graphql *mergePullRequest*)"
+Bash(gh api graphql *mergePullRequest*)
+Bash(git restore:*)
+Bash(git clean:*)
+Bash(git stash)
+Bash(git stash push:*)
+Bash(git stash save:*)
+Bash(git stash -*)"
 # A project blocks direct merge commands and asks before live changes.
 expected_ask_project="Bash(*merge.py*--approved*)
 Bash(*merge.py*--resume*)
@@ -2459,7 +2465,6 @@ Bash(gh api *git/refs*)
 Bash(gh api graphql *createRef*)
 Bash(gh api graphql *updateRef*)
 Bash(gh api graphql *deleteRef*)
-Bash(git restore *)
 Bash(supabase db push:*)
 Bash(supabase *config push*)
 Bash(vercel api *PATCH*)
@@ -2539,7 +2544,7 @@ else
   note "python3 not available; falling back to a substring check on permissions.deny"
   while IFS= read -r deny_json; do
     [ -n "$deny_json" ] || continue
-    for pattern in "git reset --hard" "git push --force" "git clean -f" "rm -rf"; do
+    for pattern in "git reset --hard" "git push --force" "git clean" "git restore" "git stash" "rm -rf"; do
       if ! grep -qF "$pattern" "$deny_json"; then
         fail "$deny_json permissions.deny is missing mechanical enforcement for '$pattern'"
       fi
@@ -2683,6 +2688,9 @@ check_claim "team.md" "team.md" "$SKILLS/setup-ai-build-kit/SKILL.md"
 check_claim "mandatory fresh session" "Always a fresh session"
 check_claim "universal pull-request claim" "which is not finished until its check is green"
 check_claim "universal test-first claim" "Test first, and show the test failing before building"
+check_claim "approved clearing of unsaved work" "Never clear without approval."
+check_claim "offer to clear unsaved work" "show what clearing loses"
+check_claim "maintenance offers clearing" "to continue it, save it or clear it."
 check_claim "obsolete automatic-rebuild rule" "rebuilds the piece from the masterplan, which is usually quicker and cleaner"
 check_claim "absolute discipline-visibility claim" "so they never appear in that list"
 check_claim "incorrect Claude invocation semantics" "can't be launched by slash either"
