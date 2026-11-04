@@ -393,6 +393,14 @@ precedence. Locally, only failures make the suite exit non-zero. GitHub also
 fails the job for incomplete rehearsals. `validate-kit.sh` checks the workflow
 jobs, repository gate and call to `run-all.sh`.
 
+The starter's browser checks choose a free local port. Set `PORT` to choose
+one explicitly; the checks refuse to reuse a server already listening there.
+The Python mutation rehearsal first runs a small independent baseline with
+the mutation tool. If that tool is missing or cannot run, the rehearsal reports
+"could not run here" with the reason and still runs its JavaScript cases.
+Once the tool passes that baseline, faults in the kit's mutation check remain
+failures.
+
 The validator runs some of the rehearsals itself, so the hosted job repeats
 them. Keep both runs; do not add a skip switch. The hosted duplication costs
 about half a minute, while a check that passes without running can hide an
