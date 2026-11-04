@@ -569,7 +569,16 @@ aimed at `stable` and explains how to retarget it. It is not required because a
 required check on `stable` would reject the release job's update.
 
 `main` requires a pull request and the `source-kit-validation` and `rehearsal`
-checks; it rejects deletion and force-push. `stable` rejects deletion and
+checks; it rejects deletion and force-push. The source validation check also
+requires the reusable Postgres starter workflow to succeed. That workflow runs
+once per pull request through `source-checks.yml`, and directly on pushes to
+`main`. Neither pull-request workflow filters changed paths.
+
+The rehearsal runner records each test's duration and runs selected isolated
+tests with two workers. Other tests run alone; adding a test always includes it
+in the suite. Use `REHEARSAL_JOBS=1 .agents/tests/run-all.sh` for a serial run.
+
+`stable` rejects deletion and
 force-push but cannot require a pull request: the release job updates its ref
 through the API, while a pull-request rule rejects any ref update.
 
