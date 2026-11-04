@@ -4,6 +4,16 @@ Each piece carries its change to the
 masterplan as [pieces.md](pieces.md) describes. The masterplan keeps its
 sections and describes the present.
 
+## Adopted behaviour
+
+Describe existing behaviour as `as found`, including known faults and unknowns.
+An adopted entry stays `as found`, never `done`, until a passing behaviour test
+covers that entry. Link the test and record what was tried before changing its
+status to `covered as found`. Coverage records evidence, not approval: keep any
+fault and the person's decision beside it. A passing test for one journey
+cannot establish another entry or the whole tool. The trued-against mark
+records a comparison with saved code, not test coverage or approval.
+
 ## Apply a piece's change
 
 At save time, apply the piece's `## Masterplan change` to the named section,

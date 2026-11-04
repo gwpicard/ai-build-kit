@@ -367,8 +367,8 @@ installer and the Agent Plugins folder carry skills only. For a review on
 those routes, `second-opinion` starts an ordinary fresh subagent and tells it
 to load the `second-opinion` skill with the same review inputs.
 
-The reviewer, refuter and researcher only read. Enforcement depends on the
-coding agent:
+The reviewer, refuter and researcher are instructed to read only. When their
+briefs are installed, enforcement depends on the coding agent:
 
 | Coding agent | What keeps a read-only agent from changing files |
 |---|---|

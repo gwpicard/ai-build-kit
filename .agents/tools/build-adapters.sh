@@ -239,14 +239,13 @@ quoted() {
 # What holds read and research access, by coding agent:
 #   Claude Code  its `tools` list: no Edit or Write. A read agent keeps Bash,
 #                because a review runs commands, and Bash can still change a
-#                file. The second-opinion skill's review-guard.sh puts back
-#                anything under review that changed, and says so.
+#                file. No check after the review restores such a change.
 #   Cursor       `readonly: true` in the same .claude/agents/ file: no edits,
 #                no shell command that changes state. Claude Code ignores it.
 #   Gemini CLI   its `tools` list: reading and searching tools only, no shell.
 #   Copilot      its `tools` list: read, search and web, no edit or execute.
 #   Codex        nothing. An agent file cannot override the session's sandbox
-#                or approvals, so only the brief and the guard hold it.
+#                or approvals, so only the brief holds it.
 generate_agents() {
   OUT="$1"
   rm -rf "$OUT/.claude/agents" "$OUT/.codex/agents" "$OUT/.gemini/agents" "$OUT/.github/agents"

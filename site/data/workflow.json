@@ -147,11 +147,6 @@
         "description": "The review packet contains the change and supporting evidence. The review record identifies the version reviewed."
       },
       {
-        "script": "review-guard.sh",
-        "path": ".agents/skills/second-opinion/scripts/review-guard.sh",
-        "description": "The review protection script restores changed or deleted files that it copied before the review; it reports other changes without restoring them."
-      },
-      {
         "script": "check-review.sh",
         "path": ".agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh",
         "description": "The review check fails the project check while a finding marked worth stopping for remains unresolved or the review record identifies a different version."

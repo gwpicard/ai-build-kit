@@ -176,7 +176,7 @@ printf 'Read `/etc`. Put logs in `/tmp`. The `/health` route returns 200. GET `/
   >> "$T/.agents/skills/alpha/SKILL.md"
 printf 'Run `/host`. Use /invented-command. Run /ai-build-kit:alpha.\n' \
   >> "$T/.agents/skills/alpha/SKILL.md"
-printf 'Read /ship.md and /plan/log. Run /other-tool:ship.\n' \
+printf 'Read /ship.md and /plan/log. Run /other-tool:ship. Also (/ship.md), **/plan/log** and [/other-tool:ship](https://example.invalid).\n' \
   >> "$T/.agents/skills/alpha/SKILL.md"
 out=$(run --strict "$T") && rc=0 || rc=$?
 [ "$rc" -eq 0 ] && [ -z "$out" ] \
@@ -190,6 +190,17 @@ out=$(run --strict "$T") && rc=0 || rc=$?
   && printf '%s\n' "$out" | grep -q '^command.*alpha/SKILL.md.*/ai-build-kit:deploy is retired or not a command in the inventory$' \
   && pass "retired names and an explicit unknown kit command fail with file and line" \
   || fail "a retired or unknown kit command was missed (exit $rc): $out"
+
+# Markdown and sentence punctuation do not hide a command.
+for command in '(/ship)' '**/plan**' '[/ai-build-kit:deploy](https://example.invalid)'; do
+  T="$WORK/wrapped-command"
+  plant "$T"
+  printf 'Use %s.\n' "$command" >> "$T/.agents/skills/alpha/SKILL.md"
+  out=$(run --strict "$T") && rc=0 || rc=$?
+  [ "$rc" -eq 1 ] && [ "$(printf '%s\n' "$out" | grep -c '^command')" -eq 1 ] \
+    && pass "wrapped command is rejected: $command" \
+    || fail "wrapped command was missed (exit $rc): $command: $out"
+done
 
 # An unreadable inventory is exit 2, never a pass.
 T="$WORK/noinventory"
