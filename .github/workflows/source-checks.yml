@@ -68,6 +68,8 @@ jobs:
           cache: npm
           cache-dependency-path: |
             .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/package-lock.json
+      - name: Share the restored npm downloads with rehearsal engines
+        run: printf 'npm_config_cache=%s\n' "$(npm config get cache)" >> "$GITHUB_ENV"
       - name: Prepare the starter's database tools
         uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
         with:
