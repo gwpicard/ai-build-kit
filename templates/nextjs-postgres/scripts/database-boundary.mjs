@@ -2,18 +2,23 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const helperPath = fileURLToPath(new URL('../src/lib/db/with-database.ts', import.meta.url));
+const signInRoot = fileURLToPath(new URL('../src/lib/sign-in/', import.meta.url));
+const authStorage = path.join(signInRoot, 'storage.ts');
 const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 
 const databaseBoundary = {
   meta: { type: 'problem', schema: [], messages: {
     connection: 'Open app database connections only in src/lib/db/with-database.ts.',
     identity: 'Test support and database administration scripts cannot be imported by app code.',
+    auth: 'Reach sign-in only through src/lib/sign-in/index.ts; Better Auth stays inside that module.',
     dynamic: 'Use a literal module path so the database boundary can check it.',
     loader: 'Alternative module loaders are available only in the database helper.',
   } },
   create(context) {
     const file = context.filename.replaceAll('\\', '/');
-    const helper = path.resolve(context.filename) === helperPath;
+    const filename = path.resolve(context.filename);
+    const inSignIn = filename.startsWith(signInRoot);
+    const helper = filename === helperPath || filename === authStorage;
     function check(node, source, specifiers) {
       if (typeof source !== 'string') {
         context.report({ node, messageId: 'dynamic' });
@@ -26,6 +31,11 @@ const databaseBoundary = {
       if (/^(?:tests|scripts)(?:\/|$)/.test(relative) || /^(?:tests|scripts)(?:\/|$)/.test(source)) {
         context.report({ node, messageId: 'identity' });
       }
+      const authPackage = /^(?:better-auth|@better-auth\/[^/]+)(?:\/|$)/.test(source)
+        || /(?:^|\/)node_modules\/(?:better-auth|@better-auth\/[^/]+)(?:\/|$)/.test(resolved.replaceAll('\\', '/'));
+      const internalSignIn = resolved.startsWith(signInRoot)
+        && !['index', 'index.ts', 'index.js'].includes(path.relative(signInRoot, resolved));
+      if (!inSignIn && (authPackage || internalSignIn)) context.report({ node, messageId: 'auth' });
       const queueLibrary = /^pg-boss(?:\/|$)/.test(source)
         || /(?:^|\/)node_modules\/pg-boss(?:\/|$)/.test(resolved.replaceAll('\\', '/'));
       if (queueLibrary

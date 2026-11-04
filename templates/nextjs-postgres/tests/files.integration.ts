@@ -1,5 +1,8 @@
-import { randomUUID } from "node:crypto";
-import { beforeAll, describe, expect, test, vi } from "vitest";
+import { randomBytes, randomUUID } from "node:crypto";
+import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
+import { createSignIn } from "../src/lib/sign-in/service";
+import { stubProvider } from "./support/oidc";
+import type { DatabaseIdentity } from "../src/lib/db/identity";
 import { createQueue } from "../src/lib/jobs/queue";
 import { jobIdentity } from "../src/lib/jobs/identity";
 import { files } from "../src/lib/files";
@@ -13,13 +16,45 @@ import { inspect } from "./support/database";
 
 // The assertions are identical for both real emulator services, with no SDK mocks.
 describe.each(["s3", "azure-blob"])("%s storage contract", (adapter) => {
-  beforeAll(() => {
+  let auth: ReturnType<typeof createSignIn>;
+  let stub: Awaited<ReturnType<typeof stubProvider>>;
+  let owner: DatabaseIdentity;
+  let other: DatabaseIdentity;
+  let ownerHeaders: Headers;
+  let ownerId: string;
+  beforeAll(async () => {
     vi.stubEnv("FILES_ADAPTER", adapter);
     vi.stubEnv("FILES_LINK_SECONDS", "2");
+    stub = await stubProvider();
+    const baseURL = "https://tool.example.test";
+    auth = createSignIn({ baseURL, secret: randomBytes(32).toString("hex"),
+      databaseURL: process.env.AUTH_DATABASE_URL!, directory: { provider: "google", issuer: stub.issuer,
+        domain: "example.test", clientId: "stub-client", clientSecret: randomUUID() } }, async () => {});
+    const cookies = (response: Response) => response.headers.getSetCookie()
+      .map((cookie) => cookie.split(";")[0]).join("; ");
+    const signIn = async () => {
+      stub.setClaims({ hd: "example.test", email: `${randomUUID()}@example.test`, sub: randomUUID(), email_verified: true });
+      const start = await auth.handler(new Request(`${baseURL}/api/auth/sign-in/social`, {
+        method: "POST", headers: { "Content-Type": "application/json", Origin: baseURL },
+        body: JSON.stringify({ provider: "google", callbackURL: "/" }),
+      }));
+      expect(start.status).toBe(200);
+      const redirect = await fetch((await start.json()).url, { redirect: "manual" });
+      const callback = await auth.handler(new Request(redirect.headers.get("location")!, {
+        headers: { Cookie: cookies(start) },
+      }));
+      const headers = new Headers({ Cookie: cookies(callback) });
+      const identity = await auth.identity(headers);
+      expect(identity?.role).toBe("member");
+      return { headers, identity: identity! };
+    };
+    const signedIn = await signIn();
+    owner = signedIn.identity;
+    ownerHeaders = signedIn.headers;
+    ownerId = owner.userId;
+    other = (await signIn()).identity;
   });
-  const ownerId = randomUUID();
-  const owner = testIdentity(ownerId, "member");
-  const other = testIdentity(randomUUID(), "member");
+  afterAll(async () => { await auth?.close(); await stub?.close(); });
   const body = new Uint8Array([0, 1, 2, 128, 255]);
   function raw() {
     const config = storageConfig();
@@ -35,7 +70,7 @@ describe.each(["s3", "azure-blob"])("%s storage contract", (adapter) => {
       const id = (await queue.send("slow-document", { fileId: file.id }))!;
       const [job] = await queue.fetch<{ fileId: string }>("slow-document", { includeMetadata: true });
       expect(job.id).toBe(id);
-      // A project's handler receives a verified identity separately from the payload.
+      // The session supplies the actor separately from the untrusted job payload.
       const handle = async (identity: typeof owner) => {
         const bytes = await port.fetch(identity, job.data.fileId);
         await withDatabase(identity, (db) => db.insertInto("records")
@@ -44,8 +79,8 @@ describe.each(["s3", "azure-blob"])("%s storage contract", (adapter) => {
       };
       await expect(handle(jobIdentity)).rejects.toThrow("File is unavailable");
       await expect(handle(other)).rejects.toThrow("File is unavailable");
-      await handle(owner);
-      await handle(owner);
+      await handle((await auth.identity(ownerHeaders))!);
+      await handle((await auth.identity(ownerHeaders))!);
       await queue.complete("slow-document", job);
       const output = await withDatabase(owner, (db) => db.selectFrom("records").selectAll()
         .where("id", "=", id).execute());
@@ -53,6 +88,47 @@ describe.each(["s3", "azure-blob"])("%s storage contract", (adapter) => {
       const audit = await inspect((client) => client.query("select actor_id, actor_role from audit.events where record_id=$1", [id]));
       expect(audit.rows).toEqual([{ actor_id: ownerId, actor_role: "member" }]);
     } finally { await queue.stop(); await port.delete(owner, file.id); }
+  });
+
+  test("current session roles govern file access and queued effects", async () => {
+    const port = files();
+    const file = await port.save(owner, "Session role", body);
+    const queue = createQueue();
+    await queue.start();
+    try {
+      const id = (await queue.send("slow-document", { fileId: file.id, role: "admin", userId: other.userId }))!;
+      const [job] = await queue.fetch<{ fileId: string }>("slow-document", { includeMetadata: true });
+      const handle = async () => {
+        const identity = await auth.identity(ownerHeaders);
+        if (!identity) throw new Error("Sign-in required");
+        await port.fetch(identity, job.data.fileId);
+        await withDatabase(identity, (db) => db.insertInto("records")
+          .values({ id, owner_id: identity.userId, title: "Session job" }).execute());
+      };
+      for (const role of ["viewer", "unassigned"] as const) {
+        await inspect((client) => client.query('UPDATE sign_in."user" SET role=$1 WHERE id=$2', [role, ownerId]));
+        const identity = (await auth.identity(ownerHeaders))!;
+        expect(identity.role).toBe(role);
+        if (role === "viewer") {
+          expect(new Uint8Array(await port.fetch(identity, file.id))).toEqual(body);
+          expect((await fetch(await port.temporaryLink(identity, file.id))).status).toBe(200);
+          await expect(handle()).rejects.toMatchObject({ code: "42501" });
+        } else {
+          await expect(port.temporaryLink(identity, file.id)).rejects.toThrow("File is unavailable");
+          await expect(handle()).rejects.toThrow("File is unavailable");
+        }
+        await expect(port.save(identity, "Denied", body)).rejects.toMatchObject({ code: "42501" });
+      }
+      await inspect((client) => client.query('UPDATE sign_in."user" SET role=$1 WHERE id=$2', ["member", ownerId]));
+      await handle();
+      const audit = await inspect((client) => client.query('SELECT actor_id, actor_role FROM audit.events WHERE record_id=$1', [id]));
+      expect(audit.rows).toEqual([{ actor_id: ownerId, actor_role: "member" }]);
+      await queue.complete("slow-document", job);
+    } finally {
+      await inspect((client) => client.query('UPDATE sign_in."user" SET role=$1 WHERE id=$2', ["member", ownerId]));
+      await queue.stop();
+      await port.delete(owner, file.id);
+    }
   });
 
   test("all five adapter actions round-trip binary content and filter listing by prefix", async () => {

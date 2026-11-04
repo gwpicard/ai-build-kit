@@ -48,6 +48,7 @@ try {
   const dbPort = port("postgres", 5432);
   env.ADMIN_DATABASE_URL = `postgresql://postgres:${env.POSTGRES_PASSWORD}@127.0.0.1:${dbPort}/tool_test`;
   env.MIGRATION_DATABASE_URL = `postgresql://tool_owner:${secret()}@127.0.0.1:${dbPort}/tool_test`;
+  env.AUTH_DATABASE_URL = `postgresql://tool_auth:${secret()}@127.0.0.1:${dbPort}/tool_test`;
   env.DATABASE_URL = `postgresql://tool_app:${secret()}@127.0.0.1:${dbPort}/tool_test`;
   env.FILES_S3_ENDPOINT = `http://127.0.0.1:${port("s3", 9000)}`;
   env.FILES_AZURE_ENDPOINT = `http://127.0.0.1:${port("azurite", 10000)}/filetests`;

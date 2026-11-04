@@ -4,7 +4,7 @@ export default function Home() {
       <p className="text-sm font-medium text-muted-foreground">Team tool</p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight">Your workspace is ready</h1>
       <p className="mt-4 max-w-xl text-muted-foreground">
-        Sign-in is not available yet.
+        Set up company sign-in or invitation access for your team.
       </p>
     </main>
   );

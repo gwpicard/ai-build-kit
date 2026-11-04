@@ -14,13 +14,16 @@ try {
     } else if (roles.rowCount !== 2) {
       throw new Error('Local roles are only partly configured');
     }
+    const authRole = await client.query("SELECT 1 FROM pg_roles WHERE rolname='tool_auth'");
+    if (!authRole.rowCount) await client.query(`CREATE ROLE tool_auth LOGIN NOSUPERUSER
+      NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS`);
     await client.query('ALTER SCHEMA public OWNER TO tool_owner');
     await client.query(`DO $$ BEGIN
       EXECUTE format('REVOKE CREATE, TEMPORARY ON DATABASE %I FROM PUBLIC', current_database());
       EXECUTE format('GRANT CREATE ON DATABASE %I TO tool_owner', current_database());
-      EXECUTE format('GRANT CONNECT ON DATABASE %I TO tool_owner, tool_app', current_database());
+      EXECUTE format('GRANT CONNECT ON DATABASE %I TO tool_owner, tool_app, tool_auth', current_database());
     END $$`);
-    for (const connection of [urls.owner, urls.app]) {
+    for (const connection of [urls.owner, urls.app, urls.auth]) {
       const url = new URL(connection);
       const password = decodeURIComponent(url.password);
       if (!password) throw new Error('A local role password is required');

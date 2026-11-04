@@ -93,3 +93,33 @@ test('the exact database helper may use a module loader', async () => {
     export const pool = load("pg");`, { filePath: path.resolve('src/lib/db/with-database.ts') });
   expect(result.messages.filter((message) => message.ruleId === 'database/boundary')).toEqual([]);
 });
+
+for (const code of [
+  'import { betterAuth } from "better-auth";',
+  'export { magicLink } from "better-auth/plugins";',
+  'const auth = await import("better-auth");',
+  'const auth = require("better-auth");',
+  'import { APIError } from "@better-auth/core/error";',
+  'import auth from "../../node_modules/better-auth/dist/index.mjs";',
+  'import { createSignIn } from "@/lib/sign-in/service";',
+  'import { signInStorage } from "./sign-in/storage";',
+]) {
+  test(`lint confines sign-in: ${code}`, async () => {
+    const [result] = await eslint.lintText(code, { filePath: path.resolve('src/lib/bypass.ts') });
+    expect(result.messages.some((message) => message.ruleId === 'database/boundary')).toBe(true);
+  });
+}
+
+test('app code may use the sign-in module entry point', async () => {
+  const [result] = await eslint.lintText('export { sessionIdentity } from "@/lib/sign-in";', {
+    filePath: path.resolve('src/lib/query.ts'),
+  });
+  expect(result.errorCount).toBe(0);
+});
+
+test('a similarly named folder gets no sign-in exemption', async () => {
+  const [result] = await eslint.lintText('import { betterAuth } from "better-auth";', {
+    filePath: path.resolve('src/nested/src/lib/sign-in/service.ts'),
+  });
+  expect(result.messages.some((message) => message.ruleId === 'database/boundary')).toBe(true);
+});
