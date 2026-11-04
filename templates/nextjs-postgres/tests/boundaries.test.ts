@@ -24,11 +24,11 @@ test("every record table forces RLS, every business table is audited, and the ma
     expect(row.rls, row.name).toBe(true);
     expect(row.forced, row.name).toBe(true);
     expect(row.owner, row.name).toBe("tool_owner");
-    if (row.schema !== "audit" && `${row.schema}.${row.name}` !== "private.schema_migrations") {
+    if (row.schema !== "sign_in" && row.schema !== "audit" && `${row.schema}.${row.name}` !== "private.schema_migrations") {
       expect(row.audited, row.name).toBe(true);
     }
   }
-  const appTables = metadata.rows.filter((row) => `${row.schema}.${row.name}` !== "private.schema_migrations")
+  const appTables = metadata.rows.filter((row) => row.schema !== "sign_in" && `${row.schema}.${row.name}` !== "private.schema_migrations")
     .map((row) => row.schema === "public" ? row.name : `${row.schema}.${row.name}`).sort();
   expect([...tables].sort()).toEqual(appTables);
   expect(Object.keys(roleMatrix).sort()).toEqual([...appRoles].sort());
@@ -66,7 +66,7 @@ test("effective app privileges match every table, including privileges outside R
   expect(metadata.rows.length).toBeGreaterThan(0);
   for (const row of metadata.rows) {
     const name = `${row.schema}.${row.name}`;
-    const expected = name === "private.schema_migrations" ? []
+    const expected = name === "private.schema_migrations" || (row.schema === "sign_in" && row.name !== "invitations") ? []
       : row.schema === "audit" ? ["SELECT"] : ["DELETE", "INSERT", "SELECT", "UPDATE"];
     expect(row.privileges, name).toEqual(expected);
   }

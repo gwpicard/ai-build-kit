@@ -6,8 +6,8 @@ included in a public kit. The existing starter and recipes are unchanged.
 
 It keeps the existing TypeScript, Next.js 16, Tailwind, shadcn, Vitest,
 Playwright and ESLint base. It needs Node.js 22.23.2 and Docker Compose for the
-local database. The root page is a placeholder; it exposes no records or
-sign-in route. `/api/health` currently checks only the web process. Database
+local database. The root page is a placeholder. The [sign-in module](SIGN-IN.md) supplies
+company sign-in and email links for invited outsiders. `/api/health` currently checks only the web process. Database
 and worker health belong to a later change.
 
 ## Try it locally
@@ -30,10 +30,10 @@ The example credentials in `.env.example` are for a disposable local database.
 Compose binds it to loopback and keeps its data in memory. Stopping and removing
 the container loses its data. Use it only for development and tests.
 
-`db:bootstrap` creates the two local database roles and gives the owner role
+`db:bootstrap` creates the three local database roles and gives the owner role
 ownership of the public schema, so migrations can manage its grants. It refuses remote
 connections, production mode and databases other than `tool_test` or
-`tool_dev`. It requires all three URLs to point at the same database. Do not
+`tool_dev`. It requires all four URLs to point at the same database. Do not
 use this script to provision a live database.
 
 `db:migrate` connects as `tool_owner`, applies SQL files in filename order in
@@ -41,8 +41,8 @@ one transaction and records their checksums. It serialises concurrent runs
 with a transaction advisory lock and rejects changes to an applied file.
 Repeat it to check that applying migrations twice is harmless. A live database
 needs separately provisioned roles and a rehearsed migration with a backup.
-The app receives only `DATABASE_URL`; keep both privileged URLs out of its
-environment.
+The app receives `DATABASE_URL` and the restricted `AUTH_DATABASE_URL`; keep
+the migration and administrator URLs out of its environment.
 
 The starter workflow runs its checks against a Postgres service. The source
 repository also runs them from this folder. CI uses trust authentication on
@@ -83,12 +83,13 @@ Migration scripts and tests live outside the app source and use privileged
 connections only for setup or inspection. Lint tests exercise the real ESLint
 configuration with deliberately invalid query code.
 
-The identity type has no production constructor yet. `tests/support/identity.ts`
-is a test-only sign-in stand-in; it throws unless both test mode and Vitest
-are present. App imports of test support fail lint. There is no HTTP endpoint,
-header or production environment flag for choosing a user or role. A later
-sign-in module must construct the identity from a verified server session,
-never from request-supplied user or role values.
+`sessionIdentity(headers)` from the sign-in module constructs the identity from
+an authenticated server session. `/api/identity` passes it to `withDatabase`.
+The [sign-in notes](SIGN-IN.md) explain directory restrictions, invitations,
+role assignment and the review check. `tests/support/identity.ts` remains a
+test-only factory; it throws unless both test mode and Vitest are present, and
+app imports of test support fail lint. No request header or production flag
+lets a caller choose a user or role.
 
 These settings trust the server application. The helper and lint rule prevent
 accidental bypasses; they do not protect against arbitrary SQL execution or
@@ -125,9 +126,10 @@ the audit table is append-only for the app role.
 `tests/role-matrix.ts` is the single list of expected access. The generated
 suite tries reading and each change for every role, table and ownership scope.
 Positive cases make a removed permission visible; negative cases check row
-isolation and denied writes. Schema inspection requires every app table to
+isolation and denied writes. Schema inspection requires every business table to
 appear in the matrix, every record table to force row rules, and every
-business table to have the audit trigger.
+business table to have the audit trigger. The separate sign-in suite checks
+authentication tables and invitation permissions.
 
 `npm run test:policy-fault` removes the `records_read` policy on the disposable
 local database and runs the generated member read test. That test must fail.
