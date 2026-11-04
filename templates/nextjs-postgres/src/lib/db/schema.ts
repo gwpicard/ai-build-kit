@@ -7,6 +7,7 @@ interface RecordRow {
 }
 
 export interface Database {
+  files: RecordRow & { storage_scope: string };
   records: RecordRow;
   withheld: RecordRow;
   "audit.events": {
