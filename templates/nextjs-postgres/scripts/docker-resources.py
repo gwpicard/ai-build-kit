@@ -4,6 +4,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -37,7 +38,10 @@ def inventory(scope=None):
                 continue
             created = data.get("CreatedAt", data.get("Created", ""))
             try:
-                born = dt.datetime.fromisoformat(created.replace("Z", "+00:00"))
+                # Docker uses nanoseconds; Python 3.9 accepts only millisecond or
+                # microsecond fractions. Preserve the timezone and normalise precision.
+                stamp = re.sub(r"\.(\d+)", lambda match: "." + match[1][:6].ljust(6, "0"), created)
+                born = dt.datetime.fromisoformat(stamp.replace("Z", "+00:00"))
                 age = (dt.datetime.now(dt.timezone.utc) - born).total_seconds()
             except (ValueError, TypeError):
                 age = None
@@ -129,9 +133,10 @@ def main():
         return supervise(command, args.proxy)
     if args.action == "clean":
         scope = os.environ.get("ABK_DOCKER_SCOPE")
-        if not scope:
-            raise RuntimeError("Cleanup requires this run's scope")
-        return int(remove(inventory(scope)))
+        run_id = os.environ.get("CODEX_RUN_ID")
+        if not scope or not run_id:
+            raise RuntimeError("Cleanup requires this run's identifier and scope")
+        return int(remove([item for item in inventory(scope) if item["run"] == run_id]))
     old = [item for item in inventory() if item["age"] is not None and item["age"] > 86400]
     if args.remove:
         approved = set(args.remove)

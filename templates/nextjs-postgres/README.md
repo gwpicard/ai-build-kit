@@ -5,8 +5,8 @@ absent from the release allowlist, so it is neither offered at founding nor
 included in a public kit. The existing starter and recipes are unchanged.
 
 It keeps the existing TypeScript, Next.js 16, Tailwind, shadcn, Vitest,
-Playwright and ESLint base. It needs Node.js 22.23.2 and Docker Compose for the
-local database. The root page is a placeholder. The [sign-in module](SIGN-IN.md) supplies
+Playwright and ESLint base. It needs Node.js 22.23.2, Python 3.9 or later and Docker Compose for the
+local database and check cleanup. The root page is a placeholder. The [sign-in module](SIGN-IN.md) supplies
 company sign-in and email links for invited outsiders. [Jobs and schedules](JOBS.md)
 describes the worker, protected timer route and database and heartbeat health check.
 

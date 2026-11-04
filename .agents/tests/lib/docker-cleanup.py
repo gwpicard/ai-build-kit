@@ -19,7 +19,7 @@ spec.loader.exec_module(resources)
 
 def sweep_boundary():
     # A fake daemon lets the test age resources without altering this computer's clock.
-    old = "2000-01-01T00:00:00Z"
+    old = "2000-01-01T00:00:00.123456789Z"
     from datetime import datetime, timezone
     recent = datetime.now(timezone.utc).isoformat()
     state = {}
