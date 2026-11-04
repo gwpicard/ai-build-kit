@@ -572,7 +572,9 @@ required check on `stable` would reject the release job's update.
 checks; it rejects deletion and force-push. The source validation check also
 requires the reusable Postgres starter workflow to succeed. That workflow runs
 once per pull request through `source-checks.yml`, and directly on pushes to
-`main`. Neither pull-request workflow filters changed paths.
+`main`. Neither pull-request workflow filters changed paths. The branch-push
+fallback reports `maintainer-source-validation`, leaving the required check name
+exclusive to the pull-request job that waits for the starter.
 
 The rehearsal runner records each test's duration and runs selected isolated
 tests with two workers. Other tests run alone; adding a test always includes it

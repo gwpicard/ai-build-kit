@@ -22,6 +22,7 @@ def read_yaml(path):
 
 source = read_yaml(root / '.github/workflows/source-checks.yml')
 starter = read_yaml(root / '.github/workflows/postgres-starter.yml')
+branch = read_yaml(root / '.github/workflows/maintainer-branch-check.yml')
 foundation = read_yaml(root / '.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml')
 # Ruby's YAML reader, like PyYAML, may treat the on key as a boolean.
 for doc in (source, starter):
@@ -33,6 +34,8 @@ with tempfile.TemporaryDirectory() as folder:
     (work / 'yaml.py').write_text('import json\nsafe_load = json.load\n')
     (work / 'contract.py').write_text(contract)
     (work / 'foundation.json').write_text(json.dumps(foundation))
+    branch_file = work / 'maintainer-branch-check.yml'
+    branch_file.write_text(json.dumps(branch))
     def run(label, src, template, expected):
         (work / 'source.json').write_text(json.dumps(src))
         (work / 'postgres-starter.yml').write_text(json.dumps(template))
@@ -60,6 +63,11 @@ with tempfile.TemporaryDirectory() as folder:
     changed = copy.deepcopy(starter)
     changed['on'].pop('workflow_call')
     run('uncallable starter', source, changed, False)
+    changed = copy.deepcopy(branch)
+    changed['jobs']['source-kit-validation'] = changed['jobs'].pop('maintainer-source-validation')
+    branch_file.write_text(json.dumps(changed))
+    run('ambiguous required check name', source, starter, False)
+    branch_file.write_text(json.dumps(branch))
     gate = next(s for s in source['jobs']['source-kit-validation']['steps'] if s.get('name') == 'Require the starter checks')
     for result in ('success', 'failure', 'cancelled', 'skipped', ''):
         ran = subprocess.run(['sh', '-c', gate['run']], env=dict(os.environ, STARTER_RESULT=result))

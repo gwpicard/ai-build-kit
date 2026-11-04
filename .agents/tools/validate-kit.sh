@@ -2202,6 +2202,11 @@ if set(starter_events) != {"workflow_call", "push"} or starter_events["push"] !=
 if starter_events.get("workflow_call") not in (None, {}):
     errors.append("starter workflow must be callable without inputs or secrets")
 
+with open(os.path.join(os.path.dirname(sys.argv[1]), "maintainer-branch-check.yml")) as stream:
+    branch_doc = yaml.safe_load(stream)
+if set(branch_doc.get("jobs", {})) != {"maintainer-source-validation"}:
+    errors.append("the branch fallback must use its own check name, apart from the required gate")
+
 # A rehearsal nobody runs proves nothing. One hosted job for each rehearsal
 # named a failure on the checks list, but each job was billed a whole minute
 # to do a few seconds of work. They run in one job now, through a runner that
