@@ -42,7 +42,7 @@ if ! command -v depcruise >/dev/null 2>&1; then
   echo "  depcruise not on PATH, installing it into a throwaway folder"
   mkdir -p "$WORK/engines"
   printf '{"name":"engines","private":true}\n' > "$WORK/engines/package.json"
-  (cd "$WORK/engines" && npm_config_cache="$WORK/npm-cache" npm install --no-audit --no-fund --silent dependency-cruiser@18) ||
+  (cd "$WORK/engines" && npm_config_cache="${npm_config_cache:-$WORK/npm-cache}" npm install --no-audit --no-fund --silent dependency-cruiser@18) ||
     fail "could not install dependency-cruiser, so the rule could not be rehearsed"
   PATH="$WORK/engines/node_modules/.bin:$PATH"
   export PATH

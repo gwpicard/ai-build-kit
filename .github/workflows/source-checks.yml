@@ -14,11 +14,19 @@ concurrency:
   group: checks-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  source-kit-validation:
+  postgres-starter:
     if: github.repository == 'gwpicard/ai-build-kit'
+    uses: ./.github/workflows/postgres-starter.yml
+  source-kit-validation:
+    needs: postgres-starter
+    if: always() && github.repository == 'gwpicard/ai-build-kit'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - name: Require the starter checks
+        env:
+          STARTER_RESULT: ${{ needs.postgres-starter.result }}
+        run: test "$STARTER_RESULT" = success
       - name: Regenerate adapters and check for drift
         run: .agents/tools/build-adapters.sh --check
       - name: Validate the kit
@@ -43,16 +51,8 @@ jobs:
           npm run build
       - name: Check the built pages
         run: .agents/tests/site-links.sh
-  # Every rehearsal in .agents/tests/ runs here, in one job. A job for each of
-  # them names a failure on the checks list, but a hosted job is billed a whole
-  # minute however long it takes, and most of these finish in seconds. Twenty
-  # five of them cost twenty five minutes to do about three minutes of work.
-  # The runner names every failure instead, in its output and in the run
-  # summary, and it reads the folder rather than a list, so a rehearsal cannot
-  # be added without being run.
-  #
-  # The replay harness stays out: it costs money and needs a model, which its
-  # own README explains.
+  # The runner discovers every rehearsal and reports each result and duration.
+  # Isolated tests share two workers; browser installers use separate groups.
   rehearsal:
     if: github.repository == 'gwpicard/ai-build-kit'
     runs-on: ubuntu-24.04
@@ -65,6 +65,17 @@ jobs:
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 22.23.2
+          cache: npm
+          cache-dependency-path: |
+            .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/package-lock.json
+            .agents/tests/structure-read-rehearsal.sh
+            .agents/tests/check-floor-rehearsal.sh
+            .agents/tests/waste-read-rehearsal.sh
+            .agents/tests/test-strength-rehearsal.sh
+            .agents/tests/trim-rehearsal.sh
+            .agents/tests/boundary-rules-rehearsal.sh
+      - name: Share the restored npm downloads with rehearsal engines
+        run: printf 'npm_config_cache=%s\n' "$(npm config get cache)" >> "$GITHUB_ENV"
       - name: Prepare the starter's database tools
         uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
         with:
