@@ -1,6 +1,6 @@
 # Dependency audit
 
-On 4 November 2026, `npm audit --json` reported 20 moderate and two low affected
+On 4 November 2026, `npm audit --json` reported 22 moderate and two low affected
 package entries, with no high or critical entries. These entries arise from
 two advisories; transitive dependants are counted separately by npm.
 
@@ -41,10 +41,12 @@ transitive entries. “Tooling” means no sign-in or application runtime reach.
 | `deepmerge` | Low | shadcn CLI; tooling | Retain |
 | `eslint` | Moderate | ESLint; tooling | Retain |
 | `eslint-config-next` | Moderate | ESLint; tooling | Retain |
+| `eslint-import-resolver-typescript` | Moderate | ESLint; tooling | Retain |
 | `eslint-plugin-better-tailwindcss` | Moderate | ESLint; tooling | Retain |
 | `eslint-plugin-import` | Moderate | ESLint; tooling | Retain |
 | `eslint-plugin-jsx-a11y` | Moderate | ESLint; tooling | Retain |
 | `eslint-plugin-react` | Moderate | ESLint; tooling | Retain |
+| `eslint-plugin-react-hooks` | Moderate | ESLint; tooling | Retain |
 | `minimatch` | Moderate | ESLint and shadcn CLI; tooling | Retain |
 | `shadcn` | Moderate | shadcn CLI; tooling | Retain |
 | `ts-morph` | Moderate | shadcn CLI; tooling | Retain |
