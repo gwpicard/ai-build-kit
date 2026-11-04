@@ -53,9 +53,56 @@ test("the app role owns no tables, bypasses no row rules and has no role members
     sql`set local role tool_owner`.execute(db))).rejects.toMatchObject({ code: "42501" });
   await expect(withDatabase(testIdentity(user, "admin"), (db) =>
     sql`create temporary table forbidden_temp (id integer)`.execute(db))).rejects.toMatchObject({ code: "42501" });
-  const privileges = await withDatabase(testIdentity(user, "admin"), (db) =>
-    sql<{ truncate: boolean }>`select has_table_privilege(current_user, 'audit.events', 'TRUNCATE') as truncate`.execute(db));
-  expect(privileges.rows).toEqual([{ truncate: false }]);
+});
+
+test("effective app privileges match every table, including privileges outside RLS", async () => {
+  const metadata = await inspect((client) => client.query(`SELECT n.nspname AS schema, c.relname AS name,
+    ARRAY(SELECT privilege FROM unnest(ARRAY['SELECT', 'INSERT', 'UPDATE', 'DELETE',
+      'TRUNCATE', 'REFERENCES', 'TRIGGER', 'MAINTAIN']) AS privilege
+      WHERE has_table_privilege('tool_app', c.oid, privilege) ORDER BY privilege) AS privileges
+    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname NOT IN ('pg_catalog', 'information_schema') AND n.nspname NOT LIKE 'pg_%'
+      AND c.relkind IN ('r', 'p')`));
+  expect(metadata.rows.length).toBeGreaterThan(0);
+  for (const row of metadata.rows) {
+    const name = `${row.schema}.${row.name}`;
+    const expected = name === "private.schema_migrations" ? []
+      : row.schema === "audit" ? ["SELECT"] : ["DELETE", "INSERT", "SELECT", "UPDATE"];
+    expect(row.privileges, name).toEqual(expected);
+  }
+});
+
+test("the app has no unreviewed views, materialised views, sequences or callable functions", async () => {
+  const relations = await inspect((client) => client.query(`SELECT n.nspname AS schema,
+    c.relname AS name, c.relkind AS kind
+    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname NOT IN ('pg_catalog', 'information_schema') AND n.nspname NOT LIKE 'pg_%'
+      AND c.relkind IN ('v', 'm', 'S', 'f') AND has_schema_privilege('tool_app', n.oid, 'USAGE')
+      AND CASE WHEN c.relkind='S' THEN has_sequence_privilege('tool_app', c.oid, 'SELECT, UPDATE, USAGE')
+        ELSE has_table_privilege('tool_app', c.oid, 'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER, MAINTAIN')
+          OR has_any_column_privilege('tool_app', c.oid, 'SELECT, INSERT, UPDATE, REFERENCES') END
+    ORDER BY n.nspname, c.relname`));
+  expect(relations.rows).toEqual([]);
+  const functions = await inspect((client) => client.query(`SELECT n.nspname AS schema, p.proname AS name,
+    pg_get_function_identity_arguments(p.oid) AS arguments, p.prosecdef AS security_definer
+    FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+    WHERE n.nspname NOT IN ('pg_catalog', 'information_schema') AND n.nspname NOT LIKE 'pg_%'
+      AND has_schema_privilege('tool_app', n.oid, 'USAGE')
+      AND has_function_privilege('tool_app', p.oid, 'EXECUTE')
+    ORDER BY n.nspname, p.proname, arguments`));
+  expect(functions.rows).toEqual([]);
+});
+
+test("the audit function runs as the owner with a fixed search path and restricted execution", async () => {
+  const metadata = await inspect((client) => client.query(`SELECT pg_get_userbyid(p.proowner) AS owner,
+    p.prosecdef AS security_definer, p.proconfig AS settings,
+    EXISTS (SELECT 1 FROM aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) acl
+      WHERE acl.grantee=0 AND acl.privilege_type='EXECUTE') AS public_execute,
+    ARRAY(SELECT r.rolname::text FROM pg_roles r WHERE NOT r.rolsuper
+      AND has_function_privilege(r.oid, p.oid, 'EXECUTE') ORDER BY r.rolname) AS executable_roles
+    FROM pg_proc p WHERE p.oid='audit.record_change()'::regprocedure`));
+  expect(metadata.rows).toEqual([{ owner: "tool_owner", security_definer: true,
+    settings: ["search_path=pg_catalog"], public_execute: false, executable_roles: ["tool_owner"] }]);
 });
 
 test("a raw app connection with no identity reads nothing, even after its own commit", async () => {
