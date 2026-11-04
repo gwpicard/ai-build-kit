@@ -96,3 +96,10 @@ test('a new environment read in the typed module needs a declaration', () => {
   writeFileSync(path, readFileSync(path, 'utf8') + '\nfunction added(env) { return env.NEW_SETTING; }\n');
   assert.throws(() => run('check', dir), /config/);
 });
+
+test('a later minor may add optional metadata outside secret declarations', () => {
+  assert.equal(validate({ ...original, schema_version: '1.1', optional_note: 'A future optional capability' }), true);
+});
+test('a later minor cannot extend a secret declaration with a value', () => {
+  assert.equal(validate(mutate(h => { h.schema_version = '1.1'; h.config[0].default = 'synthetic-marker'; })), false);
+});
