@@ -1,8 +1,10 @@
 # Dependency audit
 
-On 4 November 2026, `npm audit --json` reported 22 moderate and two low affected
+On 4 November 2026, `npm audit --json` reported 11 moderate and two low affected
 package entries, with no high or critical entries. These entries arise from
-two advisories; transitive dependants are counted separately by npm.
+two advisories; transitive dependants are counted separately by npm. The
+minimatch advisory covers versions from 7.0.0 up to, but excluding,
+11.0.1. Installed minimatch 3.x copies are outside that range.
 
 | Advisory | Severity | Reach and decision |
 | --- | --- | --- |
@@ -27,10 +29,6 @@ transitive entries. “Tooling” means no sign-in or application runtime reach.
 
 | Package entry | Severity | Dependency path and reach | Decision |
 | --- | --- | --- | --- |
-| `@eslint-community/eslint-utils` | Moderate | ESLint; tooling | Retain |
-| `@eslint/config-array` | Moderate | ESLint; tooling | Retain |
-| `@eslint/eslintrc` | Moderate | ESLint; tooling | Retain |
-| `@next/eslint-plugin-next` | Moderate | ESLint; tooling | Retain |
 | `@shadcn/registry` | Low | shadcn CLI; tooling | Retain |
 | `@ts-morph/common` | Moderate | shadcn CLI; tooling | Retain |
 | `@typescript-eslint/eslint-plugin` | Moderate | ESLint; tooling | Retain |
@@ -39,14 +37,7 @@ transitive entries. “Tooling” means no sign-in or application runtime reach.
 | `@typescript-eslint/typescript-estree` | Moderate | ESLint; tooling | Retain |
 | `@typescript-eslint/utils` | Moderate | ESLint; tooling | Retain |
 | `deepmerge` | Low | shadcn CLI; tooling | Retain |
-| `eslint` | Moderate | ESLint; tooling | Retain |
 | `eslint-config-next` | Moderate | ESLint; tooling | Retain |
-| `eslint-import-resolver-typescript` | Moderate | ESLint; tooling | Retain |
-| `eslint-plugin-better-tailwindcss` | Moderate | ESLint; tooling | Retain |
-| `eslint-plugin-import` | Moderate | ESLint; tooling | Retain |
-| `eslint-plugin-jsx-a11y` | Moderate | ESLint; tooling | Retain |
-| `eslint-plugin-react` | Moderate | ESLint; tooling | Retain |
-| `eslint-plugin-react-hooks` | Moderate | ESLint; tooling | Retain |
 | `minimatch` | Moderate | ESLint and shadcn CLI; tooling | Retain |
 | `shadcn` | Moderate | shadcn CLI; tooling | Retain |
 | `ts-morph` | Moderate | shadcn CLI; tooling | Retain |
