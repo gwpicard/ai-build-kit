@@ -1,4 +1,7 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const helperPath = fileURLToPath(new URL('../src/lib/db/with-database.ts', import.meta.url));
 
 const databaseBoundary = {
   meta: { type: 'problem', schema: [], messages: {
@@ -8,7 +11,7 @@ const databaseBoundary = {
   } },
   create(context) {
     const file = context.filename.replaceAll('\\', '/');
-    const helper = file.endsWith('/src/lib/db/with-database.ts');
+    const helper = path.resolve(context.filename) === helperPath;
     function check(node, source, specifiers) {
       if (typeof source !== 'string') {
         context.report({ node, messageId: 'dynamic' });

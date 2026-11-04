@@ -8,7 +8,8 @@ const config = [
   ...nextTypescript,
   { ignores: [".next/**", "node_modules/**", "next-env.d.ts", ".agents/**", ".claude/**"] },
   {
-    files: ["src/**/*.{js,jsx,ts,tsx,mjs,cjs}"],
+    files: ["**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}"],
+    ignores: ["scripts/**", "tests/**", "eslint.config.mjs"],
     plugins: { database: { rules: { boundary: databaseBoundary } } },
     rules: { "database/boundary": "error" },
   },

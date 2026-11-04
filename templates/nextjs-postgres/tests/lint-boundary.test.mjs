@@ -6,6 +6,12 @@ const eslint = new ESLint();
 beforeAll(async () => {
   await eslint.calculateConfigForFile(path.resolve('src/lib/bypass.ts'));
 }, 30000);
+for (const file of ['lib/query.ts', 'src/lib/query.mts', 'src/lib/query.cts', 'src/nested/src/lib/db/with-database.ts']) {
+  test(`lint confines the connection exemption to the exact helper: ${file}`, async () => {
+    const [result] = await eslint.lintText('import { Pool } from "pg";', { filePath: path.resolve(file) });
+    expect(result.messages.some((message) => message.ruleId === 'database/boundary')).toBe(true);
+  });
+}
 for (const code of [
   'import { Pool } from "pg"; new Pool().query("select 1");',
   'import Client from "pg/lib/client.js";',
