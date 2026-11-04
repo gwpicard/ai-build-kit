@@ -56,7 +56,8 @@ on a database copy before release.
 registers a database cursor at the current database time, so deployment does
 not create historic reminders. Each later tick enqueues at most one missed
 occurrence per schedule. Cursor movement and enqueue share one transaction
-and a row lock, including when worker and timer requests overlap. After a long
+and a row lock, including when worker and timer requests overlap. The cursor
+cannot move backwards if the database clock is behind it. After a long
 outage, repeated bursts catch up one occurrence at a time. Removing a schedule
 from the list stops new occurrences; already queued work still runs. Schedule
 times are UTC. The starter deliberately evaluates this list in both runners
@@ -122,14 +123,17 @@ durable idempotency key or transactional outbox before they send anything.
 `tests/jobs.test.ts` kills a real worker process during a claimed document job
 and waits for the real 30-second production lease to expire. It also holds an
 output lock to force a database failure, then checks the successful retry and
-its retry count. Two worker processes compete for a job; replay after a
+its retry count. Two worker processes compete for a job, with their claims observed over IPC;
+replay after a
 committed effect leaves one audit event. Separate tests run the actual weekly
 schedule through the worker and through concurrent authorised timer requests,
 using a cursor just before the most recent Monday occurrence.
 
 The suite checks missing and wrong tokens, missing configuration, disabled
 timer mode, cancellation at a short deadline, fresh and stale heartbeats, a
-stopped worker, and a blocked database round trip. Permission tests show that
+stopped worker, and a blocked database round trip. A timer request with a full
+queue returns within its limit and leaves unfinished jobs durable. Permission
+tests show that
 the system identity cannot act on a user's records and ordinary roles cannot
 read queue or runtime tables. The browser check exercises the health and timer
 routes through the production website.

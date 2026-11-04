@@ -4,7 +4,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { afterAll, beforeAll, expect, test, vi } from "vitest";
 import { sql } from "kysely";
 import { createQueue, withJobDatabase } from "../src/lib/jobs/queue";
-import { schedules } from "../src/lib/jobs/schedules";
+import { schedules, dispatchSchedules } from "../src/lib/jobs/schedules";
 import { runBurst } from "../src/lib/jobs/runner";
 import { jobIdentity } from "../src/lib/jobs/identity";
 import { performJob } from "../src/lib/jobs/tasks";
@@ -18,6 +18,7 @@ import { GET } from "../src/app/api/health/route";
 
 const queue = createQueue();
 const children = new Set<ChildProcess>();
+const claims = new WeakMap<ChildProcess, string[]>();
 beforeAll(async () => { await queue.start(); });
 afterAll(async () => {
   for (const child of children) await stop(child, "SIGKILL");
@@ -29,11 +30,16 @@ async function until(predicate: () => Promise<boolean>, timeout = 10000) {
   throw new Error("The expected job outcome did not arrive");
 }
 function worker() {
-  const child = spawn(process.execPath, ["dist/worker.mjs"], {
-    env: { ...process.env, JOBS_MODE: "worker" }, stdio: ["ignore", "ignore", "pipe"],
+  const child = spawn(process.execPath, ["--import", "./tests/support/trace-queue.mjs", "dist/worker.mjs"], {
+    env: { ...process.env, JOBS_MODE: "worker" }, stdio: ["ignore", "ignore", "pipe", "ipc"],
   });
   // Do not print inherited configuration or driver diagnostics.
   child.stderr?.resume();
+  const ids: string[] = [];
+  claims.set(child, ids);
+  child.on("message", (message: { event?: string; id: string }) => {
+    if (message.event === "claimed") ids.push(message.id);
+  });
   children.add(child);
   return child;
 }
@@ -129,6 +135,7 @@ test("two processes never claim one job together, and replay after a committed e
   try {
     await until(async () => (await queue.findJobs("slow-document", { id })).some((job) => job.state === "completed"));
   } finally { await Promise.all([stop(first), stop(second)]); }
+  expect([...(claims.get(first) ?? []), ...(claims.get(second) ?? [])].filter((claim) => claim === id)).toHaveLength(1);
   const [job] = await queue.findJobs("slow-document", { id });
   expect(job.retryCount).toBe(0);
   // Simulate the crash window between committing the output and acknowledging the job.
@@ -266,4 +273,50 @@ test("queue batches retain result sets, roll back effects on failure and clear t
   const ordinary = await withDatabase(testIdentity(randomUUID(), "unassigned"), (db) =>
     sql`select * from job_queue.job`.execute(db));
   expect(ordinary.rows).toEqual([]);
+});
+
+test("a timer request returns within its limit with unfinished work still durable", async () => {
+  const token = randomBytes(32).toString("hex");
+  vi.stubEnv("JOBS_MODE", "timer"); vi.stubEnv("JOBS_TIMER_TOKEN", token);
+  const ids: string[] = [];
+  try {
+    for (let index = 0; index < 12; index++) {
+      ids.push((await queue.send("slow-document", { title: `Burst document ${index}` }))!);
+    }
+    const started = Date.now();
+    const response = await POST(new Request("http://localhost/api/jobs/tick", {
+      method: "POST", headers: { authorization: `Bearer ${token}` },
+    }));
+    expect(response.status).toBe(200);
+    expect(Date.now() - started).toBeLessThan(15000);
+    const outputs = await Promise.all(ids.map((id) => hasRecord(id)));
+    expect(outputs.filter(Boolean).length).toBeGreaterThan(0);
+    expect(outputs.filter(Boolean).length).toBeLessThan(ids.length);
+    for (const id of ids) {
+      const [job] = await queue.findJobs("slow-document", { id });
+      expect(["created", "retry", "completed"]).toContain(job.state);
+    }
+  } finally {
+    // Cancel only these test jobs; retain the completed outputs for inspection.
+    await queue.cancel("slow-document", ids);
+    vi.unstubAllEnvs();
+  }
+}, 20000);
+
+test("a clock behind the schedule cursor cannot move it backwards and repeat an occurrence", async () => {
+  const name = schedules[0].name;
+  const original = await withJobDatabase((db) => db.selectFrom("job_runtime.schedules")
+    .select("checked_at").where("name", "=", name).executeTakeFirst());
+  const future = new Date(Date.now() + 86400000);
+  try {
+    await withJobDatabase((db) => db.insertInto("job_runtime.schedules").values({ name, checked_at: future })
+      .onConflict((conflict) => conflict.column("name").doUpdateSet({ checked_at: future })).execute());
+    await dispatchSchedules(queue);
+    const cursor = await withJobDatabase((db) => db.selectFrom("job_runtime.schedules")
+      .select("checked_at").where("name", "=", name).executeTakeFirstOrThrow());
+    expect(cursor.checked_at).toEqual(future);
+  } finally {
+    await withJobDatabase((db) => db.updateTable("job_runtime.schedules")
+      .set({ checked_at: original?.checked_at ?? new Date() }).where("name", "=", name).execute());
+  }
 });

@@ -22,7 +22,7 @@ export async function dispatchSchedules(queue: Queue) {
         // Cursor and enqueue commit together. Concurrent runners cannot enqueue the same slot.
         await queue.send(schedule.name, { occurrence: next.toISOString() }, { db: queueDatabase(db) });
       }
-      await db.updateTable("job_runtime.schedules").set({ checked_at: due ? next : clock.now })
+      await db.updateTable("job_runtime.schedules").set({ checked_at: due ? next : new Date(Math.max(cursor.checked_at.getTime(), clock.now.getTime())) })
         .where("name", "=", schedule.name).execute();
     });
   }
