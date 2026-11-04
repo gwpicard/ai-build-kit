@@ -1,6 +1,8 @@
 import path from 'node:path';
+import { tmpdir } from 'node:os';
 import { ESLint } from 'eslint';
 import { beforeAll, expect, test } from 'vitest';
+import databaseBoundary from '../scripts/database-boundary.mjs';
 
 const eslint = new ESLint();
 beforeAll(async () => {
@@ -38,5 +40,16 @@ test('lint permits queries inside the helper callback and type-only imports', as
     import { withDatabase } from "./db/with-database";
     export const query = (identity: never) => withDatabase(identity, db => sql\`select 1\`.execute(db));
     export type Query = Transaction<unknown>;`, { filePath: path.resolve('src/lib/query.ts') });
+  expect(result.errorCount).toBe(0);
+});
+
+test('a parent folder named scripts does not make ordinary app imports privileged', async () => {
+  const relocated = new ESLint({ cwd: tmpdir(), overrideConfigFile: true, overrideConfig: {
+    plugins: { database: { rules: { boundary: databaseBoundary } } },
+    rules: { 'database/boundary': 'error' },
+  } });
+  const [result] = await relocated.lintText('import { sql } from "kysely"; export { sql };', {
+    filePath: path.join(tmpdir(), 'scripts/example-app/src/query.js'),
+  });
   expect(result.errorCount).toBe(0);
 });

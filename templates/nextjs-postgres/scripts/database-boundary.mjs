@@ -2,6 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const helperPath = fileURLToPath(new URL('../src/lib/db/with-database.ts', import.meta.url));
+const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 
 const databaseBoundary = {
   meta: { type: 'problem', schema: [], messages: {
@@ -17,8 +18,10 @@ const databaseBoundary = {
         context.report({ node, messageId: 'dynamic' });
         return;
       }
-      const resolved = path.resolve(path.dirname(file), source).replaceAll('\\', '/');
-      if (/(?:^|\/)(?:tests|scripts)(?:\/|$)/.test(source) || /\/(?:tests|scripts)\//.test(resolved)) {
+      const resolved = source.startsWith('@/')
+        ? path.resolve(projectRoot, 'src', source.slice(2)) : path.resolve(path.dirname(file), source);
+      const relative = path.relative(projectRoot, resolved).replaceAll('\\', '/');
+      if (/^(?:tests|scripts)(?:\/|$)/.test(relative) || /^(?:tests|scripts)(?:\/|$)/.test(source)) {
         context.report({ node, messageId: 'identity' });
       }
       if (helper) return;
