@@ -18,7 +18,8 @@
     "test:files": "node scripts/test-files.mjs",
     "build:worker": "node scripts/build-worker.mjs",
     "worker": "node --env-file-if-exists=.env dist/worker.mjs",
-    "pretest": "npm run build:worker"
+    "pretest": "npm run build:worker",
+    "test:privilege-fault": "node --env-file-if-exists=.env scripts/prove-privileges.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",

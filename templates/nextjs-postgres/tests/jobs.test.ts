@@ -320,3 +320,37 @@ test("a clock behind the schedule cursor cannot move it backwards and repeat an 
       .set({ checked_at: original?.checked_at ?? new Date() }).where("name", "=", name).execute());
   }
 });
+
+test("worker and timer cannot write an output when the system insert policy is absent", async () => {
+  const policy = await inspect((client) => client.query(`SELECT with_check FROM pg_policies
+    WHERE schemaname='public' AND tablename='records' AND policyname='records_system_insert'`));
+  expect(policy.rows).toHaveLength(1);
+  const ids: string[] = [];
+  let child: ChildProcess | undefined;
+  await inspect((client) => client.query("DROP POLICY records_system_insert ON public.records"));
+  try {
+    const workerId = (await queue.send("slow-document", { title: "Denied worker output" }))!;
+    ids.push(workerId);
+    child = worker();
+    await until(async () => (await queue.findJobs("slow-document", { id: workerId }))
+      .some((job) => job.state === "retry"));
+    await stop(child);
+    expect(await hasRecord(workerId)).toBe(false);
+    const timerId = (await queue.send("slow-document", { title: "Denied timer output" }))!;
+    ids.push(timerId);
+    const token = randomBytes(32).toString("hex");
+    vi.stubEnv("JOBS_MODE", "timer"); vi.stubEnv("JOBS_TIMER_TOKEN", token);
+    const response = await POST(new Request("http://localhost/api/jobs/tick", {
+      method: "POST", headers: { authorization: `Bearer ${token}` },
+    }));
+    expect(response.status).toBe(200);
+    expect((await queue.findJobs("slow-document", { id: timerId }))[0].state).toBe("retry");
+    expect(await hasRecord(timerId)).toBe(false);
+  } finally {
+    if (child) await stop(child);
+    await inspect((client) => client.query(`CREATE POLICY records_system_insert ON public.records
+      FOR INSERT TO tool_app WITH CHECK (${policy.rows[0].with_check})`));
+    await queue.cancel("slow-document", ids);
+    vi.unstubAllEnvs();
+  }
+});

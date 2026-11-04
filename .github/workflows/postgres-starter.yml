@@ -53,5 +53,7 @@ jobs:
         run: npm run check
       - name: Prove a removed policy fails its generated test
         run: npm run test:policy-fault
-      - name: Check the restored policy
+      - name: Prove excessive privileges fail their catalogue checks
+        run: npm run test:privilege-fault
+      - name: Check the restored policy and privileges
         run: npm test

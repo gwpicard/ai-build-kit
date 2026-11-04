@@ -22,6 +22,7 @@ npm run db:bootstrap
 npm run db:migrate
 npm run check
 npm run test:policy-fault
+npm run test:privilege-fault
 npm test
 npm run dev
 ```
@@ -219,3 +220,10 @@ the owner can process it and replay the result without a second audit event.
 The example worker and timer retain their existing record-only handlers; a
 project that adds file processing must choose its verified identity and row
 policies explicitly. Queue access grants no access to user files.
+
+`npm run test:privilege-fault` plants excessive grants on records, files, the
+queue and runtime tables, a writable file ownership column, a public trigger
+grant, a privileged queue function, schema creation and owner membership. Each
+must fail its named catalogue assertion. The script restores each fault in
+`finally` and runs the boundary suite before and after the faults. Like the
+policy check, it requires a disposable local database.
