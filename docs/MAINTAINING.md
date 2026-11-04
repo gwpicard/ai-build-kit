@@ -353,6 +353,18 @@ close first.
 `validate-kit.sh` on pull requests. The `rehearsal` job runs
 `.agents/tests/run-all.sh` once for the whole suite.
 
+The source validation check requires the reusable Postgres starter workflow to
+succeed. That workflow runs once per pull request through `source-checks.yml`,
+and directly on pushes to `main`. The source workflow has no path filter, so a
+template change always runs the starter checks. The rehearsal runs on pull
+requests only; compare its timings with the runs that preceded merges to
+`main`, since there is no rehearsal job on a push to `main`.
+
+The runner records each test's duration and runs selected isolated tests with
+two workers. Browser installers run in separate groups. Other tests run alone;
+adding a test always includes it in the suite. Use
+`REHEARSAL_JOBS=1 .agents/tests/run-all.sh` for a serial run.
+
 The runner continues after failures and names each one in its output and run
 summary. It reads the test folder, so new rehearsals run when saved. Only
 `mutate.sh` is excluded because it audits the suite. A rehearsal that cannot
@@ -569,21 +581,14 @@ aimed at `stable` and explains how to retarget it. It is not required because a
 required check on `stable` would reject the release job's update.
 
 `main` requires a pull request and the `source-kit-validation` and `rehearsal`
-checks; it rejects deletion and force-push. The source validation check also
-requires the reusable Postgres starter workflow to succeed. That workflow runs
-once per pull request through `source-checks.yml`, and directly on pushes to
-`main`. Neither pull-request workflow filters changed paths. The branch-push
-fallback reports `maintainer-source-validation`, leaving the required check name
-exclusive to the pull-request job that waits for the starter.
+checks; it rejects deletion and force-push. The branch-push fallback reports
+`maintainer-source-validation`, leaving the required check name exclusive to the
+pull-request job that waits for the starter. See [The pull request
+check](#the-pull-request-check) for the workflow and coverage rules.
 
-The rehearsal runner records each test's duration and runs selected isolated
-tests with two workers. Browser installers run in separate groups. Other tests
-run alone; adding a test always includes it
-in the suite. Use `REHEARSAL_JOBS=1 .agents/tests/run-all.sh` for a serial run.
-
-`stable` rejects deletion and
-force-push but cannot require a pull request: the release job updates its ref
-through the API, while a pull-request rule rejects any ref update.
+`stable` rejects deletion and force-push but cannot require a pull request: the
+release job updates its ref through the API, while a pull-request rule rejects
+any ref update.
 
 An ordinary fast-forward push to `stable` by someone with write access is not
 blocked. The ruleset's update restriction would also block the workflow token,
