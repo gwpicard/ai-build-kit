@@ -34,7 +34,7 @@ const storageBoundary = {
         if (node.moduleReference.type === "TSExternalModuleReference") check(node, node.moduleReference.expression.value);
       },
       CallExpression(node) {
-        if (node.callee.name === "require" || node.callee.property?.name === "require") check(node, node.arguments[0]?.value);
+        if (node.callee.name === "require" || (node.callee.property?.name === "require" || node.callee.property?.value === "require")) check(node, node.arguments[0]?.value);
       },
     };
   },

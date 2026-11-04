@@ -15,6 +15,7 @@ for (const code of [
   'const sdk = await import("@aws-sdk/client-s3");',
   'const sdk = require("@azure/storage-blob");',
   'const sdk = module.require("aws-sdk/clients/s3");',
+  'const sdk = module["require"]("@aws-sdk/client-s3");',
   'import sdk = require("@azure/storage-blob");',
   'import sdk from "@aws-sdk/client-s3/dist-cjs/index.js";',
   'import { s3Storage } from "@/lib/files/adapters/s3";',
