@@ -1,33 +1,9 @@
 #!/usr/bin/env sh
-# run-all.sh: runs every rehearsal in this folder, one after another, and reports each by
-# name.
-# A check with cases it could not run prints could-not-run: <reason> and exits 2.
-# Use lib/could-not-run.sh to record this and finish after the remaining cases.
-# Exit 2 without a reason is a failure. Any failure still exits 1. Locally,
-# incomplete checks are reported separately; on GitHub (GITHUB_ACTIONS=true)
-# they also make the suite fail.
-#
-# A hosted job for each rehearsal names a failure on the checks list by itself,
-# but a job is billed a whole minute however long it takes, and most of these
-# finish in under ten seconds. Twenty five jobs cost twenty five minutes to do
-# about three minutes of work. Running them here costs one job and still names
-# every failure.
-#
-# A failing rehearsal does not stop the others. One failure must never hide
-# another, so the run continues to the end and lists everything that broke.
-# rehearsal-runner.sh is what proves that, since no validator can read it off
-# this file the way it could read fail-fast: false off the workflow.
-#
-# mutate.sh audits the suite rather than passing or failing, so it is not a
-# rehearsal and is not run here.
-#
-# Both exclusions match the leading name rather than the whole one, because a
-# copy is not called run-all. A sync daemon watching this folder writes copies
-# as "<name> 2.sh" and "<name> copy.sh", and a copy of this file that is not
-# excluded gets run as though it were a rehearsal. It then runs the whole suite
-# again and reaches its own copy again, so the run never finishes and never
-# reports. A hosted job does not fail when that happens, it hangs, and it is
-# billed for every minute until something cuts it off.
+# run-all.sh: run every rehearsal, retaining failures and incomplete results.
+# Two workers share only tests with isolated fixtures. All other tests run alone.
+# REHEARSAL_JOBS=1 gives a serial run for diagnosis and comparison.
+# Exit 2 needs a could-not-run reason; on GitHub incomplete tests fail the job.
+# Copies of this runner and mutate are excluded to prevent recursive runs.
 
 set -u
 
@@ -42,21 +18,108 @@ WORK=$(mktemp -d)
 trap 'rm -R "$WORK"' EXIT INT TERM
 : > "$WORK/not-run"
 
+# Keep discovery here: adding a test always adds it to the suite.
 for script in .agents/tests/*.sh; do
   name=$(basename "$script" .sh)
   case "$name" in
     mutate | 'mutate '* | run-all | 'run-all '*) continue ;;
   esac
+  printf '%s\n' "$script"
+done > "$WORK/scripts"
 
+python3 - "$WORK" "${REHEARSAL_JOBS:-2}" <<'PYTHON' || exit 1
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+import os
+import signal
+import subprocess
+import sys
+import threading
+import time
+
+work = Path(sys.argv[1])
+if sys.argv[2] not in ('1', '2'):
+    sys.exit('REHEARSAL_JOBS must be 1 or 2')
+workers = int(sys.argv[2])
+scripts = work.joinpath('scripts').read_text().splitlines()
+# These tests write to disposable projects and use local service stand-ins.
+# Only recipe-ci starts a database or installs a browser in this group.
+# The interface group starts after this group, so browser installers never overlap.
+parallel = (
+    'recipe-ci-rehearsal', 'replay-case-states', 'check-floor-rehearsal',
+    'piece-labels', 'replay-state', 'test-strength-rehearsal', 'found-issues',
+    'could-not-run', 'upload-piece', 'upgrade-rehearsal',
+    'recipe-nextjs-supabase-on-vercel', 'mark-ready', 'trim-rehearsal',
+    'secrets-gates', 'check-tooling', 'replay-preflight',
+    'recipe-nextjs-supabase-on-coolify', 'first-upload',
+)
+# These checks use disposable files or service stand-ins, and no browser or
+# database containers. They can share the interface test's otherwise idle time.
+interface_parallel = (
+    'starter-interface', 'waste-read-rehearsal', 'merge-gate',
+    'structure-read-rehearsal', 'risk-move-rehearsal', 'release-builder',
+    'replay-provider', 'replay-behaviour', 'tests-prove-change', 'fake-github',
+    'plan-helper-routes', 'reach-rehearsal', 'older-project-upkeep',
+    'approval-gate', 'push-guard', 'starter-rehearsal', 'recipes',
+    'seeded-scoring', 'boundary-rules-rehearsal', 'fake-host', 'gated-turns',
+)
+lock = threading.Lock()
+children = set()
+
+def stop(signum, frame):
+    # Each child owns its process group. Never signal another running programme.
+    for child in tuple(children):
+        try:
+            os.killpg(child.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+    raise SystemExit(128 + signum)
+
+signal.signal(signal.SIGTERM, stop)
+signal.signal(signal.SIGINT, stop)
+
+def run(script):
+    name = Path(script).stem
+    before = time.monotonic()
+    with lock:
+        print(f'Starting: {name}', flush=True)
+    with work.joinpath(name + '.output').open('w') as output:
+        try:
+            child = subprocess.Popen([script], stdout=output, stderr=subprocess.STDOUT,
+                                     start_new_session=True)
+            children.add(child)
+            status = child.wait()
+            children.discard(child)
+        except OSError as error:
+            output.write(f'Could not start rehearsal: {error}\n')
+            status = 1
+    elapsed = time.monotonic() - before
+    work.joinpath(name + '.status').write_text(str(status))
+    work.joinpath(name + '.seconds').write_text(f'{elapsed:.3f}')
+    with lock:
+        print(f'\n=== {name} ===', flush=True)
+        print(work.joinpath(name + '.output').read_text(errors='replace'), end='', flush=True)
+        print(f'Time: {name} | {elapsed:.3f} s | exit {status}', flush=True)
+
+if workers == 1:
+    for script in scripts:
+        run(script)
+else:
+    for group in (parallel, interface_parallel):
+        selected = sorted((s for s in scripts if Path(s).stem in group),
+                          key=lambda s: group.index(Path(s).stem))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            list(pool.map(run, selected))
+    for script in scripts:
+        if Path(script).stem not in parallel + interface_parallel:
+            run(script)
+PYTHON
+
+while IFS= read -r script; do
+  name=$(basename "$script" .sh)
   total=$((total + 1))
-  printf '\n=== %s ===\n' "$name"
-  {
-    status=0
-    "$script" || status=$?
-    printf '%s\n' "$status" > "$WORK/status"
-  } 2>&1 | tee "$WORK/output"
-  status=$(cat "$WORK/status")
-  reasons=$(sed -n 's/^could-not-run: \(..*\)$/\1/p' "$WORK/output")
+  status=$(cat "$WORK/$name.status")
+  reasons=$(sed -n 's/^could-not-run: \(..*\)$/\1/p' "$WORK/$name.output")
   if [ "$status" -eq 0 ]; then
     printf '  passed: %s\n' "$name"
   elif [ "$status" -eq 2 ] && [ -n "$reasons" ]; then
@@ -70,7 +133,7 @@ for script in .agents/tests/*.sh; do
     failed="$failed $name"
     failed_count=$((failed_count + 1))
   fi
-done
+done < "$WORK/scripts"
 
 passed_count=$((total - failed_count - not_run_count))
 
@@ -104,6 +167,21 @@ if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
     done
   } >> "$GITHUB_STEP_SUMMARY"
 fi
+
+# Timings are measured inside each worker, so parallel output cannot distort them.
+python3 - "$WORK" <<'PYTHON'
+from pathlib import Path
+import os
+import sys
+work = Path(sys.argv[1])
+rows = sorted(((float(p.read_text()), p.stem) for p in work.glob('*.seconds')), reverse=True)
+report = '\n| Rehearsal | Seconds |\n|---|---:|\n'
+report += ''.join(f'| {name} | {seconds:.3f} |\n' for seconds, name in rows)
+print(report)
+if os.environ.get('GITHUB_STEP_SUMMARY'):
+    with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+        summary.write(report)
+PYTHON
 
 if [ "$failed_count" -gt 0 ]; then
   if [ -n "$failed" ]; then
