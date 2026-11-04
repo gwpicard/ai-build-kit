@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { tmpdir } from 'node:os';
 import { ESLint } from 'eslint';
 import { beforeAll, expect, test } from 'vitest';
@@ -16,6 +17,10 @@ for (const file of ['lib/query.ts', 'src/lib/query.mts', 'src/lib/query.cts', 's
 }
 for (const code of [
   'import { Pool } from "pg"; new Pool().query("select 1");',
+  'import { PgBoss } from "pg-boss"; new PgBoss("untrusted");',
+  'export { PgBoss } from "pg-boss";',
+  'import { PgBoss } from "../../node_modules/pg-boss/dist/index.js";',
+  `import { PgBoss } from "${pathToFileURL(path.resolve('node_modules/pg-boss/dist/index.js')).href}";`,
   'import Client from "pg/lib/client.js";',
   'import Pool from "pg-pool";',
   'import type { Pool } from "pg";',

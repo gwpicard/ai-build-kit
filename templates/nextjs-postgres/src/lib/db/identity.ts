@@ -1,4 +1,4 @@
-export const appRoles = ["admin", "member", "viewer", "unassigned"] as const;
+export const appRoles = ["admin", "member", "viewer", "unassigned", "system"] as const;
 export type AppRole = (typeof appRoles)[number];
 
 declare const verifiedIdentity: unique symbol;

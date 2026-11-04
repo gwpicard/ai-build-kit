@@ -16,5 +16,6 @@ export const roleMatrix: Record<AppRole, Record<Table, Permissions>> = {
   member: { files: { read: ["self"], insert: ["self"], update: ["self"], delete: ["self"] }, records: { read: ["self"], insert: ["self"], update: ["self"], delete: ["self"] },
     withheld: none, "audit.events": none },
   viewer: { files: { ...none, read: ["self"] }, records: { ...none, read: ["self"] }, withheld: none, "audit.events": none },
+  system: { files: none, records: none, withheld: none, "audit.events": none },
   unassigned: { files: none, records: none, withheld: none, "audit.events": none },
 };

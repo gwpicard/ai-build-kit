@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { beforeAll, describe, expect, test, vi } from "vitest";
+import { createQueue } from "../src/lib/jobs/queue";
+import { jobIdentity } from "../src/lib/jobs/identity";
 import { files } from "../src/lib/files";
 import { storageConfig } from "../src/lib/files/config";
 import { s3Storage } from "../src/lib/files/adapters/s3";
@@ -23,6 +25,35 @@ describe.each(["s3", "azure-blob"])("%s storage contract", (adapter) => {
     const config = storageConfig();
     return config.adapter === "s3" ? s3Storage(config) : azureBlobStorage(config);
   }
+
+  test("a queued file handler uses the port and database identity without inheriting queue privileges", async () => {
+    const port = files();
+    const file = await port.save(owner, "Job input", body);
+    const queue = createQueue();
+    await queue.start();
+    try {
+      const id = (await queue.send("slow-document", { fileId: file.id }))!;
+      const [job] = await queue.fetch<{ fileId: string }>("slow-document", { includeMetadata: true });
+      expect(job.id).toBe(id);
+      // A project's handler receives a verified identity separately from the payload.
+      const handle = async (identity: typeof owner) => {
+        const bytes = await port.fetch(identity, job.data.fileId);
+        await withDatabase(identity, (db) => db.insertInto("records")
+          .values({ id: job.id, owner_id: identity.userId, title: `File bytes: ${bytes.length}` })
+          .onConflict((conflict) => conflict.column("id").doNothing()).execute());
+      };
+      await expect(handle(jobIdentity)).rejects.toThrow("File is unavailable");
+      await expect(handle(other)).rejects.toThrow("File is unavailable");
+      await handle(owner);
+      await handle(owner);
+      await queue.complete("slow-document", job);
+      const output = await withDatabase(owner, (db) => db.selectFrom("records").selectAll()
+        .where("id", "=", id).execute());
+      expect(output).toEqual([{ id, owner_id: ownerId, title: `File bytes: ${body.length}` }]);
+      const audit = await inspect((client) => client.query("select actor_id, actor_role from audit.events where record_id=$1", [id]));
+      expect(audit.rows).toEqual([{ actor_id: ownerId, actor_role: "member" }]);
+    } finally { await queue.stop(); await port.delete(owner, file.id); }
+  });
 
   test("all five adapter actions round-trip binary content and filter listing by prefix", async () => {
     const storage = raw();
