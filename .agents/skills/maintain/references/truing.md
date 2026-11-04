@@ -11,8 +11,8 @@ large or ambiguous corrections. Step 6 may also change the project check.
 
    Uncommitted work is the first finding, not an obstacle. Say what it is and
    whose it seems to be, leave it exactly where it is, and never sweep it into
-   a commit or discard it to get a clean tree. Say once that /what-now offers
-   to continue it, save it or clear it.
+   a commit or discard it to get a clean tree. Follow `/what-now`'s recovery
+   step: offer a checkpoint that keeps it; explain how the person can clear it.
 2. Read the open pieces' last-updated times from GitHub. List those untouched
    for 30 days or more, by title, and ask once: "For each of these, is it
    still wanted, should it be parked, or is it done?" Change nothing on that

@@ -5,9 +5,18 @@
       "Bash(git reset --hard:*)",
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
-      "Bash(git clean -f:*)",
-      "Bash(git clean -fd:*)",
-      "Bash(rm -rf:*)"
+      "Bash(rm -rf:*)",
+      "Bash(git restore:*)",
+      "Bash(git clean:*)",
+      "Bash(git stash)",
+      "Bash(git stash push:*)",
+      "Bash(git stash save:*)",
+      "Bash(git stash -*)",
+      "Bash(git checkout -- *)",
+      "Bash(git checkout * -- *)",
+      "Bash(git reset * --hard*)",
+      "Bash(git stash drop:*)",
+      "Bash(git stash clear:*)"
     ]
   }
 }

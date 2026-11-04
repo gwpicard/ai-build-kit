@@ -39,7 +39,9 @@ DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start sec
 PUBLISH_CHECKS="release-builder release-publication validate-kit"
 MODE_CHECKS="validate-kit fake-github"
 
-MUTATIONS="housekeeping-misses-mutate
+MUTATIONS="unsaved-stash-deny-dropped
+unsaved-stash-guard-dropped
+housekeeping-misses-mutate
 release-notes-unchecked
 released-docs-unrecorded
 reach-wide-threshold
@@ -196,6 +198,8 @@ backbone-api-merge-unbound"
 
 describe() {
   case "$1" in
+    unsaved-stash-deny-dropped) echo "bare stash can remove unsaved work from view" ;;
+    unsaved-stash-guard-dropped) echo "the portable guard no longer names stash push" ;;
     housekeeping-misses-mutate) echo "the housekeeping inventory skips mutation clones" ;;
     release-notes-unchecked) echo "a version is stamped without checking its notes" ;;
     released-docs-unrecorded) echo "released documents are omitted from the whole-copy record" ;;
@@ -356,6 +360,7 @@ describe() {
 
 checks_for() {
   case "$1" in
+    unsaved-stash-deny-dropped|unsaved-stash-guard-dropped) echo "push-to-main-rules" ;;
     housekeeping-misses-mutate) echo "housekeeping-inventory" ;;
     release-notes-unchecked) echo "version-stamp" ;;
     released-docs-unrecorded) echo "whole-copy-leftovers" ;;
@@ -461,6 +466,25 @@ apply() {
   name=$1
   tree=$2
   case "$name" in
+    unsaved-stash-deny-dropped)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json" '
+import json, os
+p = os.environ["MUTATE_TARGET"]
+data = json.load(open(p))
+rule = "Bash(git stash)"
+assert rule in data["permissions"]["deny"]
+data["permissions"]["deny"].remove(rule)
+open(p, "w").write(json.dumps(data, indent=2) + "\n")'
+      ;;
+    unsaved-stash-guard-dropped)
+      edit "$tree/.agents/guard/blocked-commands.md" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "`git stash push`, "
+assert old in s
+open(p, "w").write(s.replace(old, "", 1))'
+      ;;
     housekeeping-misses-mutate)
       edit "$tree/.agents/maintainer-skills/housekeeping/scripts/inventory.sh" '
 import os

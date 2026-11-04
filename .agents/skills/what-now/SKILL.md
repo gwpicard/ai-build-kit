@@ -40,8 +40,9 @@ unless already named or nothing happened lately.
 
 ## Recovery
 
-- **Uncommitted work:** say what it seems to be; offer continue, checkpoint or
-  show what clearing loses. Never clear without approval.
+- **Uncommitted work:** show it and offer a checkpoint that keeps it. Never
+  clear, stash, move or delete it, even if asked. Explain how they can discard
+  it themselves in their editor's source-control view.
 - **Conflict or live break:** follow `merge` or `live-copy`.
 - **Missing capability:** name the limit, fallback and setup action.
 - **Person's step:** say where, what to do and what to bring back. Never ask
