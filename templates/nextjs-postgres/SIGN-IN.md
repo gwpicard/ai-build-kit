@@ -27,8 +27,11 @@ also verifies the ID token's signature, audience, issuer and expiry using
 email and issued-at claim. These checks run on returning sign-ins too.
 
 Microsoft requires an exact company tenant UUID and its corresponding issuer.
-A different or missing `tid` claim is refused, as is a personal-account tenant
-or a token identifying `live.com` as its identity provider. There is no
+A different or missing `tid` claim is refused. When the token includes `idp`,
+that claim must identify the configured issuer or the company's own STS URI.
+This also refuses guests whose home provider belongs to another tenant,
+including personal Microsoft accounts. An absent `idp` uses the verified issuer,
+as Microsoft documents. There is no
 `common`, `organisations` or `consumers` authority. See Microsoft's
 [ID-token claims](https://learn.microsoft.com/en-us/entra/identity-platform/id-token-claims-reference).
 

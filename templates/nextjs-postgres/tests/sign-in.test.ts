@@ -65,7 +65,8 @@ for (const provider of ["microsoft", "google"] as const) {
     test("staff sign in, receive their database role, and sign out on the server", async () => {
       const auth = service(provider);
       const email = `${randomUUID()}@example.test`;
-      const claims = { tid: tenant, hd: domain, email, sub: randomUUID() };
+      const claims = { tid: tenant, hd: domain, email, sub: randomUUID(),
+        email_verified: provider === "google" ? true : undefined };
       stub.setClaims(claims);
       const response = await login(auth, provider);
       expect(response.status).toBe(302);
@@ -86,7 +87,8 @@ for (const provider of ["microsoft", "google"] as const) {
       await request(auth, "/sign-out", {}, cookies(response));
       expect(await auth.identity(headers)).toBeNull();
     });
-    for (const failure of ["outside", "missing", "issuer", "audience", "signature", "expired", "nonce", "personal"]) {
+    for (const failure of ["outside", "missing", "issuer", "audience", "signature", "expired", "nonce", "personal",
+      ...(provider === "microsoft" ? ["foreign-home", "personal-sts", "personal-sts-variant"] : [])]) {
       test(`the server refuses ${failure} claims`, async () => {
         const auth = service(provider);
         const claims: Record<string, unknown> = { tid: tenant, hd: domain, email: `${randomUUID()}@example.test`, sub: randomUUID() };
@@ -97,6 +99,9 @@ for (const provider of ["microsoft", "google"] as const) {
         if (failure === "audience") claims.aud = "other-client";
         if (failure === "expired") claims.exp = 1;
         if (failure === "nonce") claims.nonce = "wrong-nonce";
+        if (failure === "foreign-home") claims.idp = `https://sts.windows.net/${randomUUID()}/`;
+        if (failure === "personal-sts") claims.idp = "https://sts.windows.net/9188040d-6c67-4c5b-b112-36a304b66dad/";
+        if (failure === "personal-sts-variant") claims.idp = "https://sts.windows.net/9188040d-6c67-4c5b-b112-36a304b66dad/v2.0";
         if (failure === "personal") {
           if (provider === "microsoft") claims.idp = "live.com";
           else delete claims.hd;
@@ -109,6 +114,17 @@ for (const provider of ["microsoft", "google"] as const) {
         expect(rows.rowCount).toBe(0);
       });
     }
+  });
+}
+
+for (const form of ["issuer", "sts"]) {
+  test(`Microsoft accepts its own ${form} identity provider`, async () => {
+    const auth = service("microsoft");
+    stub.setClaims({ tid: tenant, email: `${randomUUID()}@example.test`, sub: randomUUID(),
+      email_verified: undefined, idp: form === "issuer" ? stub.issuer : `https://sts.windows.net/${tenant}/` });
+    const response = await login(auth, "microsoft");
+    expect(sessionCookie(response)).toBeDefined();
+    expect((await auth.identity(new Headers({ Cookie: cookies(response) })))?.role).toBe("member");
   });
 }
 

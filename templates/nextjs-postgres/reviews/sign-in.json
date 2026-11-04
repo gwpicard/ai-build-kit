@@ -2,12 +2,13 @@
   "review": "second-opinion",
   "outcome": "pass",
   "date": "2026-11-04",
-  "digest": "18e7717a491efbac064697df098f059921b643ff35ad853a5ce7c4a8f1871f10",
+  "digest": "ca5781a89cf3f29457f4af7fa2eb2a18f72501d55820e20a91af0ca747d95aee",
   "evidence": [
     "A fresh review inspected the module, HTTP routes, migration, database grants, lint boundary and digest check; no stopping authentication or permission findings remained.",
-    "The review reran npm test: six files and 178 tests passed against the OIDC stub and disposable Postgres.",
+    "Fresh npm test passed all six files and 183 tests against the OIDC stub and disposable Postgres. The review independently reran the original 178-test suite and the final 28 sign-in tests.",
     "Installed Better Auth 1.7.16 source was checked for OAuth verification, direct ID-token sign-in, account linking and atomic magic-link consumption.",
-    "The documentation finding was corrected: access and refresh tokens are encrypted, while retained ID-token claims remain readable."
+    "The documentation finding was corrected: access and refresh tokens are encrypted, while retained ID-token claims remain readable.",
+    "A follow-up review and separate refutation confirmed the foreign Microsoft guest finding. The idp allowlist resolves it; the follow-up review reran all 28 sign-in tests successfully."
   ],
   "limits": [
     "No real directory registration or SMTP delivery was exercised.",

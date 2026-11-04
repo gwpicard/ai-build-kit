@@ -33,8 +33,11 @@ export function directoryProvider(directory: Directory) {
           issuer: directory.issuer, audience: directory.clientId,
           algorithms: ["RS256"], requiredClaims: ["sub", "iat", "exp", "email"],
         });
-        if (directory.provider === "microsoft" && (payload.tid !== directory.tenant
-          || payload.idp === "live.com" || payload.idp === "https://sts.windows.net/9188040d-6c67-4c5b-b112-36a304b66dad/")) return null;
+        if (directory.provider === "microsoft") {
+          const companyProviders = [directory.issuer, `https://sts.windows.net/${directory.tenant}/`];
+          if (payload.tid !== directory.tenant || (payload.idp !== undefined
+            && (typeof payload.idp !== "string" || !companyProviders.includes(payload.idp)))) return null;
+        }
         if (directory.provider === "google" && (payload.hd !== directory.domain || payload.email_verified !== true)) return null;
         if (typeof payload.email !== "string" || typeof payload.sub !== "string") return null;
         return { id: payload.sub, sub: payload.sub, email: payload.email.toLowerCase(),
