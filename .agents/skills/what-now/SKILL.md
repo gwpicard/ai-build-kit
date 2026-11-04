@@ -35,14 +35,14 @@ Before launch, suggest `/implement`, `/shape` or `/setup-hosting`; once live,
 `/shape` or `/maintain`.
 
 If the update check exits 1, `/maintain` finishes the update. If the mark
-check fails, `/maintain` checks the masterplan. Recap progress unless already
-covered or nothing happened lately.
+check fails, `/maintain` checks the masterplan. Close with a short recap of where the tool has got to,
+unless already named or nothing happened lately.
 
 ## Recovery
 
-- **Uncommitted work:** show it; offer a checkpoint that keeps it. Never clear,
-  stash, move or delete it, even if asked. Explain how the person can discard
-  the named changes themselves in their editor, and what they would lose.
+- **Uncommitted work:** show it and offer a checkpoint that keeps it. Never
+  clear, stash, move or delete it, even if asked. Explain how they can discard
+  it themselves in their editor's source-control view.
 - **Conflict or live break:** follow `merge` or `live-copy`.
 - **Missing capability:** name the limit, fallback and setup action.
 - **Person's step:** say where, what to do and what to bring back. Never ask
