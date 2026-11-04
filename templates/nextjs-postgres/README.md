@@ -84,7 +84,7 @@ Migration scripts and tests live outside the app source and use privileged
 connections only for setup or inspection. Lint tests exercise the real ESLint
 configuration with deliberately invalid query code.
 
-The identity type has no production constructor yet. `tests/support/identity.ts`
+User identities have no production constructor yet. `tests/support/identity.ts`
 is a test-only sign-in stand-in; it throws unless both test mode and Vitest
 are present. App imports of test support fail lint. There is no HTTP endpoint,
 header or production environment flag for choosing a user or role. A later
@@ -149,9 +149,9 @@ records the caller may read in the configured store. These operations need the
 same verified server identity as database queries. There is no file HTTP route
 until the sign-in module supplies that identity.
 
-The `files` table forces row-level security and uses the same role rules as
-`records`: members manage their own files, viewers read their own files,
-administrators manage all files, and unassigned users have no access. Every
+The `files` table forces row-level security. Members manage their own files,
+viewers read their own files, administrators manage all files, and unassigned
+users and the jobs system identity have no access. Every
 metadata change writes an audit event. The app can update a title, but cannot
 change a file's ID, owner or storage location. Object keys come from generated
 IDs rather than filenames. Metadata includes a hash of the storage location,
