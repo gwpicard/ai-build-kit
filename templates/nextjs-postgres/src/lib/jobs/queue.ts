@@ -37,7 +37,7 @@ export function createQueue(signal?: AbortSignal) {
     monitorIntervalSeconds: 1, maintenanceIntervalSeconds: 60,
   });
   // Driver errors can contain connection details or payloads.
-  boss.on("error", () => console.error(JSON.stringify({ event: "jobs.queue_error" })));
+  boss.on("error", () => console.log(JSON.stringify({ event: "jobs.queue_error" })));
   return boss;
 }
 

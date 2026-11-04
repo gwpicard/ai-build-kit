@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { storageConfig, storageScope } from "../src/lib/files/config";
 
-const base = { FILES_S3_BUCKET: "private-files", FILES_S3_REGION: "eu-west-2" };
+const base = { AWS_ACCESS_KEY_ID: "fixture", AWS_SECRET_ACCESS_KEY: "fixture", FILES_S3_BUCKET: "private-files", FILES_S3_REGION: "eu-west-2" };
 test("S3 is the default and links default to one minute", () => {
   expect(storageConfig(base)).toMatchObject({ adapter: "s3", linkSeconds: 60 });
 });

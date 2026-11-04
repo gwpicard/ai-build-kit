@@ -171,7 +171,7 @@ HTTPS is required except for loopback emulators outside production.
 
 | Adapter | Configuration |
 | --- | --- |
-| S3 | `FILES_S3_BUCKET`, `FILES_S3_REGION`; optional `FILES_S3_ENDPOINT` and `FILES_S3_FORCE_PATH_STYLE=true` for compatible stores. The SDK credential chain reads `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, optional `AWS_SESSION_TOKEN`, or workload credentials. |
+| S3 | `FILES_S3_BUCKET`, `FILES_S3_REGION`; optional `FILES_S3_ENDPOINT` and `FILES_S3_FORCE_PATH_STYLE=true` for compatible stores. Supply `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and optional `AWS_SESSION_TOKEN` through the environment. |
 | Azure Blob | `FILES_AZURE_ACCOUNT`, `FILES_AZURE_ACCOUNT_KEY`, `FILES_AZURE_CONTAINER`; optional `FILES_AZURE_ENDPOINT`, otherwise the account's standard HTTPS Blob endpoint. |
 
 The host must supply a private bucket or container and credentials restricted
@@ -227,3 +227,46 @@ grant, a privileged queue function, schema creation and owner membership. Each
 must fail its named catalogue assertion. The script restores each fault in
 `finally` and runs the boundary suite before and after the faults. Like the
 policy check, it requires a disposable local database.
+
+## Runtime handover
+
+[hosting/handover.json](hosting/handover.json) describes the template today.
+The [canonical schema](../../hosting/handover.schema.json) owns its fields and
+the requests to AI Host Kit. It ships separately in the kit release; copy it
+to `hosting/handover.schema.json` when copying this template to a standalone
+project. The project check reads that copy, or the canonical file when run
+inside this repository. AI Host Kit vendors the published file unchanged.
+
+The `config` list is the names-only list of secrets and settings.
+`src/lib/config.ts` is their typed home. The project check compares the lists
+in both directions, checks storage and schedule declarations, and requires
+the migration step. It rejects environment reads elsewhere in app code.
+Local bootstrap and test tools have separate inputs, including the local
+administrator URL, which never belongs in a deployed app environment.
+
+The image accepts `web`, `worker` and `migrate`. Run migration before sending
+traffic to a new version, using only the migration URL. Web and worker start
+with the app URL, files and SMTP configuration; configuration is validated
+before either starts. The web process listens on `0.0.0.0` and the declared
+port. App events are JSON on standard output. Framework diagnostics retain
+severity only, because their text can contain request data.
+
+`sendMail` in `src/lib/mail.ts` sends plain-text mail through SMTP. The host
+supplies the sender and credentials. Production requires encrypted SMTP and
+refuses a missing credential pair. Loopback SMTP without authentication is
+allowed only outside production. Delivery tests use a local SMTP server;
+they do not prove delivery to an external mailbox or domain configuration.
+
+`npm run hosting:render` generates the masterplan's hosting section from the
+file. `npm run handover:check` fails on a hand edit or code mismatch.
+`npm run test:handover` plants these mismatches and checks all three founding
+sign-in choices. The founding script exposes the questions with `--questions`
+and records an answer file with `--answers`. The current founding menu still
+does not offer this template. Sign-in is unconfigured here until its module
+lands; a company choice requires an existing outside-account test reference.
+The example recovery targets are placeholders for the founding conversation.
+
+`npm run test:image` builds one image, runs each role against a fresh local
+database and checks health before, during and after the worker runs. It also
+checks database failure and JSON output, then removes its containers and image.
+The database and website receive Docker-assigned loopback ports.

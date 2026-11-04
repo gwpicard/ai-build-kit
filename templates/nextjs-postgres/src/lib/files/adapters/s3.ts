@@ -5,9 +5,8 @@ import type { StorageConfig } from "../config";
 import type { StoragePort, StoredObject } from "../port";
 
 export function s3Storage(config: Extract<StorageConfig, { adapter: "s3" }>): StoragePort {
-  // The SDK credential chain supports environment credentials and workload roles.
   const client = new S3Client({ region: config.region, endpoint: config.endpoint,
-    forcePathStyle: config.forcePathStyle });
+    forcePathStyle: config.forcePathStyle, credentials: config.credentials });
   const object = (key: string) => ({ Bucket: config.bucket, Key: key });
   return {
     async save(key, bytes) {

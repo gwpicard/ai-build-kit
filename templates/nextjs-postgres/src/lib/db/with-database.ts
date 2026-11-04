@@ -1,3 +1,4 @@
+import { environment } from "../config";
 import "server-only";
 import { Kysely, PostgresDialect, sql, type Transaction } from "kysely";
 import { Pool } from "pg";
@@ -16,9 +17,10 @@ function assertIdentity(identity: DatabaseIdentity) {
 
 function databasePool() {
   if (!pool) {
-    const connectionString = process.env.DATABASE_URL;
+    const connectionString = environment().DATABASE_URL;
     if (!connectionString) throw new Error("DATABASE_URL is required");
     pool = new Pool({ connectionString, max: 1, connectionTimeoutMillis: 1000, idleTimeoutMillis: 1000 });
+    pool.on("error", () => console.log(JSON.stringify({ event: "database.connection_lost" })));
   }
   return pool;
 }

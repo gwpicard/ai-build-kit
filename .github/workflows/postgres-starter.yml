@@ -57,3 +57,5 @@ jobs:
         run: npm run test:privilege-fault
       - name: Check the restored policy and privileges
         run: npm test
+      - name: Check all image roles and their health
+        run: npm run test:image

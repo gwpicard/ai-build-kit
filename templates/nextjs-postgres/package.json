@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build && npm run build:worker",
-    "start": "next start",
+    "start": "node --env-file-if-exists=.env --import ./scripts/startup.mjs node_modules/next/dist/bin/next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run",
@@ -19,7 +19,13 @@
     "build:worker": "node scripts/build-worker.mjs",
     "worker": "node --env-file-if-exists=.env dist/worker.mjs",
     "pretest": "npm run build:worker",
-    "test:privilege-fault": "node --env-file-if-exists=.env scripts/prove-privileges.mjs"
+    "test:privilege-fault": "node --env-file-if-exists=.env scripts/prove-privileges.mjs",
+    "predb:migrate": "npm run build:worker",
+    "handover:check": "node scripts/handover.mjs check",
+    "hosting:render": "node scripts/handover.mjs render",
+    "handover:found": "node scripts/found-handover.mjs",
+    "test:handover": "node --test tests/handover.test.mjs",
+    "test:image": "node scripts/test-image.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",
@@ -44,7 +50,8 @@
     "@aws-sdk/client-s3": "3.1161.0",
     "@aws-sdk/s3-request-presigner": "3.1161.0",
     "@azure/storage-blob": "12.29.1",
-    "pg-boss": "12.38.0"
+    "pg-boss": "12.38.0",
+    "nodemailer": "10.3.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
@@ -61,7 +68,10 @@
     "typescript": "5.9.2",
     "vitest": "5.0.5",
     "@types/pg": "8.15.5",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "@types/nodemailer": "8.0.2",
+    "ajv": "8.20.0",
+    "smtp-server": "3.21.3"
   },
   "type": "module"
 }

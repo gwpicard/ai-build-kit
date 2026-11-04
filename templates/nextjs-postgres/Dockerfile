@@ -28,4 +28,5 @@ COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/db ./db
 USER node
 EXPOSE 3000
-CMD ["node", "server.js"]
+ENTRYPOINT ["sh", "scripts/entrypoint.sh"]
+CMD ["web"]

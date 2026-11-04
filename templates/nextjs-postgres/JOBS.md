@@ -46,8 +46,9 @@ exponential backoff. Exhausted jobs remain failed for inspection through the
 queue API; processing errors log the queue name and job ID without payloads.
 
 The container uses the same image for both processes. Its default command
-starts the website; `node dist/worker.mjs` starts the worker. Give each process
-only `DATABASE_URL` and the jobs configuration. SQL migrations and queue
+starts the website; the `worker` role starts the worker and `migrate` applies
+the database changes. Give web and worker the runtime configuration described in
+[the starter notes](README.md#runtime-handover), including `DATABASE_URL`. SQL migrations and queue
 installation run separately as `tool_owner` through `npm run db:migrate`.
 Repeat migration is safe. A queue library upgrade needs a migration rehearsal
 on a database copy before release.

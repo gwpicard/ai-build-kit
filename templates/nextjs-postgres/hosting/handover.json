@@ -1,0 +1,249 @@
+{
+  "schema_version": "1.0",
+  "tool": {
+    "name": "team-tool-postgres",
+    "owner": "To be named at founding"
+  },
+  "image": {
+    "dockerfile": "Dockerfile"
+  },
+  "processes": {
+    "web": {
+      "command": "web",
+      "port": 3000
+    },
+    "worker": {
+      "command": "worker"
+    },
+    "migrate": {
+      "command": "migrate",
+      "when": "before-release"
+    }
+  },
+  "health": {
+    "path": "/api/health",
+    "checks": [
+      "database",
+      "worker"
+    ],
+    "commit_env": "SOURCE_COMMIT"
+  },
+  "config": [
+    {
+      "name": "DATABASE_URL",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "MIGRATION_DATABASE_URL",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "NODE_ENV",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "PORT",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "HOSTNAME",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "SOURCE_COMMIT",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "JOBS_MODE",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "JOBS_TIMER_TOKEN",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "generated"
+    },
+    {
+      "name": "FILES_ADAPTER",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "FILES_LINK_SECONDS",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "FILES_S3_BUCKET",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "FILES_S3_REGION",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "FILES_S3_ENDPOINT",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "FILES_S3_FORCE_PATH_STYLE",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "AWS_ACCESS_KEY_ID",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "AWS_SECRET_ACCESS_KEY",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "AWS_SESSION_TOKEN",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "FILES_AZURE_ACCOUNT",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "FILES_AZURE_ACCOUNT_KEY",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "FILES_AZURE_CONTAINER",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "FILES_AZURE_ENDPOINT",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "SMTP_HOST",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "SMTP_PORT",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "SMTP_SECURE",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "SMTP_USER",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "SMTP_PASSWORD",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "MAIL_FROM",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    }
+  ],
+  "postgres": {
+    "min_major": 17,
+    "extensions": [],
+    "roles": {
+      "migrate": "owner",
+      "app": "no-owner-no-bypassrls"
+    }
+  },
+  "files": {
+    "port": "s3",
+    "buckets": [
+      {
+        "name": "private-files",
+        "private": true,
+        "link_minutes": 1
+      }
+    ]
+  },
+  "email": {
+    "transport": "smtp",
+    "sender_domain": "example.test",
+    "inbound": false
+  },
+  "jobs": {
+    "library": "pg-boss",
+    "runner": "worker",
+    "longest_job_seconds": 2,
+    "schedules": [
+      {
+        "name": "weekly-reminder",
+        "cron": "0 9 * * 1"
+      }
+    ]
+  },
+  "sign_in": {
+    "staff": null,
+    "outsiders": "none"
+  },
+  "access": "private",
+  "residency": "any",
+  "data_risk": [],
+  "recovery": {
+    "max_data_loss_hours": 24,
+    "max_restore_hours": 8
+  },
+  "limits": {
+    "longest_request_seconds": 15,
+    "memory_mb": 512,
+    "outbound_internet": true
+  },
+  "previews": {
+    "wanted": false,
+    "data": "separate-database"
+  }
+}

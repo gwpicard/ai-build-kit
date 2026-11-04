@@ -1,11 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
+import { validateRuntime } from "../config";
 import { jobsConfig } from "./config";
 import { createQueue } from "./queue";
 import { heartbeat } from "./heartbeat";
 import { runBurst } from "./runner";
 
 async function main() {
+  validateRuntime("worker");
   const config = jobsConfig();
   if (config.mode !== "worker") throw new Error("The worker command requires JOBS_MODE=worker");
   const queue = createQueue();
@@ -33,6 +35,6 @@ async function main() {
 }
 
 main().catch(() => {
-  console.error(JSON.stringify({ event: "jobs.worker_stopped_with_error" }));
+  console.log(JSON.stringify({ event: "jobs.worker_stopped_with_error" }));
   process.exitCode = 1;
 });

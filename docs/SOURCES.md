@@ -131,3 +131,17 @@ Copyright © 2023 W3C®. This software or document includes material copied from
 warns that job names must be unique across workflows. The starter reports
 `recipe-check` beside the foundation's `project-check`, and the branch
 protection script requires both for a recipe project.
+
+## Portable hosting handover
+
+The [handover schema](../hosting/handover.schema.json) starts from AI Host Kit's
+[provisional draft](https://github.com/gwpicard/ai-host-kit/blob/a7a16e9/contracts/provisional-ai-build-kit/handover.schema.json).
+AI Build Kit owns the adopted contract. The adoption closes descriptive secret
+entries, constrains references and defines the four requests beside the schema.
+It also permits a null staff directory for email-only or unfinished sign-in.
+
+The starter's SMTP function follows Nodemailer's
+[SMTP transport](https://nodemailer.com/smtp) and
+[message controls](https://nodemailer.com/message). It requires TLS outside local
+tests, prevents attachment file and URL access, and omits message content from logs.
+Schema validation uses Ajv's [draft 2020-12 support](https://ajv.js.org/json-schema.html).
