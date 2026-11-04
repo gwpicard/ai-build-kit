@@ -3,6 +3,7 @@
 import argparse
 import datetime as dt
 import json
+import hashlib
 import os
 import re
 import signal
@@ -12,6 +13,11 @@ import sys
 LABEL = "ai-build-kit.run"
 SCOPE = "ai-build-kit.scope"
 KINDS = ("container", "network", "volume", "image")
+
+
+def project_name(name):
+    """Keep SDK project identifiers short without dropping their unique suffix."""
+    return "abk-" + hashlib.sha256(name.encode()).hexdigest()[:32]
 
 
 def docker(*args):
@@ -120,12 +126,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="action", required=True)
     sub.add_parser("clean")
+    sub.add_parser("project")
     sweep = sub.add_parser("sweep")
     sweep.add_argument("--remove", nargs="+", metavar="KIND:ID")
     run = sub.add_parser("run")
     run.add_argument("--proxy", action="store_true")
     run.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
+    if args.action == "project":
+        print(project_name(os.environ["COMPOSE_PROJECT_NAME"]))
+        return 0
     if args.action == "run":
         command = args.command
         if command and command[0] == "--":

@@ -5,7 +5,8 @@ here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 case "$1" in
   stop) exec python3 "$here/docker-resources.py" clean ;;
   start)
-    python3 - "$COMPOSE_PROJECT_NAME" <<'PYTHON'
+    project=$(python3 "$here/docker-resources.py" project)
+    python3 - "$project" <<'PYTHON'
 from pathlib import Path
 import re, sys
 p = Path("supabase/config.toml")

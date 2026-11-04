@@ -58,7 +58,8 @@ supabase db dump --linked --role-only -f "$work/roles.sql" >&2 &&
 mkdir -p "$work/copy"
 (cd "$work/copy" && supabase init >&2) ||
   cl_cannot "A throwaway local database could not be set up, so the restore could not be tried."
-python3 - "$work/copy/supabase/config.toml" "$COMPOSE_PROJECT_NAME" <<'PYTHON'
+project_id=$(python3 "$cleanup_tools/docker-resources.py" project)
+python3 - "$work/copy/supabase/config.toml" "$project_id" <<'PYTHON'
 from pathlib import Path
 import re, sys
 p = Path(sys.argv[1])

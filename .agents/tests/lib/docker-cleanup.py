@@ -17,6 +17,14 @@ resources = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(resources)
 
 
+def short_projects():
+    common = "abk-" + "a" * 40
+    names = [resources.project_name(common + suffix) for suffix in ("first", "second")]
+    assert len(set(names)) == 2
+    assert all(len(name) <= 40 for name in names)
+    print("ok: SDK project identifiers remain unique within the length limit")
+
+
 def sweep_boundary():
     # A fake daemon lets the test age resources without altering this computer's clock.
     old = "2000-01-01T00:00:00.123456789Z"
@@ -85,6 +93,10 @@ def real_paths():
     if subprocess.run(["docker", "info"], capture_output=True).returncode:
         print("could-not-run: Docker cleanup integration requires a running Docker engine")
         return 2
+    # BuildKit may cache a FROM image without adding its registry tag to Docker.
+    # Pull the base explicitly so the retention assertion tests an existing image.
+    if subprocess.run(["docker", "image", "inspect", "postgres:17.6-alpine"], capture_output=True).returncode:
+        subprocess.run(["docker", "pull", "postgres:17.6-alpine"], check=True)
     run_id = os.environ.get("CODEX_RUN_ID", "cleanup-test-" + str(os.getpid()))
     # The same wrapper is copied to the standalone template, with drift checked here.
     template = ROOT / "templates/nextjs-postgres/scripts"
@@ -179,6 +191,7 @@ docker volume create "$COMPOSE_PROJECT_NAME-sdk" >/dev/null
     return 0
 
 
+short_projects()
 sweep_boundary()
 stack_skip()
 sys.exit(real_paths())
