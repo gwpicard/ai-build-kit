@@ -2,11 +2,17 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { sql } from "kysely";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { createSignIn } from "../src/lib/sign-in/service";
+import * as configModule from "../src/lib/sign-in/config";
+import * as mailModule from "../src/lib/sign-in/mail";
+import { signInHandler } from "../src/lib/sign-in";
 import { validateConfig } from "../src/lib/sign-in/config";
 import { withDatabase } from "../src/lib/db/with-database";
 import { inspect } from "./support/database";
 import { testIdentity } from "./support/identity";
 import { stubProvider } from "./support/oidc";
+
+const deferred = vi.hoisted(() => [] as Array<() => Promise<void>>);
+vi.mock("next/server", () => ({ after: (task: () => Promise<void>) => { deferred.push(task); } }));
 
 const tenant = "11111111-1111-4111-8111-111111111111";
 const domain = "example.test";
@@ -65,7 +71,7 @@ for (const provider of ["microsoft", "google"] as const) {
     test("staff sign in, receive their database role, and sign out on the server", async () => {
       const auth = service(provider);
       const email = `${randomUUID()}@example.test`;
-      const claims = { tid: tenant, hd: domain, email, sub: randomUUID(),
+      const claims = { tid: tenant, acct: 0, hd: domain, email, sub: randomUUID(),
         email_verified: provider === "google" ? true : undefined };
       stub.setClaims(claims);
       const response = await login(auth, provider);
@@ -88,11 +94,15 @@ for (const provider of ["microsoft", "google"] as const) {
       expect(await auth.identity(headers)).toBeNull();
     });
     for (const failure of ["outside", "missing", "issuer", "audience", "signature", "expired", "nonce", "personal",
-      ...(provider === "microsoft" ? ["foreign-home", "personal-sts", "personal-sts-variant"] : [])]) {
+      ...(provider === "microsoft" ? ["foreign-home", "personal-sts", "personal-sts-variant", "guest", "guest-sts", "missing-acct", "string-acct"] : [])]) {
       test(`the server refuses ${failure} claims`, async () => {
         const auth = service(provider);
-        const claims: Record<string, unknown> = { tid: tenant, hd: domain, email: `${randomUUID()}@example.test`, sub: randomUUID() };
+        const claims: Record<string, unknown> = { tid: tenant, acct: 0, hd: domain, email: `${randomUUID()}@example.test`, sub: randomUUID() };
         const key = provider === "microsoft" ? "tid" : "hd";
+        if (failure === "guest" || failure === "guest-sts") claims.acct = 1;
+        if (failure === "guest-sts") claims.idp = `https://sts.windows.net/${tenant}/`;
+        if (failure === "missing-acct") delete claims.acct;
+        if (failure === "string-acct") claims.acct = "0";
         if (failure === "outside") claims[key] = "other-company.test";
         if (failure === "missing") delete claims[key];
         if (failure === "issuer") claims.iss = "https://other-issuer.test";
@@ -108,7 +118,7 @@ for (const provider of ["microsoft", "google"] as const) {
         }
         stub.setClaims(claims, failure === "signature");
         const response = await login(auth, provider);
-        expect(sessionCookie(response)).toBeUndefined();
+        expect(Boolean(sessionCookie(response))).toBe(false);
         expect(await auth.identity(new Headers({ Cookie: cookies(response) }))).toBeNull();
         const rows = await inspect((db) => db.query('SELECT id FROM sign_in."user" WHERE email=$1', [claims.email]));
         expect(rows.rowCount).toBe(0);
@@ -120,7 +130,7 @@ for (const provider of ["microsoft", "google"] as const) {
 for (const form of ["issuer", "sts"]) {
   test(`Microsoft accepts its own ${form} identity provider`, async () => {
     const auth = service("microsoft");
-    stub.setClaims({ tid: tenant, email: `${randomUUID()}@example.test`, sub: randomUUID(),
+    stub.setClaims({ tid: tenant, acct: 0, email: `${randomUUID()}@example.test`, sub: randomUUID(),
       email_verified: undefined, idp: form === "issuer" ? stub.issuer : `https://sts.windows.net/${tenant}/` });
     const response = await login(auth, "microsoft");
     expect(sessionCookie(response)).toBeDefined();
@@ -131,9 +141,6 @@ for (const form of ["issuer", "sts"]) {
 test("only invited outsiders receive a link; it grants viewer access once", async () => {
   const auth = service();
   const email = `${randomUUID()}@outside.test`;
-  const uninvited = `${randomUUID()}@outside.test`;
-  expect((await request(auth, "/sign-in/magic-link", { email: uninvited })).status).toBe(403);
-  expect(emails.has(uninvited)).toBe(false);
   await invite(email);
   const url = await link(auth, email);
   const responses = await Promise.all([auth.handler(new Request(url)), auth.handler(new Request(url))]);
@@ -194,4 +201,55 @@ test("production cannot use the stub issuer or a personal Microsoft tenant", () 
     expect(() => validateConfig({ ...config, directory: { ...config.directory, tenant } })).toThrow(/issuer/);
   } finally { vi.unstubAllEnvs(); }
   expect(() => validateConfig({ ...configuration(), baseURL: "http://localhost:3001" })).toThrow(/HTTPS/);
+});
+
+test("email-link responses do not reveal invitation or staff status", async () => {
+  const auth = service("microsoft");
+  const addresses = Object.fromEntries(["invited", "uninvited", "expired", "revoked", "staff"]
+    .map((state) => [state, `${randomUUID()}@outside.test`]));
+  for (const state of ["invited", "revoked", "staff"]) await invite(addresses[state]);
+  await invite(addresses.expired, new Date(0));
+  await inspect((db) => db.query('UPDATE sign_in.invitations SET revoked=true WHERE email=$1', [addresses.revoked]));
+  stub.setClaims({ tid: tenant, acct: 0, email: addresses.staff, sub: randomUUID() });
+  expect(sessionCookie(await login(auth, "microsoft"))).toBeDefined();
+  const responses = [];
+  const durations = [];
+  for (const [state, email] of Object.entries(addresses)) {
+    const start = performance.now();
+    const response = await request(auth, "/sign-in/magic-link", { email });
+    durations.push(performance.now() - start);
+    responses.push({ status: response.status, headers: [...response.headers], body: await response.text() });
+    expect(emails.has(email)).toBe(state === "invited");
+  }
+  expect(responses[0].status).toBe(200);
+  expect(JSON.parse(responses[0].body)).toEqual({ status: true });
+  for (const response of responses) expect(response).toEqual(responses[0]);
+  expect(Math.max(...durations) - Math.min(...durations)).toBeLessThan(100);
+});
+
+test("production delivery waits until after the generic response and hides SMTP failures", async () => {
+  const email = `${randomUUID()}@outside.test`;
+  await invite(email);
+  const readConfig = vi.spyOn(configModule, "readConfig").mockReturnValue(configuration());
+  const send = vi.spyOn(mailModule, "sendSignInLink").mockRejectedValue(new Error("SMTP failure"));
+  const log = vi.spyOn(console, "error").mockImplementation(() => {});
+  try {
+    const response = await signInHandler(new Request(`${baseURL}/api/auth/sign-in/magic-link`, {
+      method: "POST", headers: { "Content-Type": "application/json", Origin: baseURL },
+      body: JSON.stringify({ email }),
+    }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ status: true });
+    expect(send).not.toHaveBeenCalled();
+    expect(deferred).toHaveLength(1);
+    await expect(deferred.shift()!()).resolves.toBeUndefined();
+    expect(send).toHaveBeenCalledOnce();
+    expect(log).toHaveBeenCalledExactlyOnceWith("The sign-in email could not be sent");
+    const denied = await signInHandler(new Request(`${baseURL}/api/auth/sign-in/magic-link`, {
+      method: "POST", headers: { "Content-Type": "application/json", Origin: baseURL },
+      body: JSON.stringify({ email: `${randomUUID()}@outside.test` }),
+    }));
+    expect(denied.status).toBe(200);
+    expect(deferred).toHaveLength(0);
+  } finally { readConfig.mockRestore(); send.mockRestore(); log.mockRestore(); }
 });

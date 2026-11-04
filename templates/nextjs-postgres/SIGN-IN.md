@@ -27,7 +27,13 @@ also verifies the ID token's signature, audience, issuer and expiry using
 email and issued-at claim. These checks run on returning sign-ins too.
 
 Microsoft requires an exact company tenant UUID and its corresponding issuer.
-A different or missing `tid` claim is refused. When the token includes `idp`,
+A different or missing `tid` claim is refused. The verified ID token must also
+contain numeric `acct: 0`, meaning a tenant member. Guests (`acct: 1`), missing
+claims and other values are refused, even when the guest uses the company's
+own identity provider. The company's app registration must request `acct` in
+`optionalClaims.idToken`; without it, staff sign-in is refused. See Microsoft's
+[optional claims reference](https://learn.microsoft.com/en-us/entra/identity-platform/optional-claims-reference).
+When the token includes `idp`,
 that claim must identify the configured issuer or the company's own STS URI.
 This also refuses guests whose home provider belongs to another tenant,
 including personal Microsoft accounts. An absent `idp` uses the verified issuer,
@@ -57,9 +63,18 @@ an expiring invitation under row-level security and the existing audit trigger.
 Only administrators can read or change invitations through the app database
 role. The authentication role can read them but cannot create them.
 
-An email-link request checks the invitation and creates a viewer account only
-for an invited address. Better Auth's public email sign-up is disabled. A
-staff account cannot use the email-link route. Links expire after ten minutes;
+Email-link requests return the same generic success, HTTP 200 with
+`{"status":true}`, for invited, uninvited, expired, revoked and staff addresses.
+Only a current invitation for an outsider permits delivery and viewer-account
+creation. Requests follow the same token-generation and storage path, with a
+200 ms response floor to reduce differences in database timing. Production
+mail delivery runs through Next.js `after`, after the response, so SMTP latency
+or failure does not disclose eligibility. Delivery failures log a fixed message
+without the address or link. This is not a constant-time guarantee under load;
+monitor delivery failures and let people request another link if needed.
+
+Better Auth's public email sign-up is disabled. Staff accounts cannot sign in
+by email link. Links expire after ten minutes;
 only a hash of each link token is stored, and verification consumes it
 atomically. The tests race two requests for the same link. An expired or
 revoked invitation prevents new sessions and denies access through existing
@@ -130,12 +145,17 @@ test mode are present. No production switch enables the stub identity factory.
 The existing CI workflow runs these tests through `npm run check`.
 
 `npm run check:sign-in-review` compares the current SHA-256 digest with
-`reviews/sign-in.json`. The digest covers the module, auth routes, sign-in
-migration, user-role definitions, package manifest and lockfile, and the boundary and review scripts.
+`reviews/sign-in.json`. The digest covers the module, auth routes, every file
+in the migrations directory, user-role definitions, package manifest and
+lockfile, and the boundary and review scripts. It includes TypeScript settings
+and their inherited configuration files, plus Next.js configuration files that
+can change module resolution. A sibling named `src/lib/sign-in.*` fails the
+check because it could shadow the reviewed entry point.
 It includes file names and contents, so additions and deletions change it.
 `npm run check` runs this before the other checks. A fault test changes code,
-a dependency lockfile, the user-role definitions and the migration, and adds a file; each fails with the
-old record.
+a dependency lockfile, the user-role definitions and an existing migration.
+Further regressions add a shadow module or a later migration and change
+module-resolution settings; each fails with the old record.
 
 After a change, the `second-opinion` step must review those files and the fresh
 test evidence in a separate context. Resolve its findings, then run

@@ -2,19 +2,21 @@
   "review": "second-opinion",
   "outcome": "pass",
   "date": "2026-11-04",
-  "digest": "e103b98003a2393b2a61298620186326321a6f2d45a5b76930f5853c04e5f270",
+  "digest": "9663e3267b6042b9dfa5e247bee01268c554ee62da23fde2096881f7b11b2868",
   "evidence": [
-    "A separate fresh context reviewed all digest inputs, the merged identity boundaries, migrations, effective privileges, dependency advisories and execution evidence; no stopping findings remained.",
-    "The reviewer ran 72 non-database boundary and digest tests successfully. Supplied evidence showed 293 application tests, 44 storage integration tests, the production build and one browser test passing.",
-    "Real stub-provider sessions exercised both storage adapters and queued test effects. Viewer and unassigned role changes restricted the next attempt; production jobs retained their fixed system identity.",
-    "All 22 planted privilege faults were detected. Both baseline and restored permission suites passed 26 tests; the row-policy fault was also detected and restored.",
-    "The sign-in change restricts session identities to user roles after system jobs introduced the system role. The review digest also covers the user-role definitions.",
-    "The jobs configuration documentation was corrected to include the website sign-in settings. The advisory review found only tooling paths; flagged CLI dependencies remain present but unused in the production image."
+    "A separate fresh context reviewed the sign-in module, auth routes, all migrations, user-role definitions, dependency boundary, module-resolution configuration and review scripts. No findings remained.",
+    "The review reran 41 sign-in and digest tests against disposable Postgres. Supplied evidence showed all 106 focused sign-in, digest, permission and lint-boundary tests, TypeScript and ESLint passing.",
+    "Signed stub tokens through the real handler prove member access and rejection of Microsoft guests, missing membership claims and string membership values, including guests using the company identity provider.",
+    "Before the fix, the shadow entry point, later migration and TypeScript and Next.js alias regressions all failed. The matching tests now pass, as do inherited-configuration and alternate-configuration regressions.",
+    "Invited, uninvited, expired, revoked and staff email-link requests have identical status, headers and body. Only the invited outsider receives mail, and local sequential request durations differ by less than 100 ms.",
+    "The production entry-point test proves mail is deferred until after the generic response and SMTP failure logs no address or token. The review checked the installed Next.js response-closure scheduling and Better Auth token path.",
+    "The existing permission tests pass for authentication tables, administrator-only invitations and the database role boundary. Earlier integration evidence covered files, queued effects and planted privilege faults; this fix does not change their implementations."
   ],
   "limits": [
-    "No real company directory registration, SMTP delivery or hosted storage permissions were exercised.",
-    "User-authorised queued handlers are integration examples; the production worker exposes only fixed system tasks and no user-job submission endpoint.",
-    "The reviewer reran non-database tests and read supplied execution logs for the other checks.",
-    "The digest verifies content correspondence, not reviewer identity; GitHub review independence is unverified."
+    "No real directory registration, SMTP delivery or hosted storage permissions were exercised.",
+    "The local production build could not resolve the pre-existing dependency symlink outside the project root. GitHub build and full-suite results are recorded in the pull request.",
+    "The delivery test mocks Next.js after; its production lifecycle was checked through installed source and documentation. Deferred delivery is not a durable queue.",
+    "Timing evidence covers local sequential requests. Response padding does not guarantee constant timing under load.",
+    "The review reran 41 tests and read supplied evidence for the other focused checks. The digest verifies content correspondence, not reviewer identity; GitHub review independence remains unverified."
   ]
 }

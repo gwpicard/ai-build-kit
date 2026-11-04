@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import { readConfig } from "./config";
 import { sendSignInLink } from "./mail";
 import { createSignIn } from "./service";
@@ -6,7 +7,14 @@ import { withDatabase } from "../db/with-database";
 import { sql } from "kysely";
 
 let service: ReturnType<typeof createSignIn> | undefined;
-function signIn() { return service ??= createSignIn(readConfig(), sendSignInLink); }
+function signIn() {
+  return service ??= createSignIn(readConfig(), async (email, url) => {
+    after(async () => {
+      try { await sendSignInLink(email, url); }
+      catch { console.error("The sign-in email could not be sent"); }
+    });
+  });
+}
 
 export const signInHandler = (request: Request) => signIn().handler(request);
 export const sessionIdentity = (headers: Headers) => signIn().identity(headers);

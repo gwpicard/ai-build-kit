@@ -1,3 +1,4 @@
+import ts from 'typescript';
 import { createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -14,12 +15,35 @@ export async function signInDigest(root = project) {
       else throw new Error('The sign-in review does not accept symbolic links');
     }
   }
+  for (const entry of await readdir(path.join(root, 'src/lib'))) {
+    if (entry.startsWith('sign-in.')) throw new Error('A sibling module can shadow the sign-in entry point');
+  }
   await walk('src/lib/sign-in');
   await walk('src/app/api/auth');
-  files.push('src/lib/db/identity.ts', 'db/migrations/002_sign_in.sql', 'package.json', 'package-lock.json',
+  await walk('db/migrations');
+  // Include alternate Next.js configurations and every inherited TypeScript config.
+  for (const name of await readdir(root)) {
+    if (name.startsWith('next.config.') || name === 'jsconfig.json') files.push(name);
+  }
+  ts.getParsedCommandLineOfConfigFile(path.join(root, 'tsconfig.json'), {}, {
+    ...ts.sys,
+    readFile(file) {
+      const content = ts.sys.readFile(file);
+      if (content !== undefined) {
+        const relative = path.relative(root, file);
+        if (relative.startsWith('..') || path.isAbsolute(relative)) {
+          throw new Error('Module-resolution settings must be inside the reviewed project');
+        }
+        files.push(relative);
+      }
+      return content;
+    },
+    onUnRecoverableConfigFileDiagnostic() { throw new Error('Cannot read module-resolution settings'); },
+  });
+  files.push('src/lib/db/identity.ts', 'tsconfig.json', 'next.config.ts', 'package.json', 'package-lock.json',
     'scripts/database-boundary.mjs', 'scripts/sign-in-review.mjs');
   const hash = createHash('sha256');
-  for (const name of files.sort()) {
+  for (const name of [...new Set(files)].sort()) {
     const content = await readFile(path.join(root, name));
     hash.update(`${name}\0${content.length}\0`).update(content);
   }

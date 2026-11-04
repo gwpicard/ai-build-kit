@@ -1,6 +1,7 @@
 import "server-only";
+import { setTimeout as delay } from "node:timers/promises";
 import { betterAuth } from "better-auth";
-import { APIError, createAuthMiddleware } from "better-auth/api";
+import { createAuthMiddleware } from "better-auth/api";
 import { genericOAuth, magicLink } from "better-auth/plugins";
 import { userRoles, type UserRole, type DatabaseIdentity } from "../db/identity";
 import { type SignInConfig, validateConfig } from "./config";
@@ -26,9 +27,6 @@ export function createSignIn(config: SignInConfig, sendLink: (email: string, url
     hooks: { before: createAuthMiddleware(async (ctx) => {
       if (ctx.path === "/sign-in/magic-link") {
         const email = typeof ctx.body?.email === "string" ? ctx.body.email.trim().toLowerCase() : "";
-        if (!email || !await storage.prepareOutsider(email)) {
-          throw new APIError("FORBIDDEN", { message: "Email sign-in requires a current invitation" });
-        }
         ctx.body.email = email;
       }
     }) },
@@ -40,8 +38,7 @@ export function createSignIn(config: SignInConfig, sendLink: (email: string, url
       genericOAuth({ config: config.directory ? [directoryProvider(config.directory)] : [] }),
       magicLink({ disableSignUp: true, expiresIn: 600, storeToken: "hashed",
         sendMagicLink: async ({ email, url }) => {
-          if (!await storage.invited(email)) throw new APIError("FORBIDDEN");
-          await sendLink(email, url);
+          if (await storage.prepareOutsider(email)) await sendLink(email, url);
         } }),
     ],
   });
@@ -58,7 +55,13 @@ export function createSignIn(config: SignInConfig, sendLink: (email: string, url
       : request.method === "GET" && (["/get-session", "/magic-link/verify"].includes(path)
         || /^\/callback\/(microsoft|google)$/.test(path));
     if (!allowed) return new Response(null, { status: 404 });
-    return auth.handler(request);
+    const started = performance.now();
+    const response = await auth.handler(request);
+    // Pad the database work; production mail delivery runs after the response.
+    if (request.method === "POST" && path === "/sign-in/magic-link") {
+      await delay(Math.max(0, 200 - (performance.now() - started)));
+    }
+    return response;
   }
   return { handler, identity, close: () => storage.pool.end() };
 }

@@ -35,7 +35,7 @@ export function directoryProvider(directory: Directory) {
         });
         if (directory.provider === "microsoft") {
           const companyProviders = [directory.issuer, `https://sts.windows.net/${directory.tenant}/`];
-          if (payload.tid !== directory.tenant || (payload.idp !== undefined
+          if (payload.tid !== directory.tenant || payload.acct !== 0 || (payload.idp !== undefined
             && (typeof payload.idp !== "string" || !companyProviders.includes(payload.idp)))) return null;
         }
         if (directory.provider === "google" && (payload.hd !== directory.domain || payload.email_verified !== true)) return null;
