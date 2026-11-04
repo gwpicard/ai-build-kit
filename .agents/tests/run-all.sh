@@ -44,7 +44,7 @@ workers = int(sys.argv[2])
 scripts = work.joinpath('scripts').read_text().splitlines()
 # These tests write to disposable projects and use local service stand-ins.
 # Only recipe-ci starts a database or installs a browser in this group.
-# Browser interface tests and unclassified tests run alone after this group.
+# The interface group starts after this group, so browser installers never overlap.
 parallel = (
     'recipe-ci-rehearsal', 'replay-case-states', 'check-floor-rehearsal',
     'piece-labels', 'replay-state', 'test-strength-rehearsal', 'found-issues',
@@ -52,6 +52,16 @@ parallel = (
     'recipe-nextjs-supabase-on-vercel', 'mark-ready', 'trim-rehearsal',
     'secrets-gates', 'check-tooling', 'replay-preflight',
     'recipe-nextjs-supabase-on-coolify', 'first-upload',
+)
+# These checks use disposable files or service stand-ins, and no browser or
+# database containers. They can share the interface test's otherwise idle time.
+interface_parallel = (
+    'starter-interface', 'waste-read-rehearsal', 'merge-gate',
+    'structure-read-rehearsal', 'risk-move-rehearsal', 'release-builder',
+    'replay-provider', 'replay-behaviour', 'tests-prove-change', 'fake-github',
+    'plan-helper-routes', 'reach-rehearsal', 'older-project-upkeep',
+    'approval-gate', 'push-guard', 'starter-rehearsal', 'recipes',
+    'seeded-scoring', 'boundary-rules-rehearsal', 'fake-host', 'gated-turns',
 )
 lock = threading.Lock()
 children = set()
@@ -95,12 +105,13 @@ if workers == 1:
     for script in scripts:
         run(script)
 else:
-    selected = sorted((s for s in scripts if Path(s).stem in parallel),
-                      key=lambda s: parallel.index(Path(s).stem))
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        list(pool.map(run, selected))
+    for group in (parallel, interface_parallel):
+        selected = sorted((s for s in scripts if Path(s).stem in group),
+                          key=lambda s: group.index(Path(s).stem))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            list(pool.map(run, selected))
     for script in scripts:
-        if Path(script).stem not in parallel:
+        if Path(script).stem not in parallel + interface_parallel:
             run(script)
 PYTHON
 

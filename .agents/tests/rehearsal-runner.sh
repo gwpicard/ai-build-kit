@@ -150,8 +150,23 @@ raise SystemExit({1 if name == 'recipe-ci-rehearsal' else 0})
 """)
     stub('check-floor-rehearsal', common + """
 assert len(list(Path('.').glob('*.active'))) < 2, 'worker bound exceeded'
+Path('first-phase-done').touch()
 print('could-not-run: deliberate missing tool')
 raise SystemExit(2)
+""")
+    for name, peer in [('starter-interface', 'waste-read-rehearsal'),
+                       ('waste-read-rehearsal', 'starter-interface')]:
+        stub(name, common + f"""
+assert Path('first-phase-done').exists(), 'second group started before the first finished'
+assert not Path('recipe-ci-rehearsal.active').exists(), 'browser installers overlapped'
+assert not Path('replay-case-states.active').exists(), 'groups overlapped'
+Path('{name}.active').touch()
+Path('{name}.started').touch()
+for attempt in range(200):
+    if Path('{peer}.started').exists(): break
+    time.sleep(.05)
+else: raise AssertionError('second group did not overlap')
+Path('{name}.active').unlink()
 """)
     stub('new-unclassified', common + """
 assert not list(Path('.').glob('*.active')), 'unclassified test overlapped'
@@ -162,20 +177,21 @@ print('unclassified ran')
     ran = subprocess.run([str(runner)], cwd=root, env=env, text=True,
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=30)
     assert ran.returncode == 1, ran.stdout
-    assert '2 of 4 rehearsals passed' in ran.stdout, ran.stdout
+    assert '4 of 6 rehearsals passed' in ran.stdout, ran.stdout
     assert '1 failed; 1 could not run' in ran.stdout, ran.stdout
     assert 'unclassified ran' in ran.stdout, ran.stdout
     for name in ['recipe-ci-rehearsal', 'replay-case-states']:
         assert ran.stdout.count(name + ' unique output') == 1, ran.stdout
         assert f'| {name} |' in (root / 'summary').read_text()
     # Serial mode must honour the same complete discovery and failure policy.
-    for name in ['recipe-ci-rehearsal', 'replay-case-states', 'check-floor-rehearsal']:
+    for name in ['recipe-ci-rehearsal', 'replay-case-states', 'check-floor-rehearsal',
+                 'starter-interface', 'waste-read-rehearsal']:
         stub(name, "print('serial fixture')\n")
     env['REHEARSAL_JOBS'] = '1'
     ran = subprocess.run([str(runner)], cwd=root, env=env, text=True,
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=30)
-    assert ran.returncode == 0 and '4 of 4 rehearsals passed' in ran.stdout, ran.stdout
+    assert ran.returncode == 0 and '6 of 6 rehearsals passed' in ran.stdout, ran.stdout
     env['REHEARSAL_JOBS'] = '0'
     assert subprocess.run([str(runner)], env=env, capture_output=True).returncode == 1
-print('ok: two workers overlap, remain bounded, keep failures and timings, and isolate new tests')
+print('ok: both groups overlap, keep browser installers apart, retain failures and timings, and isolate new tests')
 PYTHON

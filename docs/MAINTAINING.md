@@ -577,7 +577,8 @@ fallback reports `maintainer-source-validation`, leaving the required check name
 exclusive to the pull-request job that waits for the starter.
 
 The rehearsal runner records each test's duration and runs selected isolated
-tests with two workers. Other tests run alone; adding a test always includes it
+tests with two workers. Browser installers run in separate groups. Other tests
+run alone; adding a test always includes it
 in the suite. Use `REHEARSAL_JOBS=1 .agents/tests/run-all.sh` for a serial run.
 
 `stable` rejects deletion and

@@ -52,7 +52,7 @@ jobs:
       - name: Check the built pages
         run: .agents/tests/site-links.sh
   # The runner discovers every rehearsal and reports each result and duration.
-  # Isolated tests share two workers; browser and unclassified tests run alone.
+  # Isolated tests share two workers; browser installers use separate groups.
   rehearsal:
     if: github.repository == 'gwpicard/ai-build-kit'
     runs-on: ubuntu-24.04
