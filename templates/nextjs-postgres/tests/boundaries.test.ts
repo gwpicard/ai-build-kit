@@ -24,15 +24,37 @@ test("every record table forces RLS, every business table is audited, and the ma
     expect(row.rls, row.name).toBe(true);
     expect(row.forced, row.name).toBe(true);
     expect(row.owner, row.name).toBe("tool_owner");
-    if (row.schema !== "audit" && `${row.schema}.${row.name}` !== "private.schema_migrations") {
+    if (!["job_queue", "job_runtime"].includes(row.schema) && row.schema !== "audit" && `${row.schema}.${row.name}` !== "private.schema_migrations") {
       expect(row.audited, row.name).toBe(true);
     }
   }
-  const appTables = metadata.rows.filter((row) => `${row.schema}.${row.name}` !== "private.schema_migrations")
+  const appTables = metadata.rows.filter((row) => !["job_queue", "job_runtime"].includes(row.schema) && `${row.schema}.${row.name}` !== "private.schema_migrations")
     .map((row) => row.schema === "public" ? row.name : `${row.schema}.${row.name}`).sort();
   expect([...tables].sort()).toEqual(appTables);
   expect(Object.keys(roleMatrix).sort()).toEqual([...appRoles].sort());
   for (const role of appRoles) expect(Object.keys(roleMatrix[role]).sort()).toEqual(appTables);
+});
+
+test("the jobs catalogue contains only reviewed tables and queue statistics partitions", async () => {
+  const { rows } = await inspect((client) => client.query(`SELECT n.nspname AS schema, c.relname AS name,
+    (SELECT pn.nspname || '.' || parent.relname FROM pg_inherits i
+      JOIN pg_class parent ON parent.oid=i.inhparent
+      JOIN pg_namespace pn ON pn.oid=parent.relnamespace WHERE i.inhrelid=c.oid) AS parent
+    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname IN ('job_queue', 'job_runtime') AND c.relkind IN ('r', 'p')`));
+  const reviewed = ["bam", "instance", "job", "job_common", "job_dependency", "queue", "queue_stats",
+    "schedule", "subscription", "version", "warning"].map((name) => `job_queue.${name}`)
+    .concat(["job_runtime.heartbeats", "job_runtime.schedules"]);
+  expect(rows.filter((row) => !/^queue_stats_[0-9]{8}$/.test(row.name))
+    .map((row) => `${row.schema}.${row.name}`).sort()).toEqual(reviewed.sort());
+  for (const row of rows.filter((row) => /^queue_stats_[0-9]{8}$/.test(row.name))) {
+    expect(row.schema).toBe("job_queue");
+    expect(row.parent).toBe("job_queue.queue_stats");
+  }
+  const schemas = await inspect((client) => client.query(`SELECT nspname FROM pg_namespace
+    WHERE nspname NOT LIKE 'pg_%' AND nspname <> 'information_schema'
+      AND has_schema_privilege('tool_app', oid, 'CREATE')`));
+  expect(schemas.rows).toEqual([]);
 });
 
 test("the app role owns no tables, bypasses no row rules and has no role memberships", async () => {
@@ -67,9 +89,25 @@ test("effective app privileges match every table, including privileges outside R
   for (const row of metadata.rows) {
     const name = `${row.schema}.${row.name}`;
     const expected = name === "private.schema_migrations" ? []
-      : row.schema === "audit" ? ["SELECT"] : ["DELETE", "INSERT", "SELECT", "UPDATE"];
+      : row.schema === "audit" ? ["SELECT"]
+      : name === "public.files" ? ["DELETE", "SELECT"] : ["DELETE", "INSERT", "SELECT", "UPDATE"];
     expect(row.privileges, name).toEqual(expected);
   }
+});
+
+test("effective file column grants permit insertion and title changes only", async () => {
+  const metadata = await inspect((client) => client.query(`SELECT a.attname AS name,
+    ARRAY(SELECT privilege FROM unnest(ARRAY['SELECT', 'INSERT', 'UPDATE', 'REFERENCES']) AS privilege
+      WHERE has_column_privilege('tool_app', a.attrelid, a.attnum, privilege)
+      ORDER BY privilege) AS privileges
+    FROM pg_attribute a WHERE a.attrelid='public.files'::regclass
+      AND a.attnum > 0 AND NOT a.attisdropped ORDER BY a.attname`));
+  expect(metadata.rows).toEqual([
+    { name: "id", privileges: ["INSERT", "SELECT"] },
+    { name: "owner_id", privileges: ["INSERT", "SELECT"] },
+    { name: "storage_scope", privileges: ["INSERT", "SELECT"] },
+    { name: "title", privileges: ["INSERT", "SELECT", "UPDATE"] },
+  ]);
 });
 
 test("the app has no unreviewed views, materialised views, sequences or callable functions", async () => {
@@ -90,7 +128,9 @@ test("the app has no unreviewed views, materialised views, sequences or callable
       AND has_schema_privilege('tool_app', n.oid, 'USAGE')
       AND has_function_privilege('tool_app', p.oid, 'EXECUTE')
     ORDER BY n.nspname, p.proname, arguments`));
-  expect(functions.rows).toEqual([]);
+  expect(functions.rows).toEqual([
+    { schema: "job_queue", name: "job_now", arguments: "", security_definer: false },
+  ]);
 });
 
 test("the audit function runs as the owner with a fixed search path and restricted execution", async () => {
