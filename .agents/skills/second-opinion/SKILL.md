@@ -16,11 +16,17 @@ reported, `recipe-check` evidence for type and lint checks.
 Gemini reviewers have no shell, so include the packet text in the prompt.
 Exit 2 means an input is missing. Continue the review and carry the packet's
 `Review limits` into the result.
+The packet script runs `second-opinion/scripts/review-guard.sh snapshot` on
+the changed files and pre-existing uncommitted work; `gate.py record` runs its
+`check` after the review and refutation. Report any restored or other changed files, or that the guard
+could not run. For a review without a packet, run the same snapshot and check
+around it, naming the files under review.
 
 At founding, review `masterplan.md` against the agreed scope and setup notes,
 using the questions below for the proposed work. No piece, base commit or
-pull request is needed. Put findings and review limits in the completion
-report instead of running `gate.py record`.
+pull request is needed. Snapshot `masterplan.md` before review and check it
+afterwards with the guard above. Put findings and review limits in the
+completion report instead of running `gate.py record`.
 
 Use the reviewer agent in a fresh context. If its brief is not installed,
 start an ordinary fresh subagent, tell it to load this `second-opinion` skill,

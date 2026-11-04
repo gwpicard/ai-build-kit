@@ -578,9 +578,12 @@ release because a `release` event runs the workflow from the tagged commit.
 ### After publication
 
 On the next branch, run `.agents/tools/record-released-copies.py` with the
-release archive. It adds whole-copy files to the record `/maintain` uses to
-offer removal of untouched copies. If a release is missing from the record,
-its files are listed rather than offered for removal.
+release archive and `--source-tag <released tag>`. The tag supplies hashes for
+files the shared installer copies from source but the archive omits. It adds
+whole-copy files to the record `/maintain` uses to offer removal of untouched copies, and keeps each release's skill-file inventory
+for the update check. An update check without the installed release's version
+and inventory is inconclusive. If a release is missing from the record,
+its whole-copy files are listed rather than offered for removal.
 
 The companion site deploys from `stable` after verification. See
 [The companion site](#the-companion-site) for its publication path.

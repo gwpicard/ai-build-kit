@@ -118,6 +118,7 @@ first-upload-ignores-shared-history
 upload-piece-skips-pull-request
 strength-config-lost
 review-gate-leaves-draft-edited
+review-guard-call-missing
 attempt-cap
 merge-behind-main
 promises-list-stale
@@ -274,6 +275,7 @@ describe() {
     upload-piece-skips-pull-request) echo "the upload script no longer opens the pull request" ;;
     strength-config-lost) echo "the Python mutation check no longer tells mutmut which code to break" ;;
     review-gate-leaves-draft-edited) echo "the review gate leaves an edited draft in place" ;;
+    review-guard-call-missing) echo "recording a review skips the file guard" ;;
     attempt-cap) echo "the piece attempt cap rises, so a fourth attempt is allowed" ;;
     merge-behind-main) echo "merge accepts a pull request branch behind main" ;;
     promises-list-stale) echo "the promise list can name a checker that does not exist" ;;
@@ -387,6 +389,7 @@ checks_for() {
     upload-piece-skips-pull-request) echo "upload-piece" ;;
     strength-config-lost) echo "test-strength-rehearsal" ;;
     review-gate-leaves-draft-edited) echo "review-guard" ;;
+    review-guard-call-missing) echo "review-gate" ;;
     attempt-cap) echo "autonomy-boundaries" ;;
     merge-behind-main) echo "merge-gate" ;;
     promises-list-stale) echo "promises-list-rehearsal" ;;
@@ -1310,14 +1313,23 @@ old = "  [ -f \"$ROOT/$path\" ] || fail \"named checker is missing: $path\""
 assert old in s, "named script existence check not found"
 open(p, "w").write(s.replace(old, "  : # mutation ignores missing checkers", 1))'
       ;;
+    review-guard-call-missing)
+      edit "$tree/.agents/skills/quality-checks/scripts/gate.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "    review_guard(\"check\")"
+assert old in s, "review guard call not found"
+open(p, "w").write(s.replace(old, "    # mutation skips the review guard", 1))'
+      ;;
     review-gate-leaves-draft-edited)
       edit "$tree/.agents/skills/second-opinion/scripts/review-guard.sh" '
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "cp -p \"$GUARD/files/$file\" \"$file\" || exit 2"
+old = "                shutil.copy2(GUARD / entry[\"copy\"], path)"
 assert old in s, "review draft restoration not found"
-open(p, "w").write(s.replace(old, ": # mutation leaves the review edit", 1))'
+open(p, "w").write(s.replace(old, "                pass # mutation leaves the review edit", 1))'
       ;;
     merge-behind-main)
       edit "$tree/.agents/skills/merge/scripts/merge.py" '
