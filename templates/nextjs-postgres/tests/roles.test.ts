@@ -10,6 +10,7 @@ import { testIdentity } from "./support/identity";
 
 const users = { self: randomUUID(), other: randomUUID() };
 const fixtures: Record<Table, Record<Scope, string>> = {
+  files: { self: randomUUID(), other: randomUUID() },
   records: { self: randomUUID(), other: randomUUID() },
   withheld: { self: randomUUID(), other: randomUUID() },
   "audit.events": { self: "", other: "" },
@@ -27,6 +28,8 @@ beforeAll(async () => {
           await client.query(`INSERT INTO public.${table} (id, owner_id, title) VALUES ($1, $2, 'Fixture')`,
             [fixtures[table][scope], users[scope]]);
         }
+        await client.query("INSERT INTO public.files (id, owner_id, title, storage_scope) VALUES ($1, $2, 'Fixture', $3)",
+          [fixtures.files[scope], users[scope], "0".repeat(64)]);
         const audit = await client.query("SELECT id FROM audit.events WHERE record_id=$1", [fixtures.records[scope]]);
         fixtures["audit.events"][scope] = audit.rows[0].id;
       }
@@ -76,6 +79,10 @@ function mutate(db: Transaction<Database>, table: Table, operation: string, scop
     if (table === "audit.events") {
       return sql`insert into audit.events (table_name, record_id, operation, actor_id)
         values ('public.records', ${randomUUID()}::uuid, 'INSERT', ${users[scope]}::uuid) returning id`.execute(db);
+    }
+    if (table === "files") {
+      return sql`insert into files (id, owner_id, title, storage_scope)
+        values (${randomUUID()}::uuid, ${users[scope]}::uuid, 'New file', ${"0".repeat(64)}) returning id`.execute(db);
     }
     return sql`insert into ${sql.table(table)} (id, owner_id, title)
       values (${randomUUID()}::uuid, ${users[scope]}::uuid, 'New record') returning id`.execute(db);

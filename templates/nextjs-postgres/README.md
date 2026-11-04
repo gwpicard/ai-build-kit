@@ -111,7 +111,7 @@ records. An unassigned role has no access. `withheld` demonstrates denial when
 a table has SQL grants but no policy. Tests check that its seeded rows remain
 invisible to every app role.
 
-Triggers on both business tables write inserts, updates and deletes to
+Triggers on the business tables write inserts, updates and deletes to
 `audit.events`, with actor, before and after values, and a timestamp. The
 function has a fixed search path and runs as the owner, which has only an
 insert policy on the forced audit table. The app has only an administrator
@@ -135,3 +135,77 @@ The script restores the saved policy in `finally`; run `npm test` afterwards
 to check the restored database. Keep the database disposable: a terminated
 process cannot run its restoration code. If interrupted, start a fresh local
 database and apply its migrations again.
+
+
+## Private files
+
+`src/lib/files/index.ts` exports `files()`, the server's permission-checked file
+port. Its five actions are `save(identity, title, bytes)`, `fetch(identity, id)`,
+`temporaryLink(identity, id)`, `delete(identity, id)` and `list(identity)`.
+`save` returns the new file record; `fetch` returns bytes; `list` returns only
+records the caller may read in the configured store. These operations need the
+same verified server identity as database queries. There is no file HTTP route
+until the sign-in module supplies that identity.
+
+The `files` table forces row-level security and uses the same role rules as
+`records`: members manage their own files, viewers read their own files,
+administrators manage all files, and unassigned users have no access. Every
+metadata change writes an audit event. The app can update a title, but cannot
+change a file's ID, owner or storage location. Object keys come from generated
+IDs rather than filenames. Metadata includes a hash of the storage location,
+so switching stores cannot issue links for records from the previous store.
+Moving files between stores needs a separate migration.
+
+App code imports the file port, never a storage SDK or adapter. ESLint rejects
+SDK imports, re-exports, CommonJS and dynamic imports outside the two exact
+adapter files. It also rejects app imports of the adapters, except from the
+file port. Administration scripts and tests remain outside this app boundary;
+the local fixture script creates private test storage.
+
+Choose storage through environment variables. `FILES_ADAPTER` defaults to `s3`;
+`FILES_LINK_SECONDS` defaults to 60 and accepts whole seconds from 1 to 300.
+Configuration is validated when `files()` is created, before any operation.
+HTTPS is required except for loopback emulators outside production.
+
+| Adapter | Configuration |
+| --- | --- |
+| S3 | `FILES_S3_BUCKET`, `FILES_S3_REGION`; optional `FILES_S3_ENDPOINT` and `FILES_S3_FORCE_PATH_STYLE=true` for compatible stores. The SDK credential chain reads `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, optional `AWS_SESSION_TOKEN`, or workload credentials. |
+| Azure Blob | `FILES_AZURE_ACCOUNT`, `FILES_AZURE_ACCOUNT_KEY`, `FILES_AZURE_CONTAINER`; optional `FILES_AZURE_ENDPOINT`, otherwise the account's standard HTTPS Blob endpoint. |
+
+The host must supply a private bucket or container and credentials restricted
+to the tool's storage. This module creates no hosted storage and grants no
+public access. Keep anonymous reads and listing disabled, including through
+bucket policies, account settings, gateways and CDNs. The local tests prove
+these settings for the emulators; they do not verify a hosted store's access.
+The Azure SDK is pinned to 12.29.1, whose Blob API version matches Azurite
+3.35.0. The AWS SDK and request presigner are pinned to 3.1161.0. The Azure
+adapter uses an account key to sign blob-scoped, read-only SAS links,
+following the [service SAS API](https://learn.microsoft.com/en-us/azure/storage/blobs/sas-service-create-javascript).
+The S3 adapter uses the SDK's
+[request presigner](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-s3-request-presigner/).
+
+Only a successful row-rule read can issue a temporary link. Links allow anyone
+holding them to read that one file until expiry, including after a role change;
+do not log, persist or share them. Downloads use attachment disposition and
+`Cache-Control: no-store`. Expiry prevents a new request after the deadline;
+it cannot retract bytes already downloaded or interrupt an accepted download.
+
+Postgres and object storage do not share a transaction. A failed upload rolls
+back its metadata, and a failed object deletion rolls back the metadata
+deletion. A process crash, partial upload or failed database commit can leave
+an orphaned object or a metadata record whose object is missing. Orphans stay
+private; recovery needs a reconciliation of metadata and objects using separate
+administration credentials. `save` buffers bytes in memory. Set upload size
+limits at the eventual HTTP route for the tool's workload.
+
+Run `npm run test:files` with Docker available. It creates a separate disposable
+Postgres database, RustFS 1.0.4 (an S3-compatible server) and Azurite 3.35.0 on
+random loopback ports. It generates test credentials in memory and removes its
+own containers afterwards. No `.env` or existing service is used. The same
+suite exercises all five adapter actions against both servers, follows listing
+pages, denies unsigned GET, HEAD and listing requests, and proves expiry with
+real HTTP requests. It checks link and byte access for every role and owner
+scope, denied writes, immutable storage locations and a removed read policy.
+The ordinary `npm test` suite also covers file row rules, configuration and the
+ESLint boundary. `npm run check` includes both suites, so CI runs the container
+tests as part of the starter check.
