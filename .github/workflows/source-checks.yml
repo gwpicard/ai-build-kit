@@ -68,6 +68,12 @@ jobs:
           cache: npm
           cache-dependency-path: |
             .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/package-lock.json
+            .agents/tests/structure-read-rehearsal.sh
+            .agents/tests/check-floor-rehearsal.sh
+            .agents/tests/waste-read-rehearsal.sh
+            .agents/tests/test-strength-rehearsal.sh
+            .agents/tests/trim-rehearsal.sh
+            .agents/tests/boundary-rules-rehearsal.sh
       - name: Share the restored npm downloads with rehearsal engines
         run: printf 'npm_config_cache=%s\n' "$(npm config get cache)" >> "$GITHUB_ENV"
       - name: Prepare the starter's database tools
