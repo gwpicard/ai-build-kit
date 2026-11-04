@@ -2166,16 +2166,46 @@ errors = []
 
 source_doc = yaml.safe_load(open(sys.argv[1]))
 source_jobs = source_doc.get("jobs") or {}
-if set(source_jobs.keys()) != {"source-kit-validation", "rehearsal", "site-build"}:
-    errors.append("source workflow must contain source-kit-validation, rehearsal and site-build")
+if set(source_jobs.keys()) != {"source-kit-validation", "rehearsal", "site-build", "postgres-starter"}:
+    errors.append("source workflow must contain validation, rehearsal, site and starter checks")
 sk = source_jobs.get("source-kit-validation") or {}
-if sk.get("if") != "github.repository == 'gwpicard/ai-build-kit'":
+if sk.get("if") != "always() && github.repository == 'gwpicard/ai-build-kit'":
     errors.append("source-kit-validation.if is wrong: %r" % sk.get("if"))
 sk_runs = " ".join(step.get("run", "") for step in (sk.get("steps") or []) if isinstance(step, dict))
 if "build-adapters.sh --check" not in sk_runs:
     errors.append("source-kit-validation is missing a build-adapters.sh --check step")
 if "validate-kit.sh" not in sk_runs:
     errors.append("source-kit-validation is missing a validate-kit.sh step")
+
+# The existing required check must fail if the reusable starter did not pass.
+source_events = source_doc.get("on", source_doc.get(True, {}))
+if source_events.get("pull_request", {}) not in (None, {}):
+    errors.append("source checks must cover every pull request without path filters")
+if "pull_request" not in source_events:
+    errors.append("source checks must run on pull requests")
+starter = source_jobs.get("postgres-starter") or {}
+if starter != {"if": "github.repository == 'gwpicard/ai-build-kit'",
+               "uses": "./.github/workflows/postgres-starter.yml"}:
+    errors.append("source checks must call the starter workflow once, without conditions on paths")
+if sk.get("needs") != "postgres-starter":
+    errors.append("source-kit-validation must depend on the starter")
+gates = [step for step in sk.get("steps", []) if step.get("name") == "Require the starter checks"]
+if gates != [{"name": "Require the starter checks",
+              "env": {"STARTER_RESULT": "${{ needs.postgres-starter.result }}"},
+              "run": 'test "$STARTER_RESULT" = success'}]:
+    errors.append("source-kit-validation must reject every non-success starter result")
+with open(os.path.join(os.path.dirname(sys.argv[1]), "postgres-starter.yml")) as stream:
+    starter_doc = yaml.safe_load(stream)
+starter_events = starter_doc.get("on", starter_doc.get(True, {}))
+if set(starter_events) != {"workflow_call", "push"} or starter_events["push"] != {"branches": ["main"]}:
+    errors.append("starter must run once per source pull request and on pushes to main")
+if starter_events.get("workflow_call") not in (None, {}):
+    errors.append("starter workflow must be callable without inputs or secrets")
+
+with open(os.path.join(os.path.dirname(sys.argv[1]), "maintainer-branch-check.yml")) as stream:
+    branch_doc = yaml.safe_load(stream)
+if set(branch_doc.get("jobs", {})) != {"maintainer-source-validation"}:
+    errors.append("the branch fallback must use its own check name, apart from the required gate")
 
 # A rehearsal nobody runs proves nothing. One hosted job for each rehearsal
 # named a failure on the checks list, but each job was billed a whole minute
@@ -2184,6 +2214,8 @@ if "validate-kit.sh" not in sk_runs:
 rehearsal = source_jobs.get("rehearsal") or {}
 if rehearsal.get("if") != "github.repository == 'gwpicard/ai-build-kit'":
     errors.append("rehearsal.if is wrong: %r" % rehearsal.get("if"))
+if rehearsal.get("timeout-minutes") != 20:
+    errors.append("rehearsal must keep its 20-minute limit")
 rehearsal_runs = " ".join(step.get("run", "") for step in (rehearsal.get("steps") or []) if isinstance(step, dict))
 if ".agents/tests/run-all.sh" not in rehearsal_runs:
     errors.append("rehearsal does not run .agents/tests/run-all.sh")

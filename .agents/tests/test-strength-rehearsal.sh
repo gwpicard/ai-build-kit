@@ -39,7 +39,7 @@ if ! command -v stryker >/dev/null 2>&1; then
   echo "  stryker not on PATH, installing it into a throwaway folder"
   mkdir -p "$WORK/engines"
   printf '{"name":"engines","private":true}\n' > "$WORK/engines/package.json"
-  (cd "$WORK/engines" && npm_config_cache="$WORK/npm-cache" npm install --no-audit --no-fund --silent @stryker-mutator/core@9) ||
+  (cd "$WORK/engines" && npm_config_cache="${npm_config_cache:-$WORK/npm-cache}" npm install --no-audit --no-fund --silent @stryker-mutator/core@9) ||
     fail "could not install StrykerJS, so the check could not be rehearsed"
   PATH="$WORK/engines/node_modules/.bin:$PATH"
   export PATH

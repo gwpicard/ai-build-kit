@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  source-kit-validation:
+  maintainer-source-validation:
     if: github.repository == 'gwpicard/ai-build-kit'
     runs-on: ubuntu-latest
     steps:
