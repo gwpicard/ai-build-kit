@@ -159,20 +159,6 @@ p.write_text(p.read_text().replace('project_id = "nextjs-supabase"', 'project_id
 instructions = p.parents[1] / "AGENTS.md"
 instructions.write_text(instructions.read_text().replace("Recipe: none", "Recipe: nextjs-supabase-on-vercel"))
 PYTHON
-# The copied workflow still runs its own commands, on a free local web port.
-node --input-type=module - "$PROJECT/playwright.config.ts" <<'NODE'
-import fs from 'node:fs';
-import net from 'node:net';
-const server = net.createServer();
-await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-const port = server.address().port;
-await new Promise(resolve => server.close(resolve));
-const file = process.argv[2];
-fs.writeFileSync(file, fs.readFileSync(file, 'utf8')
-  .replaceAll(':3000', `:${port}`)
-  .replace('command: "npm run start"', `command: "npm run start -- --port ${port}"`)
-  .replace('reuseExistingServer: !process.env.CI', 'reuseExistingServer: false'));
-NODE
 WORKFLOW="$PROJECT/.github/workflows/check.yml"
 RUNNER="$ROOT/.agents/tests/lib/recipe-workflow.rb"
 # Run the database fault cases before the full run, whose final step stops it.
