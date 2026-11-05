@@ -1,10 +1,10 @@
 # Blocked commands
 
-Follow the project's installed command guard. Do not run commands it blocks.
+Follow the project's installed command guard and the `records` skill's
+`references/unsaved-work.md` for blocked commands and unsaved work.
 Other harnesses must honour the same rules. Never use `git reset --hard`, a
 forced push or delete. Also, never push a change directly to `main`, skip the
-project's check, or disable its Git hook. Never clear, stash, move or delete
-the person's unsaved work, even if asked, or read a stored login. The installed
+project's check, disable its Git hook or read a stored login. The installed
 settings hold the command spellings.
 
 The blocked spellings include `git checkout .`, `git checkout -- <path>`,
@@ -33,9 +33,7 @@ These boundaries need judgement and always apply:
   Before its confirmation box, say what will change, whether it can be undone,
   and what the person will notice.
 
-Show unsaved work and follow `/what-now`'s checkpoint offer. If the person
-wants to clear it, explain how they can do that themselves. Save a checkpoint
-before sweeping work.
+Save a checkpoint before sweeping work.
 
 Claude's deny patterns also block staged-only restores and clean dry runs.
 Use `git reset HEAD -- <path>` to unstage while keeping the file, and

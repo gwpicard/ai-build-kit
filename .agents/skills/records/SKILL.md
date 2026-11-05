@@ -15,6 +15,7 @@ Load the reference the step needs:
   masterplan, and the trued-against mark.
 - `references/coverage-read.md`: comparing the masterplan's promises with the
   pieces.
+- `references/unsaved-work.md`: blocked commands and the unsaved-work explanation.
 
 ## The scripts
 
