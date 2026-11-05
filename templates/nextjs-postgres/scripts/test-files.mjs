@@ -2,14 +2,22 @@ import { randomBytes } from "node:crypto";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { S3Client, CreateBucketCommand } from "@aws-sdk/client-s3";
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 
+// The shell owns signal traps even while a synchronous test command is running.
+if (!process.env.ABK_FILES_WRAPPED) {
+  const child = spawn("sh", ["scripts/docker-run.sh", "--", process.execPath, "scripts/test-files.mjs"],
+    { stdio: "inherit", env: { ...process.env, ABK_FILES_WRAPPED: "1" } });
+  for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) process.on(signal, () => child.kill(signal));
+  const code = await new Promise((resolve) => child.on("exit", (code) => resolve(code ?? 1)));
+  process.exit(code);
+}
 // Provision disposable loopback fixtures only. Credentials never reach tracked files or output.
 if (process.env.NODE_ENV === "production") throw new Error("File tests refuse production");
 const scratch = await mkdtemp(path.join(tmpdir(), "file-tests-"));
-const project = `files-${randomBytes(6).toString("hex")}`;
+const project = process.env.COMPOSE_PROJECT_NAME;
 const secret = () => randomBytes(24).toString("hex");
 const accountKey = randomBytes(32).toString("base64");
 const env = { ...process.env, NODE_ENV: "test", POSTGRES_USER: "postgres", POSTGRES_DB: "tool_test",

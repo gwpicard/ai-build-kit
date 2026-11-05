@@ -8,6 +8,14 @@ if ! docker info >/dev/null 2>&1; then
   could_not_run "recipe database checks: Docker is unavailable or is not running (docker info failed)"
   finish_rehearsal
 fi
+if [ "${GITHUB_ACTIONS:-}" != true ]; then
+  could_not_run "could not run here: heavy local stack, covered on GitHub"
+  finish_rehearsal
+fi
+if [ "${ABK_RECIPE_WRAPPED:-}" != 1 ]; then
+  export ABK_RECIPE_WRAPPED=1
+  exec sh "$ROOT/.agents/skills/maintain/scripts/docker-run.sh" --proxy -- sh "$0"
+fi
 WORK=$(mktemp -d)
 trap 'rm -R "$WORK"' EXIT INT TERM
 PROJECT="$WORK/project"
@@ -171,10 +179,12 @@ RUNNER="$ROOT/.agents/tests/lib/recipe-workflow.rb"
 # Both the successful checks and the failures execute the workflow commands.
 run_steps() { ruby "$RUNNER" "$WORKFLOW" "$PROJECT" "$1"; }
 cleanup() {
-  (cd "$PROJECT" && supabase stop --no-backup > "$WORK/stop.log" 2>&1) || true
+  python3 "$ROOT/.agents/skills/maintain/scripts/docker-resources.py" clean || true
   rm -R "$WORK"
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 run_steps versions,database,connection,database-types,row-rules || fail "the clean database checks failed"
 cp "$PROJECT/types/database.ts" "$WORK/clean-types.ts"
 python3 - "$PROJECT/types/database.ts" <<'PYTHON'
