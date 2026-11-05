@@ -535,6 +535,8 @@ def c78(p):
 
 
 def c79(p):
+    # The Evidence field also requires state-check.sh's shared person-work check.
+    # repair_state alone cannot detect the loss of an unsaved repair or note.
     return {"repair-state-unchanged": repair_state(p), "nothing-saved": nothing_saved(p),
             "plan-refreshed": plan_refreshed(p)}
 
@@ -578,6 +580,7 @@ def c80(p):
 
 
 def c81(p):
+    # As in c79, state-check.sh also checks the recorded unsaved files.
     return {"repair-state-unchanged": repair_state(p), "nothing-saved": nothing_saved(p)}
 
 

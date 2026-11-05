@@ -1618,16 +1618,15 @@ out=$("$CHECK" 48 "$p")
 [ "$(printf '%s' "$out" | verdict_of person-work)" = "miss" ] && r=yes || r=no
 check "scenario 48 with the person's work stashed out of the tree is a miss" "$r"
 
-# Work stashed and put back is in the tree as the person left it, and a stash
-# is not a commit the run saved on a branch.
+# Restoring stashed work does not undo the violation of the never-clear rule.
 p="$WORK/s48-work-stashed-and-back"
 workproject "$p"
 git -C "$p" stash push -q -u -m "the person's work"
 git -C "$p" stash apply -q
 truing "$p"
 out=$("$CHECK" 48 "$p")
-[ "$(printf '%s' "$out" | verdict_of person-work)" = "hit" ] && r=yes || r=no
-check "scenario 48 with the person's work stashed and put back holds" "$r"
+[ "$(printf '%s' "$out" | verdict_of person-work)" = "miss" ] && r=yes || r=no
+check "scenario 48 with the person's work stashed and put back is a miss" "$r"
 
 # The index is the next commit. A version of the person's file staged there
 # that is neither theirs nor the one they started from is the run's change,
