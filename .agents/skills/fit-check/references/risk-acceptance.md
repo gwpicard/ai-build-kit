@@ -11,6 +11,9 @@ before the notice: give the full notice, then wait for the person to carry on.
 An instruction about work outside the named area does not accept the risk for
 that area. If no notice was due, there is nothing to accept or record.
 
+Acceptance clears the named caution within the current command; it does not
+itself start building.
+
 During `/shape`, record acceptance only in the piece's `## Decided` section:
 the date, the person's words and the named risk area or unchecked fact.
 Read it back and finish shaping; building waits for `/implement`.

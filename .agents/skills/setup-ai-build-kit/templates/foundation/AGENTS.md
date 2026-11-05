@@ -88,9 +88,12 @@ what happens to them, what would normally prevent it, what the person can do,
 and that you flag what you can recognise and will miss things.
 
 Nothing is refused, and the work does not stop there. If the person carries on
-after the notice, that is their acceptance: record it in the risk record
-with the date and their own words, and build in that same reply, with no further
-approval asked for. A lock that only waits for that caution opens with it, unless the
+after the notice, record their acceptance with the date and their own words,
+following fit-check’s risk-acceptance reference. Acceptance clears that caution
+within the current command; it does not itself start building. During `/shape`,
+record it in the piece and finish shaping; building waits for `/implement`.
+During `/implement`, record it in the risk record and continue without asking
+for the same acceptance again. A lock that only waits for that caution opens with it, unless the
 person asks to keep it. Silence is not carrying on. The record says the risk was
 accepted, never that the caution was done. Cost, deadlines and team size change
 what the person decides, never who is exposed, so never soften or drop the

@@ -18,6 +18,7 @@ Optional parts: none
 Work-team default: no
 Deploy target: Coolify on a rented server, with the Coolify GitHub App connected to the project's repository
 Command-line tools: supabase, docker, psql, curl, git
+Docker connection: backup, restore and container checks require a local Unix socket. TCP and SSH contexts are not supported; use a local Docker context for these checks, or run them on another computer with a local engine.
 Health-check tool: curl
 Last checked: 2026-10-14
 Last proven: 2026-10-23

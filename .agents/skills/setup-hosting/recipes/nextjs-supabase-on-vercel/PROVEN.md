@@ -20,3 +20,15 @@ Founding: Not tried.
 User interface: No real run yet; added 2026-10-23.
 
 Project check: No real run yet; CI workflow added 2026-10-23. The first green pull request still needs a real GitHub run.
+
+## Release decision: 2026-11-05, v1.2.6
+
+The backup, restore and container checks now label their Docker resources and
+remove their own resources after success or failure. Restore leaves the
+project's local database running; its temporary copy still needs the default
+local ports, including 54322. Starter database handling also uses labelled
+resources and clean-up.
+
+No new real run was made for these changes. The maintainer decided to release
+v1.2.6 without one. Backup and restore remain untried in a real run; the earlier
+evidence above does not prove the changed steps.

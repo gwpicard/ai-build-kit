@@ -6,7 +6,9 @@ draft: false
 
 ## Restore check
 
-For a hosted Supabase database, the recipe's restore check copies the live database to this computer and tries to restore it into a temporary local database. It stops the project's local database first because the restore uses the same ports. The check removes the temporary copy afterwards. It reads the live database but does not restore anything onto it. See [hosting recipes](/ai-build-kit/recipes/) for the steps and their test status.
+For a hosted Supabase database, the recipe's restore check copies the live database to this computer and tries to restore it into a temporary local database. It leaves the project's local database running and creates a separate, labelled temporary copy. That copy still needs the default local ports, including database port 54322; if one is occupied, it cannot start and the check reports that it could not run. The check removes its temporary copy afterwards. It reads the live database but does not restore anything onto it. See [hosting recipes](/ai-build-kit/recipes/) for the steps and their test status.
+
+If a port is in use, leave the other service running. Ask the agent to identify it and arrange a time when its owner can stop it safely, or run the restore check on another computer with the required ports free. Then repeat the check.
 
 This check is not the same as restoring a backup to the live service. A live restore starts from the service dashboard and may make the service unavailable while it runs. `/setup-hosting` runs the recipe's backup, restore and preview checks when they are due or needed.
 

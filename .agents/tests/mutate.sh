@@ -393,6 +393,8 @@ checks_for() {
     first-upload-ignores-shared-history) echo "first-upload" ;;
     upload-piece-skips-pull-request) echo "upload-piece" ;;
     strength-config-lost) echo "test-strength-rehearsal" ;;
+    release-nondeterministic) echo "release-builder" ;;
+    bootstrap-escape) echo "starter-rehearsal" ;;
     review-gate-leaves-draft-edited) echo "review-guard" ;;
     review-guard-call-missing) echo "review-gate" ;;
     attempt-cap) echo "autonomy-boundaries" ;;
@@ -734,8 +736,9 @@ open(p, "w").write(t.replace(old, "if [ -L \"$destination_file\" ]; then", 1))
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
-assert "-L " in t, "no symlink guard to break"
-open(p, "w").write(t.replace("-L ", "-Z "))
+old = "[ ! -L \"$current_parent\" ]"
+assert old in t, "parent symlink guard not found"
+open(p, "w").write(t.replace(old, "true", 1))
 '
       ;;
     maintainer-name-leak)
@@ -855,12 +858,11 @@ json.dump(d, open(p, "w"), indent=2)
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
-assert "git -C \"$ROOT\" ls-files" in t, "no tracked-file lookup to break"
-t = t.replace("git -C \"$ROOT\" ls-files --",
-              "(cd \"$ROOT\" && find -L", 1)
-open(p, "w").write(t)
+old = "git -C \"$ROOT\" ls-files -- \"$source\""
+assert t.count(old) == 2, "tracked-file lookups not found"
+new = "cd \"$ROOT\" && find \"${source%/}\" -type f"
+open(p, "w").write(t.replace(old, new))
 '
-      printf '%s\n' 'stray working note' > "$tree/docs/STRAY-NOTE.md"
       ;;
     runnable-bit-lost)
       # Not a text edit. The stand-in for the GitHub command line tool is
@@ -1958,7 +1960,7 @@ fi
 
 wanted=${*:-$MUTATIONS}
 mkdir -p "$WORK"
-printf 'mutation\tcaught_by\tchecks_run\tdescription\n' > "$REPORT"
+printf 'mutation\tcaught_by\tchecks_run\tdescription\tcould_not_run\n' > "$REPORT"
 
 run_check() {
   if [ "$2" = "validate-kit" ]; then
@@ -1979,15 +1981,29 @@ echo "Baseline: running the checks against an unmutated clone"
 BASE="$WORK/baseline"
 git clone --quiet --local --no-hardlinks "$ROOT" "$BASE"
 baseline_failures=""
-for check in $DEFAULT_CHECKS; do
-  run_check "$BASE" "$check" baseline || baseline_failures="$baseline_failures $check"
+baseline_unavailable=""
+all_checks=$(for name in $wanted; do checks_for "$name"; done | tr ' ' '\n' | sort -u)
+for check in $all_checks; do
+  check_status=0
+  run_check "$BASE" "$check" baseline || check_status=$?
+  case "$check_status" in
+    0) ;;
+    1) baseline_failures="$baseline_failures $check" ;;
+    *) baseline_unavailable="$baseline_unavailable $check"
+       echo "  $check: baseline could not run (exit $check_status)" ;;
+  esac
 done
 if [ -n "$baseline_failures" ]; then
   echo "FAIL: the suite is not green before any mutation:$baseline_failures" >&2
   echo "Logs are in $WORK" >&2
   exit 1
 fi
-echo "Baseline is green."
+if [ -n "$baseline_unavailable" ]; then
+  echo "Available baselines passed; unavailable checks will not count as detections."
+else
+  echo "Baseline is green."
+fi
+incomplete=0
 echo
 
 for name in $wanted; do
@@ -2007,6 +2023,7 @@ for name in $wanted; do
   fi
 
   if [ "$status" != applied ]; then
+    incomplete=2
     echo "  $status: this result would be false, so it is not counted"
     [ "$status" = NOT-APPLIED ] && echo "  see $WORK/$name-apply.log"
     printf '%s\t%s\t%s\t%s\n' "$name" "$status" "$(echo $checks | tr ' ' ',')" \
@@ -2038,23 +2055,34 @@ for name in $wanted; do
   git -C "$tree" add -A >/dev/null 2>&1 || true
 
   caught=""
+  unavailable=""
   for check in $checks; do
-    if run_check "$tree" "$check" "$name"; then
-      printf '    %-22s passed\n' "$check"
-    else
-      printf '    %-22s CAUGHT IT\n' "$check"
-      caught="$caught $check"
-    fi
+    case " $baseline_unavailable " in
+      *" $check "*) check_status=2 ;;
+      *) check_status=0
+         run_check "$tree" "$check" "$name" || check_status=$? ;;
+    esac
+    case "$check_status" in
+      0) printf '    %-22s passed\n' "$check" ;;
+      1) printf '    %-22s CAUGHT IT\n' "$check"
+         caught="$caught $check" ;;
+      *) printf '    %-22s COULD NOT RUN (exit %s)\n' "$check" "$check_status"
+         unavailable="$unavailable $check"
+         incomplete=2 ;;
+    esac
   done
 
-  if [ -z "$caught" ]; then
+  if [ -n "$caught" ]; then
+    caught_field=$(echo $caught | tr ' ' ',')
+  elif [ -n "$unavailable" ]; then
+    echo "  NO DETECTION; some checks could not run"
+    caught_field="NOT-RUN"
+  else
     echo "  NOTHING CAUGHT THIS"
     caught_field="none"
-  else
-    caught_field=$(echo $caught | tr ' ' ',')
   fi
-  printf '%s\t%s\t%s\t%s\n' "$name" "$caught_field" "$(echo $checks | tr ' ' ',')" \
-    "$(describe "$name")" >> "$REPORT"
+  printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$caught_field" "$(echo $checks | tr ' ' ',')" \
+    "$(describe "$name")" "$(echo $unavailable | tr ' ' ',')" >> "$REPORT"
   echo
 done
 
@@ -2069,4 +2097,9 @@ echo
 echo "Mutations that proved nothing, because they did not take effect:"
 awk -F'\t' 'NR > 1 && ($2 == "NO-CHANGE" || $2 == "NOT-APPLIED") { print "  " $1 }' "$REPORT"
 echo
+echo "Checks that could not run (not detections):"
+awk -F'\t' 'NR > 1 && $5 != "" { print "  " $1 "  " $5 }' "$REPORT"
+echo
 echo "Logs and clones are in $WORK. Nothing removes them; clear them with the housekeeping maintainer skill once read."
+
+exit "$incomplete"

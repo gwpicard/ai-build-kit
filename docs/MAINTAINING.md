@@ -215,9 +215,9 @@ reviewer share one GitHub login; that result does not stop setup.
 ## Changing a skill
 
 This section covers canonical skills in `.agents/skills/` and agents in
-`.agents/agents/`. Read [PHILOSOPHY.md](PHILOSOPHY.md) first and answer its four
-questions in the pull request description. Reshape a change that cannot answer
-them. When retiring a term, mode or behaviour, add its old phrases to the stale
+`.agents/agents/`. Read [PHILOSOPHY.md](PHILOSOPHY.md) first and answer the
+questions under "What earns a place" in the pull request description. Reshape a
+change that cannot answer them. When retiring a term, mode or behaviour, add its old phrases to the stale
 claim checks in `.agents/tools/validate-kit.sh`. Keep numbers owned by a check
 in that check rather than repeating them in prose.
 
@@ -475,7 +475,8 @@ evidence. The [replay guide](../.agents/tests/replay/README.md#updating-the-olde
 describes options and report locations. These runs leave the source test beds
 unchanged.
 
-Apply PHILOSOPHY.md's four questions to the existing kit and proposed changes.
+Apply PHILOSOPHY.md's questions under "What earns a place" to the existing kit
+and proposed changes.
 A part that no longer passes a question it once passed has drifted; use the
 method in [PHILOSOPHY.md](PHILOSOPHY.md) to decide what to change. Check
 `docs/SOURCES.md` in the same review: add new borrowed ideas and remove credit

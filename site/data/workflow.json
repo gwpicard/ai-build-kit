@@ -41,7 +41,7 @@
       {
         "script": "check.yml",
         "path": ".agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml",
-        "description": "Recipe projects skip the placeholder and use the starter's recipe-check workflow for application checks."
+        "description": "New projects using the recipe starter receive its recipe-check workflow. Adopted applications keep their existing stack and checks."
       }
     ],
     "person_decides": "You answer the founding interview questions and decide whether to use existing work.",
