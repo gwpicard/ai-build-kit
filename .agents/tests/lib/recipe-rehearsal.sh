@@ -32,7 +32,10 @@ rr_init() {
   RR_RAN="$RR_TMP/ran"
   : > "$RR_CALLS"
   : > "$RR_RAN"
-  export RR_CALLS
+  ABK_DOCKER_SCOPE=recipe-stand-in
+  CODEX_RUN_ID=${CODEX_RUN_ID:-recipe-stand-in}
+  COMPOSE_PROJECT_NAME=abk-recipe-stand-in
+  export RR_CALLS ABK_DOCKER_SCOPE CODEX_RUN_ID COMPOSE_PROJECT_NAME
   echo "$1:"
   rr_setup
 }
@@ -372,7 +375,8 @@ JSON
     bad && { echo "Error: Unauthorized" >&2; exit 1; }
     if grep -q 'enable_signup = false' "$file"; then echo closed > "$RR_STATE/signup"; else echo open > "$RR_STATE/signup"; fi
     echo "Finished supabase config push." ;;
-  "init"|"start"|"stop"|"stop --no-backup") down; mkdir -p supabase ;;
+  "init") down; mkdir -p supabase; printf 'project_id = "restore"\n' > supabase/config.toml ;;
+  "start"|"stop"|"stop --no-backup") down; mkdir -p supabase ;;
   "db push --dry-run")
     down
     password
@@ -588,21 +592,35 @@ case "$1" in
     while [ "$#" -gt 1 ]; do
       case "$1" in
         -t) [ -n "${2:-}" ] || refuse build "$@"; tag=$2; shift 2 ;;
-        --build-arg) [ -n "${2:-}" ] || refuse build "$@"; shift 2 ;;
+        --build-arg|--label) [ -n "${2:-}" ] || refuse build "$@"; shift 2 ;;
         *) refuse build "$@" ;;
       esac
     done
     [ "${1:-}" = . ] && [ -n "$tag" ] || refuse build "$@" ;;
   run)
-    [ "$#" -eq 9 ] && [ "$2 $3 $5 $7" = "-d --name -p --env-file" ] || refuse "$@"
-    case "$6" in [1-9]*:3000) ;; *) refuse "$@" ;; esac
-    # RR_PORT_BUSY: something else on this computer holds port 3000.
-    [ -z "${RR_PORT_BUSY:-}" ] || [ "$6" != 3000:3000 ] ||
-      { echo "docker: Error response from daemon: port is already allocated." >&2; exit 125; }
-    [ "$9" != app-check-nowhere ] || [ -z "${RR_NOWHERE_START_FAIL:-}" ] || exit 125
-    printf '%s\n' "$9" > "$RR_STATE/image" ;;
-  rm) [ "$#" -eq 3 ] && [ "$2" = -f ] || refuse "$@" ;;
-  rmi) [ "$#" -eq 2 ] || refuse "$@" ;;
+    shift
+    while [ "$#" -gt 1 ]; do
+      case "$1" in
+        -d) shift ;;
+        --name|--label|--env-file|-p) [ -n "${2:-}" ] || refuse "$@"; shift 2 ;;
+        *) refuse "$@" ;;
+      esac
+    done
+    case "$1" in *-app-check-nowhere) [ -z "${RR_NOWHERE_START_FAIL:-}" ] || exit 125; image=app-check-nowhere ;; *) image=app-check ;; esac
+    printf '%s\n' "$image" > "$RR_STATE/image" ;;
+  container|network|volume|image)
+    kind=$1; action=$2; shift 2
+    case "$action" in
+      ls)
+        case "$kind" in
+          image) echo stand-in-image ;;
+          container) [ ! -f "$RR_STATE/image" ] || echo stand-in-container ;;
+        esac ;;
+      inspect)
+        printf '[{"Id":"stand-in-%s","Config":{"Labels":{"ai-build-kit.run":"%s","ai-build-kit.scope":"%s"}}}]\n' "$kind" "$CODEX_RUN_ID" "$ABK_DOCKER_SCOPE" ;;
+      rm) [ "$kind" != container ] || rm -f "$RR_STATE/image" ;;
+      *) refuse "$@" ;;
+    esac ;;
   *) refuse "$@" ;;
 esac
 SH

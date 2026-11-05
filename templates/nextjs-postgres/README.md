@@ -5,8 +5,8 @@ absent from the release allowlist, so it is neither offered at founding nor
 included in a public kit. The existing starter and recipes are unchanged.
 
 It keeps the existing TypeScript, Next.js 16, Tailwind, shadcn, Vitest,
-Playwright and ESLint base. It needs Node.js 22.23.2 and Docker Compose for the
-local database. The root page is a placeholder. The [sign-in module](SIGN-IN.md) supplies
+Playwright and ESLint base. It needs Node.js 22.23.2, Python 3.9 or later and Docker Compose for the
+local database and check cleanup. The root page is a placeholder. The [sign-in module](SIGN-IN.md) supplies
 company sign-in and email links for invited outsiders. [Jobs and schedules](JOBS.md)
 describes the worker, protected timer route and database and heartbeat health check.
 
@@ -15,16 +15,18 @@ describes the worker, protected timer route and database and heartbeat health ch
 Copy this folder to an empty working directory, then run:
 
 ```sh
-cp .env.example .env
 npm ci
-docker compose up -d --wait
-npm run db:bootstrap
-npm run db:migrate
 npm run check
-npm run test:policy-fault
-npm run test:privilege-fault
-npm test
-npm run dev
+```
+
+For an interactive development session, run:
+
+```sh
+cp .env.example .env
+sh scripts/docker-run.sh -- sh -c '
+  docker compose up -d --wait && npm run db:bootstrap &&
+  npm run db:migrate && npm run dev
+'
 ```
 
 The example credentials in `.env.example` are for a disposable local database.
@@ -46,10 +48,17 @@ The app receives `DATABASE_URL` and the restricted `AUTH_DATABASE_URL`; keep
 the migration and administrator URLs out of its environment. The worker needs
 only `DATABASE_URL` and the jobs configuration.
 
-The starter workflow runs its checks against a Postgres service. The source
-repository also runs them from this folder. CI uses trust authentication on
-its disposable service; Compose uses the example passwords. Neither setup is
-a production configuration.
+The checks create a disposable Postgres database and two local file servers.
+Each run has its own Compose project name, and every container, image built by
+a check, volume and network carries the kit's run label. An exit trap removes
+those resources after success, failure or interruption. Registry base images
+stay cached for later runs. If the computer or Docker stops before cleanup can
+finish, `/maintain` can list labelled leftovers older than a day and offer to
+remove them. It leaves unlabelled resources alone.
+
+The starter and source workflows use the same disposable database runner.
+It chooses a free loopback port and generates test credentials in memory.
+These databases are for checks and local development only.
 
 ## Database choice
 

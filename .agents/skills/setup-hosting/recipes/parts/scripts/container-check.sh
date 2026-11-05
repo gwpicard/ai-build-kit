@@ -3,16 +3,10 @@
 #
 # Usage: container-check.sh
 #
-# It checks Docker is running with `docker info`, builds the image with
-# `docker build -t app-check .`, passing the public Supabase address and key as
-# build arguments, runs it with
-# `docker run -d --name app-check -p <free port>:3000 --env-file .env.container app-check`
-# and reads the HTTP status and JSON from its health route: 200 with
-# "database":"reachable" or the older "database":"ok". It then builds a
-# second image with the database address
-# pointed nowhere, and the same route must answer 503 rather than claim the
-# tool is up. `docker rm -f app-check` removes the container each time, and
-# both images are removed on exit.
+# Build two labelled images under a unique run name and read their health
+# routes on a free loopback port: 200 with a reachable database, then 503
+# with the database address pointed nowhere. Exit and signal traps remove
+# the run's containers and built images, leaving registry base images cached.
 #
 # `.env.container` is the container's own values file, which git ignores. It
 # holds only names in `.env.example`, and its values are never printed.
@@ -32,6 +26,11 @@ docker info >/dev/null 2>&1 ||
 [ -f .env.container ] ||
   cl_cannot "The project has no .env.container file, so the local container check could not run."
 
+cleanup_tools="$here/../../../../maintain/scripts"
+if [ -z "${ABK_DOCKER_SCOPE:-}" ]; then
+  exec sh "$cleanup_tools/docker-run.sh" --proxy -- sh "$0" "$@"
+fi
+
 extra=
 for name in $(cl_names .env.container); do
   cl_names .env.example | grep -qx "$name" || extra="$extra $name"
@@ -49,22 +48,28 @@ port=$(python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0));
 response=$(mktemp) || cl_cannot "The local container check could not create its response file."
 
 cleanup() {
-  docker rm -f app-check >/dev/null 2>&1 || true
+  for id in $(docker container ls --all --quiet --filter "label=ai-build-kit.scope=$ABK_DOCKER_SCOPE" --filter "label=ai-build-kit.run=$CODEX_RUN_ID"); do
+    docker container rm --force "$id" >/dev/null || return 1
+  done
 }
-trap 'cleanup; docker rmi app-check >/dev/null 2>&1; docker rmi app-check-nowhere >/dev/null 2>&1; rm -f "$response"' EXIT
+trap 'status=$?; python3 "$cleanup_tools/docker-resources.py" clean || status=1; rm -f "$response"; exit "$status"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+image="$COMPOSE_PROJECT_NAME-app-check"
+bad_image="$COMPOSE_PROJECT_NAME-app-check-nowhere"
 
 answer() {
   # answer <image>: run the image on a free port here and read its health
   # route. Store its body in the response file, print the HTTP status,
   # and return curl's status. A failed container start returns 90.
   cleanup
-  docker run -d --name app-check -p "$port:3000" --env-file .env.container "$1" >/dev/null 2>&1 || return 90
+  docker run -d --name "$COMPOSE_PROJECT_NAME-app-check" --label "ai-build-kit.run=$CODEX_RUN_ID" --label "ai-build-kit.scope=$ABK_DOCKER_SCOPE" -p "127.0.0.1:$port:3000" --env-file .env.container "$1" >/dev/null 2>&1 || return 90
   curl -sS -o "$response" -w '%{http_code}' --retry 15 --retry-connrefused --retry-all-errors --retry-delay 2 --max-time 120 "http://localhost:$port/api/health" 2>/dev/null
 }
 
-docker build -t app-check --build-arg NEXT_PUBLIC_SUPABASE_URL --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY . >&2 ||
+docker build -t "$image" --label "ai-build-kit.run=$CODEX_RUN_ID" --label "ai-build-kit.scope=$ABK_DOCKER_SCOPE" --build-arg NEXT_PUBLIC_SUPABASE_URL --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY . >&2 ||
   cl_fail "The app's image failed to build on this computer."
-http_status=$(answer app-check)
+http_status=$(answer "$image")
 status=$?
 [ "$status" -ne 90 ] || cl_fail "The app's image built, but its container would not start."
 [ "$status" -eq 0 ] ||
@@ -76,9 +81,9 @@ fields=$(cl_health_fields "$response")
   cl_fail "The app's container answered 200, but its health route did not report the database reachable."
 
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:9
-docker build -t app-check-nowhere --build-arg NEXT_PUBLIC_SUPABASE_URL --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY . >&2 ||
+docker build -t "$bad_image" --label "ai-build-kit.run=$CODEX_RUN_ID" --label "ai-build-kit.scope=$ABK_DOCKER_SCOPE" --build-arg NEXT_PUBLIC_SUPABASE_URL --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY . >&2 ||
   cl_fail "The app's image failed to build a second time, with the database pointed nowhere."
-http_status=$(answer app-check-nowhere)
+http_status=$(answer "$bad_image")
 status=$?
 [ "$status" -ne 90 ] || cl_fail "The image with its database pointed nowhere could not start, so its health response was not checked."
 [ "$status" -eq 0 ] || cl_fail "The health request failed with its database pointed nowhere; no HTTP 503 response was confirmed."

@@ -16,6 +16,9 @@ raise 'step identifiers must be unique' unless ids.uniq == ids
 raise 'a selected step does not exist' unless selection == 'all' || (selection.split(',') - ids).empty?
 environment = ENV.to_h.merge(job.fetch('env'))
 environment['SOURCE_COMMIT'] = 'local-rehearsal'
+%w[CODEX_RUN_ID ABK_DOCKER_SCOPE COMPOSE_PROJECT_NAME].each do |name|
+  environment[name] = ENV.fetch(name)
+end
 started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 results = []
 failed = false
