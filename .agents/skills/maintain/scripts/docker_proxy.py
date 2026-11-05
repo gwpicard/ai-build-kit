@@ -20,11 +20,16 @@ def start_proxy():
         if result.returncode:
             raise RuntimeError("Docker resource preparation failed")
         return result.stdout
-    endpoint = backend_env.get("DOCKER_HOST")
+    endpoint = None if backend_env.get("DOCKER_CONTEXT") else backend_env.get("DOCKER_HOST")
     if not endpoint:
         endpoint = docker("context", "inspect", "--format", "{{.Endpoints.docker.Host}}").strip()
     if not endpoint.startswith("unix://"):
-        raise RuntimeError("Labelled SDK checks require a local Docker socket")
+        raise RuntimeError(
+            "Backup, restore and container checks require a local Docker engine reached "
+            "through a Unix socket; TCP and SSH connections are not supported. "
+            "Select a local Docker context for these checks, or run them on another "
+            "computer with a local engine. No check was started."
+        )
     labels = {"ai-build-kit.run": os.environ["CODEX_RUN_ID"],
               "ai-build-kit.scope": os.environ["ABK_DOCKER_SCOPE"]}
 

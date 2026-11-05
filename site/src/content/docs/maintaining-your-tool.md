@@ -8,6 +8,8 @@ draft: false
 
 `/maintain` checks for a published kit update and asks before installing it. The update refreshes the kit's skills and leaves your application, records and project checks in place. Updating replaces installed skill files, so keep project-specific rules in `AGENTS.md` rather than editing a kit skill.
 
+Before the first update from v1.2.5, save a project checkpoint and a separate copy of the installed skills, including any plugin cache outside the project. Compare those skills with the extracted v1.2.5 release before replacing anything: the [first-upgrade instructions](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md#first-upgrade-from-v125) give the command. Review every difference and decide which changes to keep. The automatic comparison becomes available after v1.2.6 is installed and reloaded; it cannot protect the update that first installs it.
+
 The update command depends on how you installed the kit. For the shared installer, run `npx skills add gwpicard/ai-build-kit`. For the Claude Code plugin, update the marketplace and plugin with Claude's plugin commands. An Agent Plugins installation uses that agent's plugin update command. After an update, start a new session or reload the plugin where supported, then run `/maintain` again to finish the update.
 
 ## Visit the project
