@@ -40,9 +40,8 @@ unless already named or nothing happened lately.
 
 ## Recovery
 
-- **Uncommitted work:** show it and offer a checkpoint that keeps it. Never
-  clear, stash, move or delete it, even if asked. Explain how they can discard
-  it themselves in their editor's source-control view.
+- **Uncommitted work:** follow the `records` skill's
+  `references/unsaved-work.md` and give its explanation now.
 - **Conflict or live break:** follow `merge` or `live-copy`.
 - **Missing capability:** name the limit, fallback and setup action.
 - **Person's step:** say where, what to do and what to bring back. Never ask

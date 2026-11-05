@@ -48,9 +48,8 @@ guard can express them:
 - no activating a flagged capability before its recorded condition is met or the person has accepted the risk on the record;
 - no withdrawing, softening, or redefining a risk notice already given, and no treating your own work as the independent review a notice names.
 
-Never clear, stash, move or delete the person's unsaved work, even if they
-ask. Show what is unsaved and follow `/what-now`'s checkpoint offer. If they
-want to clear it, explain how they can do that themselves.
+For blocked commands and unsaved work, follow the `records` skill's
+`references/unsaved-work.md`, including its explanation to the person.
 
 Claude's deny patterns block all `git restore` and `git clean` forms, including
 unstaging and dry runs, because the patterns cannot express the safe
