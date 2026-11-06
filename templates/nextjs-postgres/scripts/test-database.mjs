@@ -5,6 +5,9 @@ import { spawnSync } from "node:child_process";
 if (!process.env.ABK_DOCKER_SCOPE) throw new Error("Run through scripts/docker-run.sh");
 const secret = () => randomBytes(24).toString("hex");
 const env = { ...process.env, NODE_ENV: "test", ABK_DATABASE_READY: "1",
+  FILES_ADAPTER: "s3", FILES_S3_BUCKET: "private-files", FILES_S3_REGION: "local",
+  SMTP_HOST: "127.0.0.1", SMTP_PORT: "1025", SMTP_SECURE: "false",
+  SMTP_USER: "", SMTP_PASSWORD: "", MAIL_FROM: "tool@example.test",
   POSTGRES_USER: "postgres", POSTGRES_DB: "tool_test", POSTGRES_PORT: "0", POSTGRES_PASSWORD: secret() };
 const compose = ["compose", "--env-file", "/dev/null", "-f", "compose.yml"];
 function run(command, args, capture = false) {
