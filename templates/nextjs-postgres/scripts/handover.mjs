@@ -59,8 +59,19 @@ export function checkCode(root, handover) {
     const paths = declaration(resolve(root, 'src/lib/sign-in/service.ts'), 'signInPaths');
     same(handover.sign_in.host_setup.callbacks, { microsoft: paths.microsoft, google: paths.google }, 'sign_in.callbacks');
     same(handover.sign_in.email_link.verification_path, paths.email, 'sign_in.email_link');
-    const migration = readFileSync(resolve(root, 'db/migrations/002_sign_in.sql'), 'utf8');
-    const tables = [...migration.matchAll(/CREATE TABLE sign_in\."?([a-z_]+)"?\s*\(/g)].map(match => match[1]);
+    const migrationPath = resolve(root, handover.postgres.sign_in.migration);
+    if (!existsSync(migrationPath)) throw new Error('postgres.sign_in.migration: declared file is missing');
+    const migration = readFileSync(migrationPath, 'utf8');
+    const createdSchema = migration.match(/CREATE SCHEMA ([a-z_]+) AUTHORIZATION ([a-z_]+);/);
+    if (!createdSchema) throw new Error('postgres.sign_in: schema ownership missing from migration');
+    same(handover.postgres.sign_in.schema, createdSchema[1], 'postgres.sign_in.schema');
+    same(handover.postgres.sign_in.owner, createdSchema[2], 'postgres.sign_in.owner');
+    const runner = readFileSync(resolve(root, 'scripts/migrate.mjs'), 'utf8');
+    const executionRole = runner.match(/role\.rows\[0\]\.name !== '([a-z_]+)'/);
+    if (!executionRole) throw new Error('postgres.sign_in.owner: migration execution role is missing');
+    same(handover.postgres.sign_in.owner, executionRole[1], 'postgres.sign_in.owner');
+    const tables = [...migration.matchAll(/CREATE TABLE ([a-z_]+)\."?([a-z_]+)"?\s*\(/g)]
+      .filter(match => match[1] === createdSchema[1]).map(match => match[2]);
     same([...handover.postgres.sign_in.tables].sort(), tables.sort(), 'postgres.sign_in.tables');
     let runtimeRole;
     walk(source(configPath), node => {

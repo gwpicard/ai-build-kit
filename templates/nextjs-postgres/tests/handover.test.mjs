@@ -173,6 +173,16 @@ test('schema alone rejects credentials in nested extension values throughout the
 test('ordinary prose extensions remain valid', () => {
   assert.equal(validate({ ...original, optional_note: { text: 'An arbitrary secret can resemble prose' } }), true);
 });
+for (const [name, target] of [
+  ['root', h => h],
+  ['tool', h => h.tool],
+  ['extension object', h => (h.optional_note = {})],
+  ['configuration map', h => h.sign_in.configuration],
+]) test(`schema alone rejects a credential URL as a field name in ${name}`, () => {
+  assert.equal(validate(mutate(h => {
+    target(h)['postgres://fixture:synthetic-marker@database.test/tool'] = 'note';
+  })), false);
+});
 const company = mutate(h => {
   h.sign_in.staff = { provider: 'entra', directory: 'company tenant', outside_refused_test: 'tests/outside-account.ts', redirect_path: '/api/auth/callback/microsoft' };
   h.sign_in.staff_provider = 'microsoft';
@@ -250,11 +260,25 @@ for (const key of ['password', 'PASSWD', 'clientSecret', 'access_token', 'apiKey
 for (const [name, edit] of [
   ['missing authentication table', h => { h.postgres.sign_in.tables = ['invitations']; }],
   ['wrong authentication role', h => { h.postgres.sign_in.runtime_role = 'tool_app'; }],
+  ['wrong authentication owner', h => { h.postgres.sign_in.owner = 'tool_app'; }],
+  ['wrong authentication schema', h => { h.postgres.sign_in.schema = 'public'; }],
+  ['missing authentication migration', h => { h.postgres.sign_in.migration = 'db/migrations/absent.sql'; }],
   ['wrong callback path', h => { h.sign_in.host_setup.callbacks.microsoft = '/wrong'; }],
   ['wrong email verification path', h => { h.sign_in.email_link.verification_path = '/wrong'; }],
   ['sign-in secret reclassified as build setting', h => { Object.assign(h.config.find(c => c.name === 'AUTH_DATABASE_URL'), { kind: 'setting', phase: 'build' }); }],
   ['setting reclassified as secret', h => { h.config.find(c => c.name === 'PORT').kind = 'secret'; }],
 ]) test(name, () => assert.throws(() => checkCode(root, mutate(edit))));
+test('the authentication migration path is read from the declaration', () => {
+  const dir = copy(), migration = 'db/migrations/003_authentication.sql';
+  cpSync(resolve(dir, original.postgres.sign_in.migration), resolve(dir, migration));
+  rmSync(resolve(dir, original.postgres.sign_in.migration));
+  assert.doesNotThrow(() => checkCode(dir, mutate(h => { h.postgres.sign_in.migration = migration; })));
+});
+test('authentication ownership must match the migration execution role', () => {
+  const dir = copy(), path = resolve(dir, 'scripts/migrate.mjs');
+  writeFileSync(path, readFileSync(path, 'utf8').replace("role.rows[0].name !== 'tool_owner'", "role.rows[0].name !== 'tool_app'"));
+  assert.throws(() => checkCode(dir, original), /postgres.sign_in.owner/);
+});
 for (const name of ['AUTH_DATABASE_URL', 'AUTH_SECRET_FILE', 'STAFF_CLIENT_SECRET_FILE', 'SMTP_PASSWORD_FILE', 'SMTP_USER']) {
   for (const metadata of [{ kind: 'setting', phase: 'build' }, { kind: 'setting', phase: 'runtime' }, { kind: 'secret', phase: 'build' }]) {
     test(`schema alone requires runtime secret metadata for ${name}: ${JSON.stringify(metadata)}`, () => {

@@ -54,6 +54,9 @@
       },
       "patternProperties": {
         "^(?!(?:name|owner|successor)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     },
     "image": {
@@ -71,6 +74,9 @@
       },
       "patternProperties": {
         "^(?!(?:dockerfile)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     },
     "processes": {
@@ -103,6 +109,9 @@
           },
           "patternProperties": {
             "^(?!(?:command|port)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
           }
         },
         "worker": {
@@ -128,6 +137,9 @@
               },
               "patternProperties": {
                 "^(?!(?:command)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+              },
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]{0,63}$"
               }
             },
             {
@@ -160,6 +172,9 @@
           },
           "patternProperties": {
             "^(?!(?:command|when)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
           }
         }
       },
@@ -172,6 +187,9 @@
       },
       "patternProperties": {
         "^(?!(?:web|worker|migrate)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     },
     "health": {
@@ -228,6 +246,9 @@
       },
       "patternProperties": {
         "^(?!(?:path|checks|commit_env)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     },
     "config": {
@@ -388,6 +409,9 @@
           },
           "patternProperties": {
             "^(?!(?:migrate|app|auth)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
           }
         },
         "sign_in": {
@@ -460,6 +484,9 @@
           },
           "patternProperties": {
             "^(?!(?:schema|tables|owner|migration|runtime_role|permissions)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
           }
         }
       },
@@ -473,6 +500,9 @@
       },
       "patternProperties": {
         "^(?!(?:min_major|extensions|roles|sign_in)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     },
     "files": {
@@ -523,6 +553,9 @@
             },
             "patternProperties": {
               "^(?!(?:name|private|link_minutes)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+            },
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
             }
           },
           "minItems": 1
@@ -537,6 +570,9 @@
       },
       "patternProperties": {
         "^(?!(?:port|buckets)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     },
     "email": {
@@ -569,6 +605,9 @@
       },
       "patternProperties": {
         "^(?!(?:transport|sender_domain|inbound)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     },
     "jobs": {
@@ -635,6 +674,9 @@
             },
             "patternProperties": {
               "^(?!(?:name|cron)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+            },
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
             }
           }
         }
@@ -650,6 +692,9 @@
       },
       "patternProperties": {
         "^(?!(?:library|runner|longest_job_seconds|schedules)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     },
     "sign_in": {
@@ -706,6 +751,9 @@
               },
               "patternProperties": {
                 "^(?!(?:provider|directory|outside_refused_test|redirect_path)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+              },
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]{0,63}$"
               }
             },
             {
@@ -748,7 +796,7 @@
           "minProperties": 1,
           "propertyNames": {
             "type": "string",
-            "pattern": "^[A-Z][A-Z0-9_]*$",
+            "pattern": "^[A-Z][A-Z0-9_]{0,63}$",
             "allOf": [
               {
                 "$ref": "#/$defs/freeText"
@@ -886,6 +934,9 @@
               ],
               "patternProperties": {
                 "^(?!(?:microsoft|google)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+              },
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]{0,63}$"
               }
             }
           },
@@ -901,6 +952,9 @@
           },
           "patternProperties": {
             "^(?!(?:owner|request|microsoft|google|callbacks)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
           }
         },
         "email_link": {
@@ -934,6 +988,9 @@
           },
           "patternProperties": {
             "^(?!(?:verification_path|requires)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
           }
         }
       },
@@ -946,6 +1003,9 @@
       },
       "patternProperties": {
         "^(?!(?:staff|outsiders|staff_provider|public_origin_env|configuration|secret_files|host_setup|email_link)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     },
     "ai": {
@@ -1014,6 +1074,9 @@
       ],
       "patternProperties": {
         "^(?!(?:needed|capabilities|residency)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     },
     "access": {
@@ -1076,6 +1139,9 @@
       },
       "patternProperties": {
         "^(?!(?:max_data_loss_hours|max_restore_hours)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     },
     "limits": {
@@ -1103,6 +1169,9 @@
       },
       "patternProperties": {
         "^(?!(?:longest_request_seconds|memory_mb|outbound_internet)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     },
     "previews": {
@@ -1124,6 +1193,9 @@
       },
       "patternProperties": {
         "^(?!(?:wanted|data)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$"
       }
     }
   },
@@ -1913,7 +1985,8 @@
                   "pattern": "(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL])"
                 }
               }
-            ]
+            ],
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
           },
           "additionalProperties": {
             "$ref": "#/$defs/credentialFreeValue"
@@ -1943,5 +2016,8 @@
   },
   "patternProperties": {
     "^(?!(?:schema_version|tool|image|processes|health|config|postgres|files|email|jobs|sign_in|ai|access|residency|data_risk|recovery|limits|previews)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+  },
+  "propertyNames": {
+    "pattern": "^[a-z][a-z0-9_]{0,63}$"
   }
 }
