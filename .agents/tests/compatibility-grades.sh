@@ -3,7 +3,7 @@
 # the replay record.
 #
 # If this breaks, an agent could be graded Tested by editing the page rather
-# than by a recorded run, or sit in the harness map with no grade at all.
+# than by a recorded run, or sit in the coding agent map with no grade at all.
 
 set -eu
 
@@ -52,14 +52,14 @@ grade_problems() {
   record=${2:-$BASELINE}
   grades=$(grep -E '^\| [^|]+ \| (Tested|Expected to work|Experimental) \|$' "$1" \
     | sed -E 's/^\| ([^|]+) \| ([^|]+) \|$/\1|\2/')
-  # Every agent the harness map names needs a grade. Read the map rather than
+  # Every agent the coding agent map names needs a grade. Read the map rather than
   # a list written out here, so an agent added to the map is held too.
-  sed -n '/^## Harness map/,/^## /p' "$1" \
-    | grep -E '^\| [A-Z]' | grep -v '^| Harness |' \
+  sed -n '/^## Coding agent map/,/^## /p' "$1" \
+    | grep -E '^\| [A-Z]' | grep -v '^| Coding agent |' \
     | sed -E 's/^\| ([^|,]+)[,|].*/\1/' | sed -E 's/ +$//' | sort -u \
     | while IFS= read -r agent; do
         printf '%s\n' "$grades" | grep -qF "$agent|" \
-          || echo "$agent is in the harness map with no grade"
+          || echo "$agent is in the coding agent map with no grade"
       done
   printf '%s\n' "$grades" | while IFS='|' read -r agent grade; do
     [ "$grade" = "Tested" ] || continue
@@ -76,7 +76,7 @@ grade_problems() {
 
 problems=$(grade_problems "$COMPAT")
 if [ -z "$problems" ]; then
-  ok "every agent in the harness map carries a grade, and each Tested grade has a recorded run"
+  ok "every agent in the coding agent map carries a grade, and each Tested grade has a recorded run"
 else
   printf '%s\n' "$problems" | sed 's/^/  /'
   fail "the grades in COMPATIBILITY.md do not rest on the record"
@@ -120,10 +120,10 @@ else
 fi
 
 grep -vE '^\| GitHub Copilot \| Experimental \|$' "$COMPAT" > "$copy"
-if grade_problems "$copy" | grep -q 'GitHub Copilot is in the harness map with no grade'; then
-  ok "an agent in the harness map with no grade is caught"
+if grade_problems "$copy" | grep -q 'GitHub Copilot is in the coding agent map with no grade'; then
+  ok "an agent in the coding agent map with no grade is caught"
 else
-  fail "an agent in the harness map with no grade was not caught"
+  fail "an agent in the coding agent map with no grade was not caught"
 fi
 
 echo

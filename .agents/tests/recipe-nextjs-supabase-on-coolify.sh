@@ -154,7 +154,9 @@ rr_case 1 good live-check.sh --only commit --pasted-health "$RR_TMP/pasted/stale
 rr_said yes "older commit than the latest merge"
 printf '## How it stays running\n\nAccess: private\nDeploys on merge: no (redeploy by hand).\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 1 good live-check.sh --only commit --pasted-health "$RR_TMP/pasted/stale-live-health"
-rr_said yes '/host "redeploy <name>" or Coolify'
+rr_said yes 'coolify-devops companion'
+rr_said yes '/host "redeploy <name>" command or Coolify'
+rr_said yes '/host belongs to that companion'
 
 # The shared parts this recipe names.
 rr_case 0 good migrate.sh

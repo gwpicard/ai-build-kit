@@ -28,8 +28,8 @@ continue.
   stopping finding and record findings with `gate.py record`. It writes review
   boxes and drops findings without evidence. Do not call it ready before checks
   pass. Read and fix a red check before pushing again. The `merge` skill handles
-  the merge and recovery when checks did not start, including the
-  [billing fallback](../../../../WORKFLOW.md#7-saving-work).
+  the merge and recovery when checks did not start, including the billing
+  fallback.
 - **Flagged without acceptance:** take the pull-request route to the recorded
   condition, record it and that `/maintain` prepares a handover on request,
   label the piece `blocked`, name continuing work, and say the capability is

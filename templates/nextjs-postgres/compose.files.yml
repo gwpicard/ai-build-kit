@@ -1,0 +1,31 @@
+services:
+  s3:
+    image: rustfs/rustfs:1.0.4
+    labels:
+      ai-build-kit.run: ${CODEX_RUN_ID:?Run checks through scripts/docker-run.sh}
+      ai-build-kit.scope: ${ABK_DOCKER_SCOPE:?Run checks through scripts/docker-run.sh}
+    command: [/data]
+    environment:
+      RUSTFS_ACCESS_KEY: ${AWS_ACCESS_KEY_ID:?Run npm run test:files}
+      RUSTFS_SECRET_KEY: ${AWS_SECRET_ACCESS_KEY:?Run npm run test:files}
+      RUSTFS_CONSOLE_ENABLE: "false"
+      RUSTFS_OBS_LOGGER_LEVEL: "error"
+    ports:
+      - "127.0.0.1::9000"
+    tmpfs: ["/data:uid=10001,gid=10001", "/logs:uid=10001,gid=10001"]
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.35.0
+    labels:
+      ai-build-kit.run: ${CODEX_RUN_ID:?Run checks through scripts/docker-run.sh}
+      ai-build-kit.scope: ${ABK_DOCKER_SCOPE:?Run checks through scripts/docker-run.sh}
+    command: [azurite-blob, --blobHost, 0.0.0.0, --location, /data, --silent]
+    environment:
+      AZURITE_ACCOUNTS: ${AZURITE_ACCOUNTS:?Run npm run test:files}
+    ports:
+      - "127.0.0.1::10000"
+    tmpfs: [/data]
+networks:
+  default:
+    labels:
+      ai-build-kit.run: ${CODEX_RUN_ID:?Run checks through scripts/docker-run.sh}
+      ai-build-kit.scope: ${ABK_DOCKER_SCOPE:?Run checks through scripts/docker-run.sh}

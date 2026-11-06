@@ -8,8 +8,8 @@
 # A repair tries one cause at a time, and a failed attempt is undone before the
 # next one, so failed fixes never stack. The coding agent's settings refuse the
 # plain commands that throw changes away, so this named script is the one way
-# a repair resets. It is the reset step in the implement skill's
-# references/repair.md, and nothing else should run it.
+# a repair resets. It is the reset step in the repair skill's
+# references/fixing.md, and nothing else should run it.
 #
 # --start writes down which files Git does not track yet, inside Git's own
 # folder, so it is never saved or pushed. Run it once the repair's test is

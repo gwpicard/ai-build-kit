@@ -408,10 +408,18 @@ def stale_copy(project):
 
 
 def copy_findings(project):
-    if not stale_copy(project):
-        return []
     known = released()
     found = []
+    # Recorded paths keep personal notes outside the removal offer.
+    for path in sorted(p for p in known if p.startswith("docs/") and p.endswith(".md")):
+        if not os.path.lexists(os.path.join(project, path)):
+            continue
+        problem = file_problem(project, path, known)
+        if problem and problem.startswith("it differs"):
+            problem = "it started as the kit's document and was changed, so it stays"
+        found.append(("left", path, problem) if problem else ("kitcopy", path))
+    if not stale_copy(project):
+        return found
     for path in KIT_COPIES:
         full = os.path.join(project, path)
         if not (os.path.lexists(full)):

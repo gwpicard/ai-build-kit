@@ -24,6 +24,7 @@ something of them, and never needs to read one to keep the tool working.
 | Tests prove the change | Every build, after behaviour is built | `quality.py tests --base --piece` |
 | Structure, one change | Every build, before the save | `quality.py loops --base`, as "During a build" says |
 | Tests notice a breakage | A change inside a mapped risk area | `quality.py strength --base`; repairs include the regression test |
+| Adopted behaviour | Before editing uncovered existing code | `references/adoption-safety-net.md`, `adoption-safety-net.py` |
 | Stale document names | Every `/maintain` visit | `references/document-read.md` |
 | Old branches | Monthly visit | `references/stale-branches.md` |
 | Waste, structure, document bloat | Quarterly visit | `references/waste-read.md`, `references/structure-read.md`, `references/document-bloat.md` |

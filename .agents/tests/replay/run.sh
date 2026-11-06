@@ -139,6 +139,11 @@ run_once() {
   project="$WORK/s${number}-r${repeat}"
 
   mkdir -p "$project"
+  prepare=$(case_prepare "$casefile")
+  if [ "$prepare" = testbed-update ]; then
+    REPLAY_TESTBED_KIT="$KIT"; export REPLAY_TESTBED_KIT
+    sh "$REPLAY_DIR/prepare/testbed-update.sh" "$project" || return 1
+  else
   cp -R "$KIT/." "$project/"
   setup=$(case_setup "$casefile")
   # The release carries the foundation AGENTS.md as the file bootstrap copies
@@ -256,6 +261,8 @@ run_once() {
     printf '%s\n' "$canary" > "$project.canary"
   fi
 
+  fi # test beds retain their own history and unfinished work
+
   # The GitHub stand-in keeps its state beside the project from here on, not
   # in it. The copy in the first commit still says what the project started
   # with. A state file inside the project is a tracked file the kit's own Git
@@ -289,6 +296,9 @@ run_once() {
   : > "$ghlog"
   log_pushes "$project.git" "$ghlog"
 
+  if [ "$prepare" = testbed-update ]; then
+    python3 "$REPLAY_DIR/testbed-update-data.py" snapshot "$project" after-install >&2
+  fi
   provider_new_session
   transcript="$WORK/s${number}-r${repeat}.transcript"
   turns="$WORK/s${number}-r${repeat}-turns"
@@ -414,6 +424,19 @@ run_once() {
       printf '(before this turn the person merged: %s)\n' "${merged:-nothing was open}" \
         >> "$transcript"
     fi
+    if [ "$prepare" = testbed-update ] && [ "$message" != "$filler" ]; then
+      case "$message" in
+        '/maintain Make a second visit'*)
+          python3 "$REPLAY_DIR/testbed-update-data.py" snapshot "$project" first-visit >&2
+          printf '%s\n' "${PROVIDER_SESSION:-}" > "$WORK/s${number}-r${repeat}-first-visit.session"
+          provider_session_records "$WORK/s${number}-r${repeat}-first-visit" > "$WORK/s${number}-r${repeat}.extra-records"
+          provider_new_session
+          # The new session has not started yet, so its first turn must not
+          # ask to resume one.
+          rm -f "$lastreply.session-started"
+          ;;
+      esac
+    fi
     # Claude's box server answers only commands the scripted person granted.
     # Codex already bypasses prompts. Both still run the kit's approval gate.
     if ! provider_turn "$project" "$message" "$raw" "$lastreply"; then
@@ -430,6 +453,12 @@ run_once() {
     printf '\n' >> "$transcript"
   done
 
+  if [ "$prepare" = testbed-update ]; then
+    printf '\n### Harness evidence: stand-in calls, tagged with their visit turn\n' >> "$transcript"
+    for evidence in "$ghlog" "$project-host.log"; do
+      [ ! -f "$evidence" ] || cat "$evidence" >> "$transcript"
+    done
+  fi
   printf '%s\n' "${PROVIDER_SESSION:-}" > "$WORK/s${number}-r${repeat}.session"
   printf '%s' "$transcript"
 }

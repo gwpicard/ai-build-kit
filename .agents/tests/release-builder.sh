@@ -15,7 +15,7 @@ fail() {
 [ -x "$BUILDER" ] || fail "release builder is missing or not executable"
 
 SCRATCH=$(mktemp -d)
-MARKER="$ROOT/.claude/.release-builder-untracked-$$"
+MARKER="$ROOT/.agents/skills/setup-ai-build-kit/.release-builder-untracked-$$"
 INSIDE_SOURCE="$ROOT/release-builder-inside-source-$$"
 cleanup() {
   [ ! -e "$MARKER" ] || rm -f "$MARKER"
@@ -37,7 +37,7 @@ fi
 
 printf '%s\n' "maintainer-only marker" > "$MARKER"
 "$BUILDER" v0.1.0 "$MARKER_BUILD"
-[ ! -e "$MARKER_BUILD/.claude/$(basename "$MARKER")" ] || \
+[ ! -e "$MARKER_BUILD/.agents/skills/setup-ai-build-kit/$(basename "$MARKER")" ] || \
   fail "an untracked file inside an approved folder crossed into the starter"
 rm -f "$MARKER"
 
@@ -83,7 +83,7 @@ for required in \
   .github/ISSUE_TEMPLATE/feature-request.yml \
   .github/ISSUE_TEMPLATE/config.yml \
   .github/workflows/checks.yml \
-  AGENTS.md CONTRIBUTING.md README.md WORKFLOW.md CLAUDE.md GEMINI.md \
+  AGENTS.md CONTRIBUTING.md README.md CLAUDE.md GEMINI.md \
   docs/PHILOSOPHY.md docs/COMPATIBILITY.md docs/SOURCES.md \
   .ai-build-kit-version .env.example .gitignore LICENSE; do
   [ -e "$FIRST/$required" ] || fail "starter is missing $required"
@@ -103,6 +103,7 @@ for forbidden in \
   .agents/tests \
   .agents/tools/finish-release-draft.sh \
   .agents/tools/stamp-version.sh \
+  .agents/tools/check-release-notes.py \
   .agents/tools/rehearse-merged-tree.sh \
   .agents/tools/validate-kit.sh \
   .agents/tools/plan-refresh.sh \

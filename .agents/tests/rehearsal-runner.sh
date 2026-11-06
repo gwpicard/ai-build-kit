@@ -113,3 +113,85 @@ check "a suite with nothing failing passes" \
 
 echo
 echo "rehearsal-runner.sh: all $pass checks passed"
+
+# Use real scheduler names in a disposable suite. A file barrier proves overlap
+# without relying on a faster machine completing within a timing threshold.
+python3 - "$RUNNER" <<'PYTHON'
+from pathlib import Path
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+
+with tempfile.TemporaryDirectory() as folder:
+    root = Path(folder)
+    tests = root / '.agents/tests'
+    tests.mkdir(parents=True)
+    runner = tests / 'run-all.sh'
+    shutil.copy2(sys.argv[1], runner)
+    def stub(name, body):
+        file = tests / (name + '.sh')
+        file.write_text('#!/usr/bin/env python3\n' + body)
+        file.chmod(0o755)
+    common = "from pathlib import Path\nimport time\n"
+    for name, peer in [('recipe-ci-rehearsal', 'replay-case-states'),
+                       ('replay-case-states', 'recipe-ci-rehearsal')]:
+        stub(name, common + f"""
+Path('{name}.active').touch()
+Path('{name}.started').touch()
+for attempt in range(200):
+    if Path('{peer}.started').exists(): break
+    time.sleep(.05)
+else: raise AssertionError('workers did not overlap')
+Path('{name}.active').unlink()
+print('{name} unique output')
+raise SystemExit({1 if name == 'recipe-ci-rehearsal' else 0})
+""")
+    stub('check-floor-rehearsal', common + """
+assert len(list(Path('.').glob('*.active'))) < 2, 'worker bound exceeded'
+Path('first-phase-done').touch()
+print('could-not-run: deliberate missing tool')
+raise SystemExit(2)
+""")
+    for name, peer in [('starter-interface', 'waste-read-rehearsal'),
+                       ('waste-read-rehearsal', 'starter-interface')]:
+        stub(name, common + f"""
+assert Path('first-phase-done').exists(), 'second group started before the first finished'
+assert not Path('recipe-ci-rehearsal.active').exists(), 'browser installers overlapped'
+assert not Path('replay-case-states.active').exists(), 'groups overlapped'
+Path('{name}.active').touch()
+Path('{name}.started').touch()
+for attempt in range(200):
+    if Path('{peer}.started').exists(): break
+    time.sleep(.05)
+else: raise AssertionError('second group did not overlap')
+Path('{name}.active').unlink()
+""")
+    stub('new-unclassified', common + """
+assert not list(Path('.').glob('*.active')), 'unclassified test overlapped'
+print('unclassified ran')
+""")
+    env = dict(os.environ, REHEARSAL_JOBS='2', GITHUB_ACTIONS='true',
+               GITHUB_STEP_SUMMARY=str(root / 'summary'))
+    ran = subprocess.run([str(runner)], cwd=root, env=env, text=True,
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=30)
+    assert ran.returncode == 1, ran.stdout
+    assert '4 of 6 rehearsals passed' in ran.stdout, ran.stdout
+    assert '1 failed; 1 could not run' in ran.stdout, ran.stdout
+    assert 'unclassified ran' in ran.stdout, ran.stdout
+    for name in ['recipe-ci-rehearsal', 'replay-case-states']:
+        assert ran.stdout.count(name + ' unique output') == 1, ran.stdout
+        assert f'| {name} |' in (root / 'summary').read_text()
+    # Serial mode must honour the same complete discovery and failure policy.
+    for name in ['recipe-ci-rehearsal', 'replay-case-states', 'check-floor-rehearsal',
+                 'starter-interface', 'waste-read-rehearsal']:
+        stub(name, "print('serial fixture')\n")
+    env['REHEARSAL_JOBS'] = '1'
+    ran = subprocess.run([str(runner)], cwd=root, env=env, text=True,
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=30)
+    assert ran.returncode == 0 and '6 of 6 rehearsals passed' in ran.stdout, ran.stdout
+    env['REHEARSAL_JOBS'] = '0'
+    assert subprocess.run([str(runner)], env=env, capture_output=True).returncode == 1
+print('ok: both groups overlap, keep browser installers apart, retain failures and timings, and isolate new tests')
+PYTHON

@@ -535,6 +535,8 @@ def c78(p):
 
 
 def c79(p):
+    # The Evidence field also requires state-check.sh's shared person-work check.
+    # repair_state alone cannot detect the loss of an unsaved repair or note.
     return {"repair-state-unchanged": repair_state(p), "nothing-saved": nothing_saved(p),
             "plan-refreshed": plan_refreshed(p)}
 
@@ -578,6 +580,7 @@ def c80(p):
 
 
 def c81(p):
+    # As in c79, state-check.sh also checks the recorded unsaved files.
     return {"repair-state-unchanged": repair_state(p), "nothing-saved": nothing_saved(p)}
 
 
@@ -629,6 +632,14 @@ def c82(p):
     return out
 
 
+def testbed_update(p):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("testbed_update_data", os.path.join(HERE, "testbed-update-data.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return {name: (value["verdict"], value["note"]) for name, value in module.checks(p.path).items()}
+
+
 def founding(p):
     plan = p.text("masterplan.md")
     saved = p.git("show", "HEAD:masterplan.md")
@@ -650,7 +661,7 @@ def founding(p):
 
 CHECKS = {64: c64, 65: c65, 66: c66, 67: c67, 68: c68, 69: c69, 70: c70, 71: c71, 72: c72,
           73: c73, 74: c74, 75: c75, 76: c76, 77: c77, 78: c78, 79: c79, 80: c80, 81: c81, 82: c82,
-          83: founding, 84: founding}
+          83: founding, 84: founding, 85: testbed_update}
 
 
 def main(argv):

@@ -19,13 +19,17 @@ git -C "$PROJECT" config user.email rehearsal@example.invalid
 printf 'value = 1\n' > "$PROJECT/app.py"
 printf 'Tests: pytest -q\n' > "$PROJECT/AGENTS.md"
 printf 'Risk areas: none\n' > "$PROJECT/masterplan.md"
+printf 'Original notes\n' > "$PROJECT/notes.txt"
 git -C "$PROJECT" add app.py
 git -C "$PROJECT" add AGENTS.md
 git -C "$PROJECT" add masterplan.md
+git -C "$PROJECT" add notes.txt
 git -C "$PROJECT" commit -qm base
 BASE=$(git -C "$PROJECT" rev-parse HEAD)
 printf 'value = 2\n' > "$PROJECT/app.py"
 git -C "$PROJECT" commit -qam change
+printf 'The person changed these notes\n' > "$PROJECT/notes.txt"
+printf 'The person drafted this\n' > "$PROJECT/draft.txt"
 cat > "$WORK/quality.py" <<'PY'
 import sys
 print("quality evidence")
@@ -111,6 +115,8 @@ out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" PIECE_CASE=missing GATE_QUALITY_SC
   && grep -q 'no Done when section' "$PROJECT/.git/review-packet.md" \
   && pass "brief reports missing agreement as exit 2" || fail "brief missing section returned $code: $out"
 
+printf 'The reviewer overwrote these notes\n' > "$PROJECT/notes.txt"
+printf 'The reviewer overwrote this draft\n' > "$PROJECT/draft.txt"
 out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GH_EDIT_FILE="$WORK/edits" python3 "$GATE" record --pr 9 <<'JSON'
 [{"mark":"reproduced","finding":"The save fails","command":"python3 app.py","output":"Traceback","worth_stopping_for":true},{"mark":"reasoned","finding":"A visitor sees private data","scenario":"A visitor opens the page and exposes private data","worth_stopping_for":false},{"mark":"reproduced","finding":"The refuter disproved this","command":"python3 app.py","output":"No failure","worth_stopping_for":true,"refuted":true},{"mark":"reasoned","finding":"Maybe bad","scenario":"unclear"}]
 JSON
@@ -122,6 +128,12 @@ JSON
   && grep -A4 '## Worth knowing' "$WORK/edits" | grep -q 'The refuter disproved this' \
   && ! grep -q 'Maybe bad' "$WORK/edits" \
   && pass "record keeps evidence, drops unsupported findings and exits 1 for open boxes" || fail "record returned $code: $out"
+[ "$(cat "$PROJECT/notes.txt")" = 'The person changed these notes' ] \
+  && [ "$(cat "$PROJECT/draft.txt")" = 'The person drafted this' ] \
+  && printf '%s\n' "$out" | grep -qx 'restored	notes.txt' \
+  && printf '%s\n' "$out" | grep -qx 'restored	draft.txt' \
+  && pass "record restores and reports the person's work outside the branch diff" \
+  || fail "record lost pre-existing work outside the branch diff: $out"
 
 
 out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GH_EDIT_FILE="$WORK/edits" GH_PR_BODY=$(printf 'Summary\n\n## Worth stopping for\n- [x] Settled finding and decision\n\n## Worth knowing\n- First known\n- Second known\n- Third known') python3 "$GATE" record --pr 9 <<'JSON'
@@ -157,6 +169,19 @@ not-json
 JSON
 ) && code=0 || code=$?
 [ "$code" -eq 2 ] && pass "record exits 2 when review input cannot be read" || fail "record invalid input returned $code: $out"
+
+# Exercise the packet's guard calls, rather than calling the guard ourselves.
+out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GATE_QUALITY_SCRIPT="$WORK/quality.py" python3 "$GATE" brief --base "$BASE" --piece 7 2>&1) || fail "guard packet failed: $out"
+cp "$PROJECT/app.py" "$WORK/before-review"
+printf 'reviewer changed the tracked file\n' > "$PROJECT/app.py"
+out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" python3 "$GATE" record --pr 9 2>&1 <<'JSON'
+[]
+JSON
+) && code=0 || code=$?
+[ "$code" -eq 0 ] && cmp -s "$PROJECT/app.py" "$WORK/before-review" \
+  && printf '%s' "$out" | grep -q 'restored.*app.py' \
+  && pass "the packet and record restore a reviewer's edit and report it" \
+  || fail "review guard call missing or ineffective: $code: $out"
 
 run_check() {
   body=$1

@@ -73,7 +73,7 @@ if wanted commit; then
   elif [ "$commit" = "$main" ]; then
     say "Live copy against main: the live copy runs the latest merge on main."
   elif [ -f masterplan.md ] && grep -Eq '^[[:space:]]*Deploys on merge:[[:space:]]*no([[:space:]]|$)' masterplan.md; then
-    gapped "Live copy against main: the health route shows an older commit, and the recorded address says merges do not deploy. Redeploy with /host \"redeploy <name>\" or Coolify's Redeploy button."
+    gapped "Live copy against main: the health route shows an older commit, and the recorded address says merges do not deploy. Redeploy with the coolify-devops companion's /host \"redeploy <name>\" command or Coolify's Redeploy button. /host belongs to that companion."
   else
     gapped "Live copy against main: the live copy runs an older commit than the latest merge on main."
   fi

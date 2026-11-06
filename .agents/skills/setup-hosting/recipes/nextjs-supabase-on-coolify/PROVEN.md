@@ -38,3 +38,15 @@ Going live, public lane: `/host` gave the app a domain on the public lane, a Doc
 Not tried on the second run: rollback, backup, restore, logs, the settings the kit can read, and the local container check. Secrets and health were not recorded as checks of their own, though Coolify showing the app running and healthy covers part of health.
 
 User interface: No real run yet; added 2026-10-23.
+
+## Release decision: 2026-11-05, v1.2.6
+
+The backup, restore and container checks now label their Docker resources and
+remove their own resources after success or failure. Restore leaves the
+project's local database running; its temporary copy still needs the default
+local ports, including 54322. Starter database handling also uses labelled
+resources and clean-up.
+
+No new real run was made for these changes. The maintainer decided to release
+v1.2.6 without one. Backup and restore remain untried in a real run; the earlier
+evidence above does not prove the changed steps.

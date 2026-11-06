@@ -117,6 +117,13 @@ if [ "$CHECK" -eq 1 ]; then
   exit 0
 fi
 
+# The stamp pull request is the last step before a release, so the notes must
+# be ready before it. `--check` stays free of this: `prepare release` runs it on
+# GitHub, where the git-ignored review record does not exist.
+NOTES_CHECK="$ROOT/.agents/tools/check-release-notes.py"
+[ -x "$NOTES_CHECK" ] || fail "the notes check is missing: .agents/tools/check-release-notes.py"
+"$NOTES_CHECK" "$VERSION" || fail "fix the $VERSION notes before stamping"
+
 for manifest in "$CLAUDE_MANIFEST" "$AGENT_MANIFEST"; do
   tmp="$manifest.tmp"
   sed -E "s/^([[:space:]]*)\"version\": \"[^\"]*\"/\1\"version\": \"$PLAIN\"/" \

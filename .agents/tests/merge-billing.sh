@@ -116,7 +116,7 @@ run() {
   : > "$GH_LOG"
   rm -f "$MARK"
   (cd "$P" && python3 "$APPROVAL" yes "merge pull request 12" --words "merge it" >/dev/null)
-  (cd "$P" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$(sealed "$HEAD_SHA")" \
+  (cd "$P" && PATH="$WORK/bin:$PATH" GH_TOKEN=local-test-placeholder GH_CASE="$1" PR_BODY="$(sealed "$HEAD_SHA")" \
     PR_HEAD_OID="$HEAD_SHA" PR_BASE_OID="$BASE" python3 "$SCRIPT" --approved 12)
 }
 merged() { grep -Fq "pr merge 12 --merge --match-head-commit $HEAD_SHA" "$GH_LOG"; }

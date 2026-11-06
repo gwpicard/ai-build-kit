@@ -22,6 +22,7 @@ body:
       options:
         - Claude Code plugin
         - Shared skills installer
+        - Agent Plugins folder from the release archive
         - Manual release download
     validations:
       required: true

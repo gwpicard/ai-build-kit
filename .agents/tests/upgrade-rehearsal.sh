@@ -44,6 +44,128 @@ def check(skills,p,code):
 def apply(skills,p,step):
     run([sys.executable,skills/'maintain/scripts/upgrade-check.py','--apply',step,p])
 
+# Frozen source-tag bytes model the shared installer's copy, independently of
+# the record being tested. The archive inventory omits this starter file.
+shared = work/'shared-source/.agents/skills'
+copy(root/'.agents/tests/fixtures/upgrade-v1.2.5/next-env.d.ts.txt',
+     shared/'setup-hosting/recipes/parts/starters/nextjs-supabase/next-env.d.ts')
+put(shared/'maintain/VERSION', 'v1.2.5\n')
+shared_record = json.loads((source/'maintain/scripts/kit-released-copies.json').read_text())
+copy(root/'.agents/tests/fixtures/upgrade-v1.2.5/setup-hosting.md.txt', shared/'setup-hosting/SKILL.md')
+shared_record['skill_paths']['v1.2.5'] = ['maintain/VERSION', 'setup-hosting/SKILL.md']
+shared_baseline = work/'shared-record.json'
+put(shared_baseline, json.dumps(shared_record))
+shared_command = [sys.executable, source/'maintain/scripts/kit-local-edits.py',
+                  '--skills', shared, '--record', shared_baseline]
+assert run(shared_command) == ''
+shared_file = shared/'setup-hosting/recipes/parts/starters/nextjs-supabase/next-env.d.ts'
+with shared_file.open('a') as handle:
+    handle.write('// Personal declaration\n')
+assert 'local-edit\t'+str(shared_file) in run(shared_command, code=1)
+print('  ok: an untouched shared-installer starter file is recognised and a personal edit is named')
+
+# The pre-update read must find even committed edits before an installer can
+# replace them. Use an actual recorded release file on each installation layout.
+local_check = source/'maintain/scripts/kit-local-edits.py'
+record = work/'local-record.json'
+baseline = json.loads((source/'maintain/scripts/kit-released-copies.json').read_text())
+baseline['skill_paths']['v0.19.3'] = ['maintain/VERSION', 'setup-ai-build-kit/scripts/bootstrap-project.sh']
+put(record,json.dumps(baseline))
+replacement = work/'replace.py'
+put(replacement, 'import pathlib,sys\npathlib.Path(sys.argv[1]).write_text("updated by installer\\n")\n')
+for layout in ('.agents/skills', '.claude/skills', 'plugin/skills'):
+    p = work/('local-edits-'+layout.split('/')[0].lstrip('.'))
+    skills = p/layout
+    target = skills/'setup-ai-build-kit/scripts/bootstrap-project.sh'
+    copy(fixture/'bootstrap-project.sh.txt', target)
+    put(skills/'maintain/VERSION','v0.19.3\n')
+    command = [sys.executable, local_check, '--record', record, '--skills', skills]
+    assert run(command) == ''  # No extra warning or offer for an untouched installation.
+    before = target.read_bytes()
+    run(command+['--run', sys.executable, replacement, target], code=1)
+    assert target.read_bytes() == before
+    target.write_bytes(before+b'\n# Local project change\n')
+    run(['git','init','-q','-b','main'],p)
+    run(['git','add','-f',str(target.relative_to(p))],p)
+    run(['git','-c','user.name=upgrade rehearsal','-c','user.email=rehearsal@example.invalid',
+         'commit','-qm','Customise installed skill'],p)
+    edited = target.read_bytes()
+    offer = run(command,code=1)
+    assert 'local-edit\t'+str(target) in offer and 'say\tlocal-edits\t' in offer, offer
+    run(command+['--approved','--run',sys.executable,replacement,target],code=1)
+    run(command+['--approved','--overwrite',str(skills/'another-file'),
+                 '--run',sys.executable,replacement,target],code=1)
+    assert target.read_bytes() == edited
+    run(command+['--approved','--overwrite',str(target),
+                 '--run',sys.executable,replacement,target])
+    assert target.read_text() == 'updated by installer\n'
+    print('  ok: '+layout+' names committed skill edits and requires approval for their replacement')
+
+# A different released copy is accepted; additions and unreadable records cannot pass silently.
+copy(fixture/'bootstrap-project.sh.txt', target)
+extra = target.parent/'my-notes.txt'
+put(extra,'Project-specific notes\n')
+assert 'local-edit\t'+str(extra) in run(command,code=1)
+invalid = work/'invalid-record.json'
+put(invalid,'{}')
+run([sys.executable,local_check,'--record',invalid,'--skills',skills,
+     '--approved','--overwrite',str(extra),'--run',sys.executable,replacement,target],code=2)
+assert target.read_bytes() == before
+print('  ok: added files are named and an unreadable record cannot authorise replacement')
+
+# Missing baselines must never be labelled as personal edits or permit an update.
+extra.unlink()
+missing = work/'missing-baseline.json'
+for reason in ('version', 'inventory'):
+    data = json.loads(record.read_text())
+    if reason == 'version':
+        data['versions'].remove('v0.19.3')
+    else:
+        del data['skill_paths']['v0.19.3']
+    put(missing,json.dumps(data))
+    result = subprocess.run([sys.executable,local_check,'--record',missing,'--skills',skills,
+                             '--approved','--overwrite',str(target),
+                             '--run',sys.executable,replacement,target],capture_output=True,text=True)
+    assert result.returncode == 2 and 'could not check' in result.stderr, result
+    assert 'local-edit\t' not in result.stdout and target.read_bytes() == before, result
+print('  ok: missing release baselines and inventories are inconclusive and prevent replacement')
+
+# A deliberate deletion needs approval even when the entire skill folder went.
+for whole_folder in (False, True):
+    if whole_folder:
+        shutil.rmtree(target.parents[1])
+    else:
+        target.unlink()
+    offer = run(command,code=1)
+    assert 'local-edit\t'+str(target) in offer and 'recreate' in offer, offer
+    run(command+['--approved','--run',sys.executable,replacement,target],code=1)
+    assert not target.exists()
+    target.parent.mkdir(parents=True,exist_ok=True)
+    run(command+['--approved','--overwrite',str(target),
+                 '--run',sys.executable,replacement,target])
+    assert target.read_text() == 'updated by installer\n'
+    copy(fixture/'bootstrap-project.sh.txt', target)
+print('  ok: deleted recorded files and skill folders are named and require approval before recreation')
+
+# Use a complete installation and run its own scripts before the local-edit
+# read. Their generated bytecode must not turn an untouched install into edits.
+p = work/'executed-install'; skills = p/'.agents/skills'
+shutil.copytree(source,skills,ignore=shutil.ignore_patterns('__pycache__','*.pyc','*.pyo'))
+installed_record = work/'executed-record.json'
+files = {'.agents/skills/'+path.relative_to(skills).as_posix():
+         [hashlib.sha256(path.read_bytes()).hexdigest()[:16]]
+         for path in skills.rglob('*') if path.is_file()}
+version = (skills/'maintain/VERSION').read_text().strip()
+put(installed_record,json.dumps({'versions':[version], 'files':files,
+    'skill_paths':{version:sorted(path[len('.agents/skills/'):] for path in files)}}))
+run([sys.executable,skills/'quality-checks/scripts/quality.py','--help'],cwd=p,code=2)
+run([sys.executable,skills/'quality-checks/scripts/gate.py','--help'],cwd=p)
+for cache in ('__pycache__/generated.pyc','.pytest_cache/state','.mypy_cache/state',
+              '.ruff_cache/state','generated.pyc','generated.pyo'):
+    put(skills/'quality-checks/scripts'/cache,'generated\n')
+assert run([sys.executable,local_check,'--record',installed_record,'--skills',skills]) == ''
+print('  ok: running installed scripts and generating caches leaves an untouched installation without edits')
+
 # Stand in for the installer's own removal, including linked agent copies.
 npx=work/'bin/npx'
 put(npx, '''#!/usr/bin/env python3
@@ -284,6 +406,10 @@ for name,(script,old,new) in mutations.items():
         else:
             raise AssertionError('removing unfinished status was not caught')
         continue
+    if name == 'plain version marker':
+        # A stable marker absent from the release record still belongs to the
+        # kit. A recorded marker would pass the hash check independently.
+        put(p/'.ai-build-kit-version', 'v999.0.0\n')
     try:
         sentence_pending(skills)
     except AssertionError:

@@ -44,7 +44,7 @@ on.
    and recheck triggers. Consider redesigns first. Give the risk notice before
    flagged work and record acceptance. An ownership no becomes a task.
 5. Follow `references/write-the-masterplan.md`. If a risk area is named, run
-   `second-opinion` before flagged work. Record findings and gaps; apply a
+   `second-opinion` on the masterplan before flagged work. Record findings; apply a
    stopping finding only with approval. Otherwise record why review was
    skipped. Check ownership.
 6. Cut one-sitting vertical slices in dependency order, not database, API and

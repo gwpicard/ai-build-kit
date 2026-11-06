@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: "Fresh eyes on the code and evidence for a piece on the pull-request route. Runs the second-opinion skill in a context that has not seen the builder's reasoning."
+description: "Fresh eyes on a piece's code and evidence or the founding masterplan. Runs the second-opinion skill in a context that has not seen the builder's reasoning."
 tools: Read, Grep, Glob, Bash, Skill
 readonly: true
 model: inherit

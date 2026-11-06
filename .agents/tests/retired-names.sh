@@ -4,10 +4,9 @@
 #
 # /fix, /queue, /sync and /ship were folded into other commands or renamed. A
 # person sent to one of them types a command that does nothing. Every shipped
-# file is read, WORKFLOW.md and the maintain skill included. The only text
-# that may name them is the sentence that tells a person they were retired,
-# which upgrade-check.py says and WORKFLOW.md repeats, and the old masterplan
-# sentence upgrade-check.py recognises to rewrite. The released descriptions
+# files are read, and the maintain skill is included. The only text
+# that may name them is the retirement notice supplied by upgrade-check.py,
+# plus the old masterplan sentence that script recognises and rewrites. The released descriptions
 # in kit-retired-skills.json and kit-released-copies.json are data the
 # maintain skill matches old folders against, so they are not read.
 #
@@ -19,8 +18,7 @@
 #
 # A scanned path that is missing fails rather than being skipped, and the
 # check proves itself on copies: a planted "run /sync" in the maintain skill
-# or in WORKFLOW.md fails, a planted "Section-builder" fails, and a missing
-# WORKFLOW.md fails.
+# fails, as does a planted "Section-builder".
 
 set -eu
 
@@ -35,9 +33,9 @@ root = sys.argv[1]
 skills = os.path.join(root, ".agents/skills")
 fail = []
 
-COMMANDS = ("README.md", "llms.txt", "WORKFLOW.md", "docs/COMPATIBILITY.md",
+COMMANDS = ("README.md", "llms.txt", "docs/COMPATIBILITY.md",
             ".agents/hooks", ".agents/skills")
-FOLDED_PATHS = ("README.md", "llms.txt", "WORKFLOW.md", "docs/COMPATIBILITY.md",
+FOLDED_PATHS = ("README.md", "llms.txt", "docs/COMPATIBILITY.md",
                 "docs/PHILOSOPHY.md", ".agents/hooks", ".agents/guard", ".claude-plugin",
                 "agent-plugin", "release-manifest.txt", ".agents/skills")
 DATA = {".agents/skills/maintain/scripts/kit-retired-skills.json",
@@ -113,7 +111,7 @@ python3 "$work/scan.py" "$ROOT" || exit 1
 # The check must catch what it exists to catch. Each case runs on a copy.
 copy() {
   rm -rf "$work/copy"; mkdir -p "$work/copy/docs" "$work/copy/.agents"
-  for p in README.md llms.txt WORKFLOW.md release-manifest.txt .claude-plugin agent-plugin; do
+  for p in README.md llms.txt release-manifest.txt .claude-plugin agent-plugin; do
     cp -R "$ROOT/$p" "$work/copy/$p"
   done
   cp "$ROOT/docs/COMPATIBILITY.md" "$ROOT/docs/PHILOSOPHY.md" "$work/copy/docs/"
@@ -128,11 +126,7 @@ refused() {
 copy; python3 "$work/scan.py" "$work/copy" >/dev/null || { echo "FAIL: a clean copy is refused"; exit 1; }
 copy; printf '\nWhen the records drift, run /sync.\n' >> "$work/copy/.agents/skills/maintain/SKILL.md"
 refused "a planted \"run /sync\" in the maintain skill"
-copy; printf '\nAfter a launch, run /ship again.\n' >> "$work/copy/WORKFLOW.md"
-refused "a planted \"run /ship\" in WORKFLOW.md"
 copy; printf '\nSection-builder saves the change.\n' >> "$work/copy/.agents/skills/implement/SKILL.md"
 refused "a capitalised folded skill name"
-copy; rm "$work/copy/WORKFLOW.md"
-refused "a missing scanned file"
 
 echo "retired-names.sh: all checks passed"

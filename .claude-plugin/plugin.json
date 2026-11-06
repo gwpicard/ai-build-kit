@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "ai-build-kit",
   "displayName": "AI Build Kit",
-  "description": "A guided workflow for building reliable software with an AI coding agent.",
-  "version": "1.2.1",
+  "description": "Build and maintain internal tools with a coding agent, without reading code.",
+  "version": "1.2.6",
   "author": {
     "name": "Guillaume Picard"
   },

@@ -1,0 +1,21 @@
+---
+title: Live data and recovery
+description: Understand what hosting checks do with live and local data.
+draft: false
+---
+
+## Restore check
+
+For a hosted Supabase database, the recipe's restore check copies the live database to this computer and tries to restore it into a temporary local database. It leaves the project's local database running and creates a separate, labelled temporary copy. That copy still needs the default local ports, including database port 54322; if one is occupied, it cannot start and the check reports that it could not run. The check removes its temporary copy afterwards. It reads the live database but does not restore anything onto it. See [hosting recipes](/ai-build-kit/recipes/) for the steps and their test status.
+
+If a port is in use, leave the other service running. Ask the agent to identify it and arrange a time when its owner can stop it safely, or run the restore check on another computer with the required ports free. Then repeat the check.
+
+This check is not the same as restoring a backup to the live service. A live restore starts from the service dashboard and may make the service unavailable while it runs. `/setup-hosting` runs the recipe's backup, restore and preview checks when they are due or needed.
+
+## Previews
+
+Both recipes point previews at a separate Supabase project rather than the live database. No real run has yet proven that previews stay off live data. Keep test data separate from live data and check the preview settings before using it.
+
+## Limits and service terms
+
+The checks provide evidence about the tool, but do not establish that it is safe for every purpose. The kit cannot replace a professional developer or provide legal, medical, financial or security advice. You use the kit and its output at your own risk. The terms of the services you run the tool on, such as a host or database plan, are between you and those services. You are responsible for reading and following them.

@@ -1,5 +1,5 @@
 ---
-description: Make the project true and healthy.
+description: Keep project records accurate and the live copy healthy.
 ---
 <!-- GENERATED from .agents/skills/maintain/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 

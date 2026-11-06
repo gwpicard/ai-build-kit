@@ -13,18 +13,19 @@ replacing it. The danger is changing behaviour nobody ever wrote down.
    does Y, which is wrong, but people rely on it for now).
 3. Run the full fit check. A tool with outside users or real data arrives with
    the risk areas that reflect it.
-4. Write the masterplan for the present, warts included: "Uploads over 10MB
-   fail silently" belongs there if that is what it does today.
-5. Pin down before changing. Code that is going to change gets tests that
-   record what it does today, right or wrong. Leave the rest untouched.
+4. Write the masterplan for the present, warts included, following
+   `records/references/masterplan-changes.md`'s adopted-behaviour rule.
+5. Before changing existing code, follow
+   `quality-checks/references/adoption-safety-net.md`:
+   write and run permission tests first, then the main journeys.
 6. Cut the plan from the gaps, then stand up what is missing around the code:
    the documents, the branch flow, the hosting split. From here, work runs
    through /shape and /implement as normal.
 
 ## The one hard rule
 
-Never rewrite or tidy old code that has no tests on it, however messy. Pin it
-down first, or leave it alone.
+Never rewrite or tidy old code that has no tests on it, however messy. Extend
+the safety net before changing an uncovered area, or leave it alone.
 
 ## Classify existing behaviour
 

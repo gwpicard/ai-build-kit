@@ -54,7 +54,7 @@ bootstrap_review_reader() {
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 mkdir -p "$WORK/npm-cache"
-npm_config_cache="$WORK/npm-cache"
+npm_config_cache="${npm_config_cache:-$WORK/npm-cache}"
 export npm_config_cache
 PROJECT="$WORK/project"
 mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/.agents/tools"

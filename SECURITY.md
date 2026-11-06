@@ -1,8 +1,8 @@
 # Reporting a security problem
 
-AI Build Kit is a set of instructions a coding agent follows. Those instructions
-run shell commands in your project and handle the file where your keys and
-passwords live, so a problem here can matter beyond the kit itself.
+AI Build Kit is a set of instructions a coding agent follows. The agent runs
+shell commands in your project and handles the file where your keys and
+passwords live, so a problem in the kit can affect more than its own files.
 
 ## Report it privately
 
@@ -31,11 +31,12 @@ arrives in a numbered release with public notes, and the notes will credit you
 unless you would rather they did not.
 
 This is a small project with no service behind it and no paid support, so there
-is no response-time commitment. Reports are read and taken seriously.
+is no response-time commitment.
 
 ## What is out of scope
 
 The coding agents the kit runs on, and the services a project connects to,
-belong to their own vendors. A problem in Claude Code, Cursor, Gemini CLI,
-GitHub, or a service your project uses should go to that vendor. If the kit
-tells people to use one of them in an unsafe way, that part is ours.
+belong to their own vendors. A problem in Claude Code, Codex, Cursor, Gemini
+CLI, GitHub Copilot, GitHub, or a service your project uses should go to that
+vendor. If the kit tells people to use one of them in an unsafe way, that part
+is ours.

@@ -109,6 +109,18 @@ support.
 
 ## Checks
 
+The fixture in `adoption/` starts as an existing notebook with no tests.
+`../adoption-safety-net.sh` snapshots its code, adds behaviour tests, and runs
+permissions before journeys. Seven tests pass on the unchanged tool. A planted
+permission change then makes the tests fail. The generated report names the
+uncovered areas and explains that recording behaviour does not approve it.
+
+Its key and planted change live separately in `keys/adoption-permissions/`.
+The check copies only `adoption/project/` and then `adoption/safety-net/` into
+the throwaway project, and checks that the key's canary stayed outside. This
+is a deterministic fixture check, separate from the model-run products and
+their scores; it does not measure an agent's adoption behaviour.
+
 `../seeded-scoring.sh` proves the scoring on hand-made outcomes, the roll-up
 counts and that the keys stay out of the project. `../seeded-reproductions.sh`
 proves each fault is real, each fix is recognised and each twin is left alone. It

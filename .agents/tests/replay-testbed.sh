@@ -174,7 +174,7 @@ printf 'transcript\\n' > "$REPLAY_RESULTS/s$1-r1.transcript"
     # The normal pass excludes builders, but every previous case still runs.
     env = dict(os.environ, REPLAY_DIR=str(harness))
     defaults = call(['sh', '-c', '. "$REPLAY_DIR/lib.sh"; default_cases'], env=env).split()
-    expected = sorted(int(p.stem) for p in (harness / 'cases').glob('*.txt') if int(p.stem) < 83)
+    expected = sorted(int(p.stem) for p in (harness / 'cases').glob('*.txt') if '# selection: explicit' not in p.read_text())
     assert sorted(map(int, defaults)) == expected
 print('replay-testbed: argument, naming, export, saved issues, replacement and cleanup checks passed')
 PY

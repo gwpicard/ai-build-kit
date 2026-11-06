@@ -20,6 +20,7 @@ set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 STAMPER="$ROOT/.agents/tools/stamp-version.sh"
+NOTES_CHECK="$ROOT/.agents/tools/check-release-notes.py"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -46,6 +47,9 @@ build_tree() {
   mkdir -p "$tree/.claude-plugin" "$tree/agent-plugin" \
     "$tree/.agents/skills/maintain" "$tree/.agents/tools"
   cp "$STAMPER" "$tree/.agents/tools/stamp-version.sh"
+  cp "$NOTES_CHECK" "$tree/.agents/tools/check-release-notes.py"
+  give_notes "$tree" v0.11.0
+  give_notes "$tree" v0.12.0
   cat > "$tree/$CLAUDE_MANIFEST" <<CLAUDEJSON
 {
   "name": "ai-build-kit",
@@ -61,6 +65,30 @@ CLAUDEJSON
 AGENTJSON
   printf '%s\n' "$maintain_value" > "$tree/$MAINTAIN_VERSION"
   printf '%s\n' "$tree"
+}
+
+# Notes the check accepts: the two sections, a page holding them with its pull
+# request list, and a later review with no Critical or Major finding.
+give_notes() {
+  notes_dir="$1/docs/release-notes"
+  review_dir="$1/.agents/tmp/release-notes-review/$2"
+  mkdir -p "$notes_dir" "$review_dir"
+  cat > "$notes_dir/$2.md" <<NOTES
+$2 fixes one thing.
+
+## Updating
+
+Run /maintain, then start a new session.
+
+## What changes
+
+1. **A fix.** The thing now works.
+NOTES
+  { cat "$notes_dir/$2.md"; printf '\n## Pull requests in this release\n\n- A fix\n'; } \
+    > "$review_dir/page.md"
+  printf 'No findings.\n\nCritical: %s | Major: %s | Minor: 0\n' "${3:-0}" "${4:-0}" \
+    > "$review_dir/review.md"
+  touch -t 203001010000 "$review_dir/review.md"
 }
 
 stamp() {
@@ -94,6 +122,36 @@ TREE=$(build_tree placeholder 0.0.0-development 0.0.0-development v0.0.0-develop
 stamp "$TREE" v0.11.0 >/dev/null
 assert_carries "$TREE" v0.11.0 "stamping a placeholder tree"
 ok "a placeholder tree takes a version in all three files"
+
+# --- notes that are not ready stop the stamp, and nothing is written ------
+refused_by_notes() {
+  tree=$1
+  label=$2
+  if out=$(stamp "$tree" v0.11.0 2>&1); then
+    fail "$label: the stamp went ahead"
+  fi
+  printf '%s\n' "$out" | grep -qF 'refused: the v0.11.0 notes' || \
+    fail "$label: the refusal did not come from the notes check: $out"
+  [ "$(cat "$tree/$MAINTAIN_VERSION")" = "v0.10.0" ] || \
+    fail "$label: a version was written anyway"
+  ok "$label"
+}
+NOTES=$(build_tree no-notes 0.10.0 0.10.0 v0.10.0)
+rm "$NOTES/docs/release-notes/v0.11.0.md"
+refused_by_notes "$NOTES" "missing notes stop the stamp"
+NOTES=$(build_tree dash 0.10.0 0.10.0 v0.10.0)
+printf 'One more line \342\200\224 with a dash.\n' >> "$NOTES/docs/release-notes/v0.11.0.md"
+refused_by_notes "$NOTES" "an em dash in the notes stops the stamp"
+NOTES=$(build_tree major 0.10.0 0.10.0 v0.10.0)
+give_notes "$NOTES" v0.11.0 0 1
+refused_by_notes "$NOTES" "a review with a Major finding stops the stamp"
+NOTES=$(build_tree stale 0.10.0 0.10.0 v0.10.0)
+touch -t 202001010000 "$NOTES/.agents/tmp/release-notes-review/v0.11.0/review.md"
+refused_by_notes "$NOTES" "a review older than the page text stops the stamp"
+NOTES=$(build_tree no-list 0.10.0 0.10.0 v0.10.0)
+cp "$NOTES/docs/release-notes/v0.11.0.md" "$NOTES/.agents/tmp/release-notes-review/v0.11.0/page.md"
+touch -t 203001010000 "$NOTES/.agents/tmp/release-notes-review/v0.11.0/review.md"
+refused_by_notes "$NOTES" "a page without the pull request list stops the stamp"
 
 # --- --check agrees, and disagrees about a different version -------------
 stamp "$TREE" --check v0.11.0 >/dev/null || \

@@ -352,8 +352,14 @@ grep -qF "github.event.workflow_run.conclusion == 'success'" "$PAGES_WORKFLOW" |
   fail "pages.yml can run after a failed verification"
 grep -qF 'workflow_dispatch:' "$PAGES_WORKFLOW" || \
   fail "pages.yml cannot be started by hand"
-grep -qF 'ref: stable' "$PAGES_WORKFLOW" || \
-  fail "pages.yml does not build the stable branch"
+grep -qF 'ref:' "$PAGES_WORKFLOW" && \
+grep -qF 'default: stable' "$PAGES_WORKFLOW" && \
+grep -qF 'type: choice' "$PAGES_WORKFLOW" && \
+grep -qF -- '- stable' "$PAGES_WORKFLOW" && \
+grep -qF -- '- main' "$PAGES_WORKFLOW" || \
+  fail "pages.yml manual run must offer stable (default) and main"
+grep -qF "ref: \${{ github.event_name == 'workflow_dispatch' && inputs.ref || 'stable' }}" "$PAGES_WORKFLOW" || \
+  fail "pages.yml automatic run must build stable"
 build_job=$(sed -n '/^  build:/,/^  deploy:/p' "$PAGES_WORKFLOW")
 deploy_job=$(sed -n '/^  deploy:/,$p' "$PAGES_WORKFLOW")
 jobs_block=$(sed -n '/^jobs:/,$p' "$PAGES_WORKFLOW")

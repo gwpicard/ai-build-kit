@@ -1,0 +1,42 @@
+name: Plain Postgres starter
+
+on:
+  workflow_call:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-check:
+    if: github.repository == 'gwpicard/ai-build-kit'
+    defaults:
+      run:
+        working-directory: templates/nextjs-postgres
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Read the project files
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - name: Prepare Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.23.2
+          cache: npm
+          cache-dependency-path: templates/nextjs-postgres/package-lock.json
+      - name: Install the locked packages
+        run: npm ci
+      - name: Install the browser
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Check the starter and its deliberate permission faults
+        run: |
+          sh scripts/docker-run.sh -- node scripts/test-database.mjs sh -c '
+            npm run check && npm run test:policy-fault &&
+            npm run test:privilege-fault && npm test
+          '

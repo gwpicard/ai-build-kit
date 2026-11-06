@@ -82,7 +82,7 @@ expected_maintainer_skills=$(find "$MAINTAINER_SKILLS" -mindepth 1 -maxdepth 1 -
 # skill turns into an uncredited one. A skill written here has no upstream to
 # carry a licence from, so demanding one of every maintainer skill would mean
 # inventing a file to satisfy a check.
-vendored_maintainer_skills="humanizer"
+vendored_maintainer_skills="writing-review"
 
 # ---------------------------------------------------------------------------
 echo "== Issue references =="
@@ -675,7 +675,7 @@ else
     note "the skills are out of shape, reported only until the check turns strict:"
     printf '%s\n' "$structure_out" | sed 's/^/    /' >&2
   else
-    pass "no command loads another's files, each background skill has its callers, and each file keeps its word budget"
+    pass "skill entry points name only inventory commands, no command loads another's files, background skills have callers, and files keep their word budgets"
   fi
 fi
 
@@ -1618,7 +1618,7 @@ echo "== Retired path vocabulary =="
 # search of the tree finds only real uses.
 path_hits=$(grep -rIlE -e 'Explore p''rivately' -e 'Build and r''un it' -e 'Build with c''are' \
   -e 'build p''ath' -e '^P''ath:' \
-  "$ROOT/.agents" "$ROOT/docs" "$ROOT/README.md" "$ROOT/WORKFLOW.md" "$ROOT/AGENTS.md" \
+  "$ROOT/.agents" "$ROOT/docs" "$ROOT/README.md" "$ROOT/AGENTS.md" \
   "$ROOT/CONTRIBUTING.md" "$ROOT/llms.txt" "$ROOT/.claude" "$ROOT/.cursor" "$ROOT/.gemini" \
   "$ROOT/.github" "$ROOT/agent-plugin" "$ROOT/.claude-plugin" 2>/dev/null \
   | grep -v '/\.git/' \
@@ -1660,7 +1660,7 @@ had_stale=0
 while IFS= read -r term; do
   [ -n "$term" ] || continue
   hits=$(grep -rlFi --include='*.md' -- "$term" "$ROOT/.agents" "$ROOT/docs" \
-    "$ROOT/README.md" "$ROOT/WORKFLOW.md" "$ROOT/AGENTS.md" "$ROOT/starter" 2>/dev/null \
+    "$ROOT/README.md" "$ROOT/AGENTS.md" "$ROOT/starter" 2>/dev/null \
     | grep -v '/\.git/' \
     | grep -v '/\.agents/tmp/' \
     | grep -v '\.agents/tests/scenarios\.md$' \
@@ -1731,7 +1731,7 @@ for entry in \
   "$SKILLS/maintain/SKILL.md|last-light-pass" \
   "$SKILLS/maintain/SKILL.md|last-full-pass" \
   "$SKILLS/what-now/SKILL.md|.ai-build-kit-maintenance" \
-  "$ROOT/WORKFLOW.md|maintain writes the date of each visit" \
+  "$ROOT/site/src/content/docs/maintaining-your-tool.md|records the date of each monthly and quarterly pass in" \
   "$ROOT/docs/COMPATIBILITY.md|Said automatically when a session opens" \
   "$scenarios|## 27. Session opens on a project past its check-up cadence"; do
   file=${entry%%|*}
@@ -2166,16 +2166,46 @@ errors = []
 
 source_doc = yaml.safe_load(open(sys.argv[1]))
 source_jobs = source_doc.get("jobs") or {}
-if set(source_jobs.keys()) != {"source-kit-validation", "rehearsal", "site-build"}:
-    errors.append("source workflow must contain source-kit-validation, rehearsal and site-build")
+if set(source_jobs.keys()) != {"source-kit-validation", "rehearsal", "site-build", "postgres-starter"}:
+    errors.append("source workflow must contain validation, rehearsal, site and starter checks")
 sk = source_jobs.get("source-kit-validation") or {}
-if sk.get("if") != "github.repository == 'gwpicard/ai-build-kit'":
+if sk.get("if") != "always() && github.repository == 'gwpicard/ai-build-kit'":
     errors.append("source-kit-validation.if is wrong: %r" % sk.get("if"))
 sk_runs = " ".join(step.get("run", "") for step in (sk.get("steps") or []) if isinstance(step, dict))
 if "build-adapters.sh --check" not in sk_runs:
     errors.append("source-kit-validation is missing a build-adapters.sh --check step")
 if "validate-kit.sh" not in sk_runs:
     errors.append("source-kit-validation is missing a validate-kit.sh step")
+
+# The existing required check must fail if the reusable starter did not pass.
+source_events = source_doc.get("on", source_doc.get(True, {}))
+if source_events.get("pull_request", {}) not in (None, {}):
+    errors.append("source checks must cover every pull request without path filters")
+if "pull_request" not in source_events:
+    errors.append("source checks must run on pull requests")
+starter = source_jobs.get("postgres-starter") or {}
+if starter != {"if": "github.repository == 'gwpicard/ai-build-kit'",
+               "uses": "./.github/workflows/postgres-starter.yml"}:
+    errors.append("source checks must call the starter workflow once, without conditions on paths")
+if sk.get("needs") != "postgres-starter":
+    errors.append("source-kit-validation must depend on the starter")
+gates = [step for step in sk.get("steps", []) if step.get("name") == "Require the starter checks"]
+if gates != [{"name": "Require the starter checks",
+              "env": {"STARTER_RESULT": "${{ needs.postgres-starter.result }}"},
+              "run": 'test "$STARTER_RESULT" = success'}]:
+    errors.append("source-kit-validation must reject every non-success starter result")
+with open(os.path.join(os.path.dirname(sys.argv[1]), "postgres-starter.yml")) as stream:
+    starter_doc = yaml.safe_load(stream)
+starter_events = starter_doc.get("on", starter_doc.get(True, {}))
+if set(starter_events) != {"workflow_call", "push"} or starter_events["push"] != {"branches": ["main"]}:
+    errors.append("starter must run once per source pull request and on pushes to main")
+if starter_events.get("workflow_call") not in (None, {}):
+    errors.append("starter workflow must be callable without inputs or secrets")
+
+with open(os.path.join(os.path.dirname(sys.argv[1]), "maintainer-branch-check.yml")) as stream:
+    branch_doc = yaml.safe_load(stream)
+if set(branch_doc.get("jobs", {})) != {"maintainer-source-validation"}:
+    errors.append("the branch fallback must use its own check name, apart from the required gate")
 
 # A rehearsal nobody runs proves nothing. One hosted job for each rehearsal
 # named a failure on the checks list, but each job was billed a whole minute
@@ -2184,6 +2214,8 @@ if "validate-kit.sh" not in sk_runs:
 rehearsal = source_jobs.get("rehearsal") or {}
 if rehearsal.get("if") != "github.repository == 'gwpicard/ai-build-kit'":
     errors.append("rehearsal.if is wrong: %r" % rehearsal.get("if"))
+if rehearsal.get("timeout-minutes") != 20:
+    errors.append("rehearsal must keep its 20-minute limit")
 rehearsal_runs = " ".join(step.get("run", "") for step in (rehearsal.get("steps") or []) if isinstance(step, dict))
 if ".agents/tests/run-all.sh" not in rehearsal_runs:
     errors.append("rehearsal does not run .agents/tests/run-all.sh")
@@ -2348,7 +2380,7 @@ fi
 
 # Deny-list parity: permissions.deny must be exactly the set of entries that
 # mirror .agents/guard/blocked-commands.md's mechanically enforceable
-# patterns (git reset --hard, git push --force/-f, git clean -f/-fd, rm -rf).
+# patterns for unsaved work, forced pushes and recursive deletion.
 # An exact set comparison catches a missing OR an unexplained extra entry,
 # not just a missing substring. Both this repository's own Claude settings and
 # the settings founding gives a project are checked. Founded projects also
@@ -2359,14 +2391,21 @@ $ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.jso
 expected_deny="Bash(git reset --hard:*)
 Bash(git push --force:*)
 Bash(git push -f:*)
-Bash(git clean -f:*)
-Bash(git clean -fd:*)
-Bash(rm -rf:*)"
+Bash(rm -rf:*)
+Bash(git restore:*)
+Bash(git clean:*)
+Bash(git stash)
+Bash(git stash push:*)
+Bash(git stash save:*)
+Bash(git stash -*)
+Bash(git checkout -- *)
+Bash(git checkout * -- *)
+Bash(git reset * --hard*)
+Bash(git stash drop:*)
+Bash(git stash clear:*)"
 # Founded projects use the pre-push guard for main and replacing remote work.
 # Their text rules protect the guard and the other command boundaries.
 expected_deny_project="Bash(git reset --hard:*)
-Bash(git clean -f:*)
-Bash(git clean -fd:*)
 Bash(rm -rf:*)
 Write(**/.claude/settings.json)
 Edit(**/.claude/settings.json)
@@ -2406,7 +2445,6 @@ Bash(git *core.hooksPath*)
 Bash(git *core.hookspath*)
 Bash(git checkout .)
 Bash(git checkout * .)
-Bash(git restore .)
 Bash(git checkout -- *)
 Bash(git checkout * -- *)
 Bash(git checkout -f*)
@@ -2416,12 +2454,6 @@ Bash(git switch -f*)
 Bash(git switch * -f*)
 Bash(git switch *--force*)
 Bash(git switch *--discard-changes*)
-Bash(git restore -- *)
-Bash(git restore *--worktree*)
-Bash(git restore -W*)
-Bash(git restore * -W*)
-Bash(git clean -*f*)
-Bash(git clean * -*f*)
 Bash(git reset * --hard*)
 Bash(git stash drop:*)
 Bash(git stash clear:*)
@@ -2450,7 +2482,13 @@ Read(//**/.docker/config.json)
 Bash(gh pr merge:*)
 Bash(gh api *pulls/*/merge*)
 Bash(gh api *merges*)
-Bash(gh api graphql *mergePullRequest*)"
+Bash(gh api graphql *mergePullRequest*)
+Bash(git restore:*)
+Bash(git clean:*)
+Bash(git stash)
+Bash(git stash push:*)
+Bash(git stash save:*)
+Bash(git stash -*)"
 # A project blocks direct merge commands and asks before live changes.
 expected_ask_project="Bash(*merge.py*--approved*)
 Bash(*merge.py*--resume*)
@@ -2459,7 +2497,6 @@ Bash(gh api *git/refs*)
 Bash(gh api graphql *createRef*)
 Bash(gh api graphql *updateRef*)
 Bash(gh api graphql *deleteRef*)
-Bash(git restore *)
 Bash(supabase db push:*)
 Bash(supabase *config push*)
 Bash(vercel api *PATCH*)
@@ -2539,7 +2576,7 @@ else
   note "python3 not available; falling back to a substring check on permissions.deny"
   while IFS= read -r deny_json; do
     [ -n "$deny_json" ] || continue
-    for pattern in "git reset --hard" "git push --force" "git clean -f" "rm -rf"; do
+    for pattern in "git reset --hard" "git push --force" "git clean" "git restore" "git stash" "rm -rf"; do
       if ! grep -qF "$pattern" "$deny_json"; then
         fail "$deny_json permissions.deny is missing mechanical enforcement for '$pattern'"
       fi
@@ -2623,7 +2660,7 @@ project_docs="$(
       fi
     done
   printf '%s\n' "$ROOT/.agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh"
-  for path in "$ROOT/README.md" "$ROOT/WORKFLOW.md" "$ROOT/llms.txt" \
+  for path in "$ROOT/README.md" "$ROOT/llms.txt" \
     "$ROOT/CONTRIBUTING.md" "$ROOT/SECURITY.md"; do
     [ ! -f "$path" ] || printf '%s\n' "$path"
   done
@@ -2683,6 +2720,9 @@ check_claim "team.md" "team.md" "$SKILLS/setup-ai-build-kit/SKILL.md"
 check_claim "mandatory fresh session" "Always a fresh session"
 check_claim "universal pull-request claim" "which is not finished until its check is green"
 check_claim "universal test-first claim" "Test first, and show the test failing before building"
+check_claim "approved clearing of unsaved work" "Never clear without approval."
+check_claim "offer to clear unsaved work" "show what clearing loses"
+check_claim "maintenance offers clearing" "to continue it, save it or clear it."
 check_claim "obsolete automatic-rebuild rule" "rebuilds the piece from the masterplan, which is usually quicker and cleaner"
 check_claim "absolute discipline-visibility claim" "so they never appear in that list"
 check_claim "incorrect Claude invocation semantics" "can't be launched by slash either"
@@ -2715,7 +2755,7 @@ check_claim "sensitive-area step" "sensitive-area step"
 check_claim "absolute merge yes claim" "nothing merges without your yes"
 check_claim "absolute merge wait claim" "every merge waits for your yes"
 check_claim "absolute merge need claim" "every merge needs the person's yes"
-# WORKFLOW.md once said both recipe trials proved every step. The PROVEN.md records do not support that.
+# Earlier user guidance said both recipe trials proved every step. The PROVEN.md records do not support that.
 check_claim "both recipe trials proved all steps" "Both trials proved the preview, launch, rollback, secrets, logs and health steps"
 check_claim "absolute human merge claim" "a human decides whether to merge, always"
 check_claim "human always decides merge" "A human decides whether to merge."
@@ -2734,13 +2774,14 @@ check_claim "informal approval renewal wording" "fresh yes"
 # ---------------------------------------------------------------------------
 echo "== Maintainer writing contract =="
 
-if grep -qF '.agents/maintainer-skills/humanizer/SKILL.md' "$ROOT/AGENTS.md" && \
-   grep -qF '.agents/maintainer-skills/humanizer/SKILL.md' "$ROOT/docs/MAINTAINING.md" && \
-   grep -qF 'metadata:' "$MAINTAINER_SKILLS/humanizer/SKILL.md" && \
-   grep -qF 'version: "2.9.1"' "$MAINTAINER_SKILLS/humanizer/SKILL.md"; then
-  pass "maintainer prose loads the pinned local Humanizer skill"
+if grep -qF '.agents/maintainer-skills/writing-review/SKILL.md' "$ROOT/AGENTS.md" && \
+   grep -qF '.agents/maintainer-skills/writing-review/SKILL.md' "$ROOT/docs/MAINTAINING.md" && \
+   grep -qF 'name: writing-review' "$MAINTAINER_SKILLS/writing-review/SKILL.md" && \
+   grep -qF 'Writing quality framework' "$MAINTAINER_SKILLS/writing-review/SKILL.md" && \
+   grep -qF 'pattern-guide-version: "2.9.1"' "$MAINTAINER_SKILLS/writing-review/SKILL.md"; then
+  pass "maintainer prose loads the local writing-review skill"
 else
-  fail "maintainer Humanizer skill or writing instructions are incomplete"
+  fail "maintainer writing-review skill or writing instructions are incomplete"
 fi
 
 # ---------------------------------------------------------------------------

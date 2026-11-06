@@ -1,13 +1,16 @@
 # Blocked commands
 
-Follow the project's installed command guard. Do not run commands it blocks.
+Follow the project's installed command guard and the `records` skill's
+`references/unsaved-work.md` for blocked commands and unsaved work.
 Other harnesses must honour the same rules. Never use `git reset --hard`, a
 forced push or delete. Also, never push a change directly to `main`, skip the
-project's check, or disable its Git hook. Never discard unsaved work or
-read a stored login. The installed settings hold the command spellings.
+project's check, disable its Git hook or read a stored login. The installed
+settings hold the command spellings.
 
-The exact blocked spellings include `git checkout .`, `git restore .`,
-`git clean -f`, `git reset --hard`, `git stash drop`, `rm -rf`, and shell-wrapped
+The blocked spellings include `git checkout .`, `git checkout -- <path>`,
+`git restore` without `--staged` (or with `--worktree` or `-W`), `git clean`,
+`git reset --hard`, `git stash`, `git stash push`, `git stash save`,
+`git stash -u`, `git stash drop`, `git stash clear`, `rm -rf`, and shell-wrapped
 forms of these; Python `shutil.rmtree`, `find -delete`, `gh auth token`,
 `git credential`, and `security find-*` also protect unsaved work or stored
 logins. Do not vary their spelling to get around a guard.
@@ -30,5 +33,8 @@ These boundaries need judgement and always apply:
   Before its confirmation box, say what will change, whether it can be undone,
   and what the person will notice.
 
-Save a checkpoint before sweeping work. If a blocked action seems necessary,
-stop and explain why so the person can decide.
+Save a checkpoint before sweeping work.
+
+Claude's deny patterns also block staged-only restores and clean dry runs.
+Use `git reset HEAD -- <path>` to unstage while keeping the file, and
+`git ls-files --others --exclude-standard` to list untracked files.

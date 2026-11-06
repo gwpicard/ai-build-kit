@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: "Fresh eyes on the code and evidence for a piece on the pull-request route. Runs the second-opinion skill in a context that has not seen the builder's reasoning."
+description: "Fresh eyes on a piece's code and evidence or the founding masterplan. Runs the second-opinion skill in a context that has not seen the builder's reasoning."
 tools: [read_file, list_directory, glob, grep_search, web_fetch]
 ---
 <!-- GENERATED from .agents/agents/reviewer.md. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->

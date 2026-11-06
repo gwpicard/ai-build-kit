@@ -488,6 +488,11 @@ def main():
     note("CALL\t%s%s" % (" ".join(argv), "\tturn=" + turn if turn.isdigit() else ""))
     state = load()
     command = argv[0]
+    if (command == "api" and "repos/gwpicard/ai-build-kit/releases/latest" in argv
+            and os.environ.get("REPLAY_TESTBED_VERSION")):
+        print_json_or_jq(argv, {"tag_name": os.environ["REPLAY_TESTBED_VERSION"],
+                               "body": "Replay assembly of the current kit; finish with /maintain."})
+        return
 
     if command in ("--version", "version"):
         print("gh version 2.0.0 (rehearsal stand-in)")
