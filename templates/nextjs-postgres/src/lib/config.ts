@@ -43,6 +43,22 @@ export const environmentNames = [
   "VITEST"
 ] as const;
 
+export const environmentSecrets = [
+  "DATABASE_URL",
+  "MIGRATION_DATABASE_URL",
+  "JOBS_TIMER_TOKEN",
+  "AWS_ACCESS_KEY_ID",
+  "AWS_SECRET_ACCESS_KEY",
+  "AWS_SESSION_TOKEN",
+  "FILES_AZURE_ACCOUNT_KEY",
+  "SMTP_USER",
+  "SMTP_PASSWORD",
+  "AUTH_SECRET_FILE",
+  "AUTH_DATABASE_URL",
+  "STAFF_CLIENT_SECRET_FILE",
+  "SMTP_PASSWORD_FILE"
+] as const;
+
 export type EnvironmentName = typeof environmentNames[number];
 export function environment(): Record<EnvironmentName, string | undefined> {
   return Object.fromEntries(environmentNames.map(name => [name, process.env[name]])) as Record<EnvironmentName, string | undefined>;

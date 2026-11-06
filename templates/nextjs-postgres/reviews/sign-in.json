@@ -2,17 +2,18 @@
   "review": "second-opinion",
   "outcome": "pass",
   "date": "2026-11-06",
-  "digest": "581e9ce85f8a27346baa2f60dc8d7994bed1da1b066302c7bd234f37ee0a6adf",
+  "digest": "fc3c6044d8539f15183c3e6eb934058720141ee597877d500db2289771c00a46",
   "evidence": [
-    "A separate context reviewed the sign-in module, shared configuration and mail, authentication routes, migrations, roles, dependencies, module-resolution boundaries and this runtime validation change. No findings remain. The review also checked the final standalone schema guards and Google declaration tests.",
-    "The reviewer independently ran all 91 handover tests. Schema-only tests reject recognisable credential URLs and copied key shapes in complete records and nested extensions. Missing and malformed sign-in requirements fail schema validation and the project check.",
-    "Fresh supplied evidence: 27 startup, mail, storage configuration and review-boundary tests passed, plus 54 import-boundary tests. Startup subprocesses cover email-only, Microsoft and Google sign-in, with absent settings and missing or unreadable secret files refused before server code runs.",
-    "Fresh supplied evidence: TypeScript, ESLint, production build and worker/configuration bundling passed. The released-schema standalone check passed all 89 tests before the final two schema regression tests were added."
+    "A separate context reviewed the current sign-in module, shared configuration, mail, authentication routes, migrations, roles, dependencies and module-resolution boundaries, including the runtime handover changes. No supported findings remain.",
+    "The reviewer independently ran 35 focused handover tests covering structural credential exclusions, labelled secret metadata, authentication tables, runtime role, callback and verification paths, and configuration metadata. All passed.",
+    "The reviewer reproduced an interruption cleanup gap in the disposable runner. After the fix, repeated SIGHUP, SIGINT and SIGTERM checks removed the temporary secret directory. These checks used stub commands and no Docker resources.",
+    "Fresh supplied evidence: all 124 handover tests passed in the template and standalone released-schema copy; 45 real-Postgres sign-in and permission tests and 27 startup, mail, storage configuration and review-boundary tests passed.",
+    "Fresh supplied evidence: TypeScript, ESLint, production build and worker/configuration bundling passed. Request-only Playwright verified production startup, protected timer and database/jobs health on port 3119 through the disposable runner."
   ],
   "limits": [
     "No real directory registration, external SMTP delivery, hosted storage permissions or actual workload-role authentication were exercised.",
-    "Database and Docker suites were not run locally during this fix round. Full starter, image and repository checks remain for GitHub. Reviewer identity independence remains unverified.",
-    "The review guard could not create its snapshot in the protected skills directory. The reviewer reported no file changes. The digest verifies content correspondence; pull request review remains necessary.",
+    "The original browser check started its production server but macOS refused Chromium Mach port registration. Page and accessibility assertions remain unverified locally. GitHub checks could not be read because authentication returned HTTP 401.",
+    "The review guard could not create its snapshot in the protected skills directory. The reviewer reported no file changes. Reviewer identity independence remains unverified. The digest verifies content correspondence; pull request review remains necessary.",
     "Response padding is not a constant-time guarantee under load. Deferred email delivery is not a durable queue. Multiple replicas need shared rate limiting or an ingress limit."
   ]
 }

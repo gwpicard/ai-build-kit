@@ -170,8 +170,8 @@ test('schema alone rejects credentials in nested extension values throughout the
     assert.equal(validate(h), false, path.join('.'));
   }
 });
-test('ordinary prose and credential-free URL extensions remain valid', () => {
-  assert.equal(validate({ ...original, optional_note: { text: 'An arbitrary secret can resemble prose', url: 'postgres://database.test/tool' } }), true);
+test('ordinary prose extensions remain valid', () => {
+  assert.equal(validate({ ...original, optional_note: { text: 'An arbitrary secret can resemble prose' } }), true);
 });
 const company = mutate(h => {
   h.sign_in.staff = { provider: 'entra', directory: 'company tenant', outside_refused_test: 'tests/outside-account.ts', redirect_path: '/api/auth/callback/microsoft' };
@@ -227,3 +227,38 @@ test('Google sign-in requires its directory setting declaration and description'
     assert.throws(() => run('check', dir));
   }
 });
+
+for (const sample of [
+  'postgresql://database.test/tool?user=fixture&%70assword=synthetic-marker',
+  'postgresql://database.test/tool?user=fixture&%2570assword=synthetic-marker',
+  'postgresql://database.test/tool?%75ser=fixture&%70%61ssword=synthetic-marker',
+  'https://database.test/tool?%74oken=synthetic-marker',
+  'https://fixture%3Asynthetic-marker@database.test/tool',
+  'https://database.test/tool',
+]) test('schema alone rejects URL values in descriptions and extensions', () => {
+  for (const edit of [
+    h => { h.sign_in.configuration.AUTH_DATABASE_URL = sample; },
+    h => { h.config[0].description = sample; },
+    h => { h.optional_note = { nested: [sample] }; },
+  ]) assert.equal(validate(mutate(edit)), false);
+});
+for (const key of ['password', 'PASSWD', 'clientSecret', 'access_token', 'apiKey', 'credentialNote']) {
+  test(`schema alone refuses nested secret metadata ${key}`, () => {
+    assert.equal(validate(mutate(h => { h.sign_in.optional_note = { nested: { [key]: 'synthetic-marker' } }; })), false);
+  });
+}
+for (const [name, edit] of [
+  ['missing authentication table', h => { h.postgres.sign_in.tables = ['invitations']; }],
+  ['wrong authentication role', h => { h.postgres.sign_in.runtime_role = 'tool_app'; }],
+  ['wrong callback path', h => { h.sign_in.host_setup.callbacks.microsoft = '/wrong'; }],
+  ['wrong email verification path', h => { h.sign_in.email_link.verification_path = '/wrong'; }],
+  ['sign-in secret reclassified as build setting', h => { Object.assign(h.config.find(c => c.name === 'AUTH_DATABASE_URL'), { kind: 'setting', phase: 'build' }); }],
+  ['setting reclassified as secret', h => { h.config.find(c => c.name === 'PORT').kind = 'secret'; }],
+]) test(name, () => assert.throws(() => checkCode(root, mutate(edit))));
+for (const name of ['AUTH_DATABASE_URL', 'AUTH_SECRET_FILE', 'STAFF_CLIENT_SECRET_FILE', 'SMTP_PASSWORD_FILE', 'SMTP_USER']) {
+  for (const metadata of [{ kind: 'setting', phase: 'build' }, { kind: 'setting', phase: 'runtime' }, { kind: 'secret', phase: 'build' }]) {
+    test(`schema alone requires runtime secret metadata for ${name}: ${JSON.stringify(metadata)}`, () => {
+      assert.equal(validate(mutate(h => { Object.assign(h.config.find(c => c.name === name), metadata); })), false);
+    });
+  }
+}

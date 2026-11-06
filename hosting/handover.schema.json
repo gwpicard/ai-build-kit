@@ -1,12 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AI Build Kit handover v1",
-  "description": "AI Build Kit owns hosting/handover.json and this schema. AI Host Kit vendors the published release copy unchanged. The config list declares secrets and settings by name only. Requests are defined in $defs/request. Readers accept 1.x; minor versions may add optional fields outside config entries and readers report unknown fields before ignoring them. Config entries remain closed to their descriptive fields in every minor version. After publication, a removal, changed meaning or new required field needs a new major version and a supporting reader update. Reference fields accept credential-free HTTPS addresses or repository paths, without queries, fragments, user information, escapes or key text. Validation cannot detect arbitrary secrets disguised as ordinary prose.",
+  "description": "AI Build Kit owns hosting/handover.json and this schema. AI Host Kit vendors the published release copy unchanged. The config list declares secrets and settings by name only. Requests are defined in $defs/request. Readers accept 1.x; minor versions may add optional fields outside config entries and readers report unknown fields before ignoring them. Config entries remain closed to their descriptive fields in every minor version. After publication, a removal, changed meaning or new required field needs a new major version and a supporting reader update. Free text rejects scheme URLs. Extension keys cannot contain password, passwd, secret, token, key or credential in any letter case. Reference fields accept credential-free HTTPS addresses or repository paths, without queries, fragments, user information, escapes or key text. Validation cannot detect arbitrary secrets disguised as ordinary prose.",
   "type": "object",
   "properties": {
     "schema_version": {
       "type": "string",
-      "pattern": "^1\\.(0|[1-9][0-9]*)$"
+      "pattern": "^1\\.(0|[1-9][0-9]*)$",
+      "allOf": [
+        {
+          "$ref": "#/$defs/freeText"
+        }
+      ]
     },
     "tool": {
       "type": "object",
@@ -14,22 +19,42 @@
         "name": {
           "type": "string",
           "minLength": 1,
-          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "allOf": [
+            {
+              "$ref": "#/$defs/freeText"
+            }
+          ]
         },
         "owner": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "allOf": [
+            {
+              "$ref": "#/$defs/freeText"
+            }
+          ]
         },
         "successor": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "allOf": [
+            {
+              "$ref": "#/$defs/freeText"
+            }
+          ]
         }
       },
       "required": [
         "name",
         "owner"
       ],
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
+      "patternProperties": {
+        "^(?!(?:name|owner|successor)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     },
     "image": {
       "type": "object",
@@ -41,7 +66,12 @@
       "required": [
         "dockerfile"
       ],
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
+      "patternProperties": {
+        "^(?!(?:dockerfile)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     },
     "processes": {
       "type": "object",
@@ -51,7 +81,12 @@
           "properties": {
             "command": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "port": {
               "type": "integer",
@@ -63,7 +98,12 @@
             "command",
             "port"
           ],
-          "additionalProperties": true
+          "additionalProperties": {
+            "$ref": "#/$defs/credentialFreeValue"
+          },
+          "patternProperties": {
+            "^(?!(?:command|port)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+          }
         },
         "worker": {
           "anyOf": [
@@ -72,13 +112,23 @@
               "properties": {
                 "command": {
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/freeText"
+                    }
+                  ]
                 }
               },
               "required": [
                 "command"
               ],
-              "additionalProperties": true
+              "additionalProperties": {
+                "$ref": "#/$defs/credentialFreeValue"
+              },
+              "patternProperties": {
+                "^(?!(?:command)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+              }
             },
             {
               "type": "null"
@@ -90,7 +140,12 @@
           "properties": {
             "command": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "when": {
               "const": "before-release"
@@ -100,14 +155,24 @@
             "command",
             "when"
           ],
-          "additionalProperties": true
+          "additionalProperties": {
+            "$ref": "#/$defs/credentialFreeValue"
+          },
+          "patternProperties": {
+            "^(?!(?:command|when)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+          }
         }
       },
       "required": [
         "web",
         "migrate"
       ],
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
+      "patternProperties": {
+        "^(?!(?:web|worker|migrate)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     },
     "health": {
       "type": "object",
@@ -115,7 +180,12 @@
         "path": {
           "type": "string",
           "minLength": 1,
-          "pattern": "^/[^\\s?#]*$"
+          "pattern": "^/[^\\s?#]*$",
+          "allOf": [
+            {
+              "$ref": "#/$defs/freeText"
+            }
+          ]
         },
         "checks": {
           "type": "array",
@@ -124,6 +194,11 @@
             "enum": [
               "database",
               "worker"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/$defs/freeText"
+              }
             ]
           },
           "uniqueItems": true,
@@ -135,7 +210,12 @@
         "commit_env": {
           "type": "string",
           "minLength": 1,
-          "pattern": "^[A-Z][A-Z0-9_]*$"
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "allOf": [
+            {
+              "$ref": "#/$defs/freeText"
+            }
+          ]
         }
       },
       "required": [
@@ -143,7 +223,12 @@
         "checks",
         "commit_env"
       ],
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
+      "patternProperties": {
+        "^(?!(?:path|checks|commit_env)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     },
     "config": {
       "type": "array",
@@ -153,13 +238,23 @@
           "name": {
             "type": "string",
             "minLength": 1,
-            "pattern": "^[A-Z][A-Z0-9_]*$"
+            "pattern": "^[A-Z][A-Z0-9_]*$",
+            "allOf": [
+              {
+                "$ref": "#/$defs/freeText"
+              }
+            ]
           },
           "kind": {
             "type": "string",
             "enum": [
               "secret",
               "setting"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/$defs/freeText"
+              }
             ]
           },
           "phase": {
@@ -167,6 +262,11 @@
             "enum": [
               "build",
               "runtime"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/$defs/freeText"
+              }
             ]
           },
           "source": {
@@ -175,7 +275,15 @@
               "generated",
               "person",
               "host"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/$defs/freeText"
+              }
             ]
+          },
+          "description": {
+            "$ref": "#/$defs/freeText"
           }
         },
         "required": [
@@ -204,6 +312,34 @@
                 }
               }
             }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "enum": [
+                    "AUTH_DATABASE_URL",
+                    "AUTH_SECRET_FILE",
+                    "STAFF_CLIENT_SECRET_FILE",
+                    "SMTP_PASSWORD_FILE",
+                    "SMTP_USER"
+                  ]
+                }
+              },
+              "required": [
+                "name"
+              ]
+            },
+            "then": {
+              "properties": {
+                "kind": {
+                  "const": "secret"
+                },
+                "phase": {
+                  "const": "runtime"
+                }
+              }
+            }
           }
         ],
         "description": "Declare names and where they come from. Never put values here. Secret names are supplied at runtime."
@@ -220,7 +356,12 @@
           "type": "array",
           "items": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "allOf": [
+              {
+                "$ref": "#/$defs/freeText"
+              }
+            ]
           },
           "uniqueItems": true
         },
@@ -242,14 +383,24 @@
             "migrate",
             "app"
           ],
-          "additionalProperties": true
+          "additionalProperties": {
+            "$ref": "#/$defs/credentialFreeValue"
+          },
+          "patternProperties": {
+            "^(?!(?:migrate|app|auth)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+          }
         },
         "sign_in": {
           "type": "object",
           "properties": {
             "schema": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "tables": {
               "type": "array",
@@ -257,23 +408,43 @@
               "uniqueItems": true,
               "items": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/freeText"
+                  }
+                ]
               }
             },
             "owner": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "migration": {
               "$ref": "#/$defs/path"
             },
             "runtime_role": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "permissions": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             }
           },
           "required": [
@@ -284,7 +455,12 @@
             "runtime_role",
             "permissions"
           ],
-          "additionalProperties": true
+          "additionalProperties": {
+            "$ref": "#/$defs/credentialFreeValue"
+          },
+          "patternProperties": {
+            "^(?!(?:schema|tables|owner|migration|runtime_role|permissions)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+          }
         }
       },
       "required": [
@@ -292,7 +468,12 @@
         "extensions",
         "roles"
       ],
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
+      "patternProperties": {
+        "^(?!(?:min_major|extensions|roles|sign_in)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     },
     "files": {
       "type": "object",
@@ -302,6 +483,11 @@
           "enum": [
             "s3",
             "azure-blob"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/$defs/freeText"
+            }
           ]
         },
         "buckets": {
@@ -312,7 +498,12 @@
               "name": {
                 "type": "string",
                 "minLength": 1,
-                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/freeText"
+                  }
+                ]
               },
               "private": {
                 "type": "boolean"
@@ -327,7 +518,12 @@
               "private",
               "link_minutes"
             ],
-            "additionalProperties": true
+            "additionalProperties": {
+              "$ref": "#/$defs/credentialFreeValue"
+            },
+            "patternProperties": {
+              "^(?!(?:name|private|link_minutes)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+            }
           },
           "minItems": 1
         }
@@ -336,7 +532,12 @@
         "port",
         "buckets"
       ],
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
+      "patternProperties": {
+        "^(?!(?:port|buckets)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     },
     "email": {
       "type": "object",
@@ -347,7 +548,12 @@
         "sender_domain": {
           "type": "string",
           "minLength": 1,
-          "pattern": "^(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}$"
+          "pattern": "^(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}$",
+          "allOf": [
+            {
+              "$ref": "#/$defs/freeText"
+            }
+          ]
         },
         "inbound": {
           "type": "boolean"
@@ -358,14 +564,24 @@
         "sender_domain",
         "inbound"
       ],
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
+      "patternProperties": {
+        "^(?!(?:transport|sender_domain|inbound)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     },
     "jobs": {
       "type": "object",
       "properties": {
         "library": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "allOf": [
+            {
+              "$ref": "#/$defs/freeText"
+            }
+          ]
         },
         "runner": {
           "type": "string",
@@ -373,6 +589,11 @@
             "worker",
             "in-app",
             "host-tick"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/$defs/freeText"
+            }
           ]
         },
         "longest_job_seconds": {
@@ -387,19 +608,34 @@
               "name": {
                 "type": "string",
                 "minLength": 1,
-                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/freeText"
+                  }
+                ]
               },
               "cron": {
                 "type": "string",
                 "minLength": 1,
-                "pattern": "^\\S+(?:[ \\t]+\\S+){4}$"
+                "pattern": "^\\S+(?:[ \\t]+\\S+){4}$",
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/freeText"
+                  }
+                ]
               }
             },
             "required": [
               "name",
               "cron"
             ],
-            "additionalProperties": true
+            "additionalProperties": {
+              "$ref": "#/$defs/credentialFreeValue"
+            },
+            "patternProperties": {
+              "^(?!(?:name|cron)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+            }
           }
         }
       },
@@ -409,7 +645,12 @@
         "longest_job_seconds",
         "schedules"
       ],
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
+      "patternProperties": {
+        "^(?!(?:library|runner|longest_job_seconds|schedules)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     },
     "sign_in": {
       "type": "object",
@@ -425,11 +666,21 @@
                     "entra",
                     "google",
                     "oidc"
+                  ],
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/freeText"
+                    }
                   ]
                 },
                 "directory": {
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/freeText"
+                    }
+                  ]
                 },
                 "outside_refused_test": {
                   "$ref": "#/$defs/path"
@@ -437,7 +688,12 @@
                 "redirect_path": {
                   "type": "string",
                   "minLength": 1,
-                  "pattern": "^/[^\\s?#]*$"
+                  "pattern": "^/[^\\s?#]*$",
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/freeText"
+                    }
+                  ]
                 }
               },
               "required": [
@@ -445,7 +701,12 @@
                 "directory",
                 "outside_refused_test"
               ],
-              "additionalProperties": true
+              "additionalProperties": {
+                "$ref": "#/$defs/credentialFreeValue"
+              },
+              "patternProperties": {
+                "^(?!(?:provider|directory|outside_refused_test|redirect_path)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+              }
             },
             {
               "type": "null"
@@ -458,6 +719,11 @@
           "enum": [
             "email-link",
             "none"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/$defs/freeText"
+            }
           ]
         },
         "staff_provider": {
@@ -470,18 +736,33 @@
         },
         "public_origin_env": {
           "type": "string",
-          "pattern": "^[A-Z][A-Z0-9_]*$"
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "allOf": [
+            {
+              "$ref": "#/$defs/freeText"
+            }
+          ]
         },
         "configuration": {
           "type": "object",
           "minProperties": 1,
           "propertyNames": {
             "type": "string",
-            "pattern": "^[A-Z][A-Z0-9_]*$"
+            "pattern": "^[A-Z][A-Z0-9_]*$",
+            "allOf": [
+              {
+                "$ref": "#/$defs/freeText"
+              }
+            ]
           },
           "additionalProperties": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "allOf": [
+              {
+                "$ref": "#/$defs/freeText"
+              }
+            ]
           }
         },
         "secret_files": {
@@ -493,7 +774,12 @@
             "properties": {
               "name": {
                 "type": "string",
-                "pattern": "^[A-Z][A-Z0-9_]*$"
+                "pattern": "^[A-Z][A-Z0-9_]*$",
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/freeText"
+                  }
+                ]
               },
               "required_when": {
                 "enum": [
@@ -504,7 +790,12 @@
               },
               "description": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/freeText"
+                  }
+                ]
               }
             },
             "required": [
@@ -512,7 +803,10 @@
               "required_when",
               "description"
             ],
-            "additionalProperties": true
+            "additionalProperties": false,
+            "patternProperties": {
+              "^(?!(?:name|required_when|description)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+            }
           }
         },
         "host_setup": {
@@ -520,41 +814,79 @@
           "properties": {
             "owner": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "request": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "microsoft": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "google": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "callbacks": {
               "type": "object",
               "minProperties": 1,
               "additionalProperties": {
                 "type": "string",
-                "pattern": "^/[^\\s?#]*$"
+                "pattern": "^/[^\\s?#]*$",
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/freeText"
+                  }
+                ]
               },
               "properties": {
                 "microsoft": {
                   "type": "string",
-                  "pattern": "^/[^\\s?#]*$"
+                  "pattern": "^/[^\\s?#]*$",
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/freeText"
+                    }
+                  ]
                 },
                 "google": {
                   "type": "string",
-                  "pattern": "^/[^\\s?#]*$"
+                  "pattern": "^/[^\\s?#]*$",
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/freeText"
+                    }
+                  ]
                 }
               },
               "required": [
                 "microsoft",
                 "google"
-              ]
+              ],
+              "patternProperties": {
+                "^(?!(?:microsoft|google)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+              }
             }
           },
           "required": [
@@ -564,32 +896,57 @@
             "google",
             "callbacks"
           ],
-          "additionalProperties": true
+          "additionalProperties": {
+            "$ref": "#/$defs/credentialFreeValue"
+          },
+          "patternProperties": {
+            "^(?!(?:owner|request|microsoft|google|callbacks)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+          }
         },
         "email_link": {
           "type": "object",
           "properties": {
             "verification_path": {
               "type": "string",
-              "pattern": "^/[^\\s?#]*$"
+              "pattern": "^/[^\\s?#]*$",
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "requires": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             }
           },
           "required": [
             "verification_path",
             "requires"
           ],
-          "additionalProperties": true
+          "additionalProperties": {
+            "$ref": "#/$defs/credentialFreeValue"
+          },
+          "patternProperties": {
+            "^(?!(?:verification_path|requires)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+          }
         }
       },
       "required": [
         "staff",
         "outsiders"
       ],
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
+      "patternProperties": {
+        "^(?!(?:staff|outsiders|staff_provider|public_origin_env|configuration|secret_files|host_setup|email_link)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     },
     "ai": {
       "type": "object",
@@ -605,6 +962,11 @@
               "text",
               "vision",
               "pdf"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/$defs/freeText"
+              }
             ]
           },
           "minItems": 1,
@@ -616,13 +978,20 @@
             "uk",
             "eu",
             "any"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/$defs/freeText"
+            }
           ]
         }
       },
       "required": [
         "needed"
       ],
-      "additionalProperties": true,
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
       "allOf": [
         {
           "if": {
@@ -642,7 +1011,10 @@
             ]
           }
         }
-      ]
+      ],
+      "patternProperties": {
+        "^(?!(?:needed|capabilities|residency)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     },
     "access": {
       "type": "string",
@@ -650,6 +1022,11 @@
         "private",
         "invitation",
         "public"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/$defs/freeText"
+        }
       ]
     },
     "residency": {
@@ -658,13 +1035,23 @@
         "uk",
         "eu",
         "any"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/$defs/freeText"
+        }
       ]
     },
     "data_risk": {
       "type": "array",
       "items": {
         "type": "string",
-        "minLength": 1
+        "minLength": 1,
+        "allOf": [
+          {
+            "$ref": "#/$defs/freeText"
+          }
+        ]
       },
       "uniqueItems": true
     },
@@ -684,7 +1071,12 @@
         "max_data_loss_hours",
         "max_restore_hours"
       ],
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
+      "patternProperties": {
+        "^(?!(?:max_data_loss_hours|max_restore_hours)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     },
     "limits": {
       "type": "object",
@@ -706,7 +1098,12 @@
         "memory_mb",
         "outbound_internet"
       ],
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
+      "patternProperties": {
+        "^(?!(?:longest_request_seconds|memory_mb|outbound_internet)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     },
     "previews": {
       "type": "object",
@@ -722,7 +1119,12 @@
         "wanted",
         "data"
       ],
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "#/$defs/credentialFreeValue"
+      },
+      "patternProperties": {
+        "^(?!(?:wanted|data)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
+      }
     }
   },
   "required": [
@@ -741,11 +1143,10 @@
     "limits",
     "previews"
   ],
-  "additionalProperties": true,
+  "additionalProperties": {
+    "$ref": "#/$defs/credentialFreeValue"
+  },
   "allOf": [
-    {
-      "$ref": "#/$defs/credentialFreeValue"
-    },
     {
       "if": {
         "properties": {
@@ -1307,7 +1708,9 @@
       "description": "A repository path or HTTPS address without credentials, query, fragment, percent encoding or copied key material. Use an evidence file path instead of a signed address.",
       "allOf": [
         {
-          "$ref": "#/$defs/credentialFreeValue"
+          "not": {
+            "pattern": "(?:[a-zA-Z][a-zA-Z0-9+.-]*://[^/\\s?#]*@|-----[bB][eE][gG][iI][nN]|(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[sS][iI][gG][nN][aA][tT][uU][rR][eE]|[sS][iI][gG]|[kK][eE][yY])\\s*=|(?:AKIA|ASIA)[A-Z0-9]{16}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})"
+          }
         }
       ]
     },
@@ -1316,7 +1719,7 @@
       "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$",
       "allOf": [
         {
-          "$ref": "#/$defs/credentialFreeValue"
+          "$ref": "#/$defs/freeText"
         }
       ]
     },
@@ -1330,18 +1733,33 @@
             },
             "tool": {
               "type": "string",
-              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "handover": {
               "$ref": "#/$defs/path"
             },
             "branch": {
               "type": "string",
-              "pattern": "^(?!.*\\.\\.)[A-Za-z0-9_][A-Za-z0-9_./-]*$"
+              "pattern": "^(?!.*\\.\\.)[A-Za-z0-9_][A-Za-z0-9_./-]*$",
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "commit": {
               "type": "string",
-              "pattern": "^[a-f0-9]{40}$"
+              "pattern": "^[a-f0-9]{40}$",
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             }
           },
           "required": [
@@ -1362,7 +1780,12 @@
             },
             "tool": {
               "type": "string",
-              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "handover": {
               "$ref": "#/$defs/path"
@@ -1390,7 +1813,12 @@
             },
             "tool": {
               "type": "string",
-              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "handover": {
               "$ref": "#/$defs/path"
@@ -1412,14 +1840,24 @@
             },
             "tool": {
               "type": "string",
-              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             },
             "handover": {
               "$ref": "#/$defs/path"
             },
             "commit": {
               "type": "string",
-              "pattern": "^[a-f0-9]{40}$"
+              "pattern": "^[a-f0-9]{40}$",
+              "allOf": [
+                {
+                  "$ref": "#/$defs/freeText"
+                }
+              ]
             }
           },
           "required": [
@@ -1432,12 +1870,7 @@
           "description": "Put this merged commit live after the host side obtains the required approval and rehearses its migration."
         }
       ],
-      "description": "The four requests to AI Host Kit. A request is intent, not approval. The host owns execution and writes its own records; the build kit never writes host-record.json.",
-      "allOf": [
-        {
-          "$ref": "#/$defs/credentialFreeValue"
-        }
-      ]
+      "description": "The four requests to AI Host Kit. A request is intent, not approval. The host owns execution and writes its own records; the build kit never writes host-record.json."
     },
     "response": {
       "type": "object",
@@ -1460,28 +1893,27 @@
         "status",
         "evidence"
       ],
-      "additionalProperties": false,
-      "allOf": [
-        {
-          "$ref": "#/$defs/credentialFreeValue"
-        }
-      ]
+      "additionalProperties": false
     },
     "credentialFreeValue": {
-      "description": "Reject recognisable credential URLs and copied key material throughout declarations and extensions. Arbitrary secrets can resemble ordinary prose.",
+      "description": "Extension values contain no URLs or recognisable key material, and extension keys cannot name secrets. Arbitrary secrets can resemble ordinary prose.",
       "anyOf": [
         {
-          "type": "string",
-          "not": {
-            "pattern": "(?:[a-zA-Z][a-zA-Z0-9+.-]*://[^/\\s?#]*@|-----[bB][eE][gG][iI][nN]|(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[sS][iI][gG][nN][aA][tT][uU][rR][eE]|[sS][iI][gG]|[kK][eE][yY])\\s*=|(?:AKIA|ASIA)[A-Z0-9]{16}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})"
-          }
+          "$ref": "#/$defs/freeText"
         },
         {
           "type": "object",
           "propertyNames": {
-            "not": {
-              "pattern": "(?:[a-zA-Z][a-zA-Z0-9+.-]*://[^/\\s?#]*@|-----[bB][eE][gG][iI][nN]|(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[sS][iI][gG][nN][aA][tT][uU][rR][eE]|[sS][iI][gG]|[kK][eE][yY])\\s*=|(?:AKIA|ASIA)[A-Z0-9]{16}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})"
-            }
+            "allOf": [
+              {
+                "$ref": "#/$defs/freeText"
+              },
+              {
+                "not": {
+                  "pattern": "(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL])"
+                }
+              }
+            ]
           },
           "additionalProperties": {
             "$ref": "#/$defs/credentialFreeValue"
@@ -1501,6 +1933,15 @@
           ]
         }
       ]
+    },
+    "freeText": {
+      "type": "string",
+      "not": {
+        "pattern": "(?:[a-zA-Z][a-zA-Z0-9+.-]*://[^/\\s?#]*@|-----[bB][eE][gG][iI][nN]|(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[sS][iI][gG][nN][aA][tT][uU][rR][eE]|[sS][iI][gG]|[kK][eE][yY])\\s*=|(?:AKIA|ASIA)[A-Z0-9]{16}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})|[A-Za-z][A-Za-z0-9+.-]*://"
+      }
     }
+  },
+  "patternProperties": {
+    "^(?!(?:schema_version|tool|image|processes|health|config|postgres|files|email|jobs|sign_in|ai|access|residency|data_risk|recovery|limits|previews)$).*(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[pP][aA][sS][sS][wW][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[kK][eE][yY]|[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]).*": false
   }
 }

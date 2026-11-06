@@ -56,11 +56,30 @@ export function checkCode(root, handover) {
   const signInConfig = resolve(root, 'src/lib/sign-in/config.ts');
   if (existsSync(signInConfig)) {
     same(handover.sign_in.outsiders, 'email-link', 'sign_in.outsiders');
+    const paths = declaration(resolve(root, 'src/lib/sign-in/service.ts'), 'signInPaths');
+    same(handover.sign_in.host_setup.callbacks, { microsoft: paths.microsoft, google: paths.google }, 'sign_in.callbacks');
+    same(handover.sign_in.email_link.verification_path, paths.email, 'sign_in.email_link');
+    const migration = readFileSync(resolve(root, 'db/migrations/002_sign_in.sql'), 'utf8');
+    const tables = [...migration.matchAll(/CREATE TABLE sign_in\."?([a-z_]+)"?\s*\(/g)].map(match => match[1]);
+    same([...handover.postgres.sign_in.tables].sort(), tables.sort(), 'postgres.sign_in.tables');
+    let runtimeRole;
+    walk(source(configPath), node => {
+      if (ts.isBinaryExpression(node) && node.left.getText() === 'database.username'
+        && ts.isStringLiteral(node.right)) runtimeRole = node.right.text;
+    });
+    if (!runtimeRole || !migration.includes(`TO ${runtimeRole}`)) throw new Error('sign_in: runtime role missing from implementation');
+    same(handover.postgres.sign_in.runtime_role, runtimeRole, 'postgres.sign_in.runtime_role');
+
     const provider = handover.sign_in.staff?.provider;
     if (provider && !['entra', 'google'].includes(provider)) throw new Error('sign_in: unsupported staff provider');
     same(handover.sign_in.staff_provider, provider === 'entra' ? 'microsoft' : provider ?? 'none', 'sign_in.staff_provider');
     same(handover.sign_in.public_origin_env, 'AUTH_BASE_URL', 'sign_in.public_origin_env');
-    if (provider) same(handover.sign_in.staff.redirect_path, `/api/auth/callback/${provider === 'entra' ? 'microsoft' : provider}`, 'sign_in.redirect_path');
+    if (provider) same(handover.sign_in.staff.redirect_path, paths[provider === 'entra' ? 'microsoft' : provider], 'sign_in.redirect_path');
+  }
+  const secrets = declaration(configPath, 'environmentSecrets');
+  for (const config of handover.config) {
+    same(config.kind, secrets.includes(config.name) ? 'secret' : 'setting', `config.${config.name}.kind`);
+    same(config.phase, 'runtime', `config.${config.name}.phase`);
   }
   const declared = handover.config.map(c => c.name);
   if (new Set(names).size !== names.length || new Set(declared).size !== declared.length) throw new Error('config: duplicate name');
