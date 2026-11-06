@@ -10,13 +10,13 @@ test('an unreviewed edit, added file or dependency change fails the sign-in revi
     for (const name of ['src/lib/db', 'src/lib/sign-in', 'src/app/api/auth', 'db/migrations', 'scripts']) {
       await cp(name, path.join(root, name), { recursive: true });
     }
-    for (const name of ['package.json', 'package-lock.json', 'tsconfig.json', 'next.config.ts']) await cp(name, path.join(root, name));
+    for (const name of ['src/lib/config.ts', 'src/lib/mail.ts', 'package.json', 'package-lock.json', 'tsconfig.json', 'next.config.ts']) await cp(name, path.join(root, name));
     await mkdir(path.join(root, 'reviews'));
     const record = { digest: await signInDigest(root), review: 'second-opinion', outcome: 'pass',
       date: '2026-11-04', evidence: ['Test fixture only'] };
     await writeFile(path.join(root, 'reviews/sign-in.json'), JSON.stringify(record));
     await expect(checkSignInReview(root)).resolves.toBeUndefined();
-    for (const name of ['src/lib/db/identity.ts', 'src/lib/sign-in/service.ts', 'package-lock.json', 'db/migrations/002_sign_in.sql']) {
+    for (const name of ['src/lib/config.ts', 'src/lib/mail.ts', 'src/lib/db/identity.ts', 'src/lib/sign-in/service.ts', 'package-lock.json', 'db/migrations/002_sign_in.sql']) {
       const file = path.join(root, name);
       const original = await readFile(file, 'utf8');
       await writeFile(file, `${original}\n`);
@@ -35,7 +35,7 @@ for (const name of ['src/lib/sign-in.ts', 'db/migrations/999_sign_in_access.sql'
       for (const directory of ['src/lib/db', 'src/lib/sign-in', 'src/app/api/auth', 'db/migrations', 'scripts']) {
         await cp(directory, path.join(root, directory), { recursive: true });
       }
-      for (const file of ['package.json', 'package-lock.json', 'tsconfig.json', 'next.config.ts']) {
+      for (const file of ['src/lib/config.ts', 'src/lib/mail.ts', 'package.json', 'package-lock.json', 'tsconfig.json', 'next.config.ts']) {
         await cp(file, path.join(root, file));
       }
       await mkdir(path.join(root, 'config'));

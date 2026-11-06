@@ -6,6 +6,8 @@ if [ "${ABK_DATABASE_READY:-}" != 1 ]; then
   exec sh scripts/docker-run.sh -- node scripts/test-database.mjs sh scripts/check.sh
 fi
 npm run check:sign-in-review
+npm run handover:check
+npm run test:handover
 npm run typecheck
 npm run lint
 npm test

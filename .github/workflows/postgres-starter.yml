@@ -40,3 +40,5 @@ jobs:
             npm run check && npm run test:policy-fault &&
             npm run test:privilege-fault && npm test
           '
+      - name: Check all image roles and their health
+        run: npm run test:image

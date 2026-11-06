@@ -1,3 +1,4 @@
+import { environment } from "../config";
 import "server-only";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import type { Directory } from "./config";
@@ -25,8 +26,8 @@ export function directoryProvider(directory: Directory) {
           const discovery = await response.json();
           if (discovery.issuer !== directory.issuer) return null;
           const jwks = new URL(discovery.jwks_uri);
-          if (jwks.protocol !== "https:" && !(process.env.NODE_ENV === "test"
-            && process.env.VITEST === "true" && jwks.hostname === "127.0.0.1")) return null;
+          if (jwks.protocol !== "https:" && !(environment().NODE_ENV === "test"
+            && environment().VITEST === "true" && jwks.hostname === "127.0.0.1")) return null;
           keys = createRemoteJWKSet(jwks);
         }
         const { payload } = await jwtVerify(tokens.idToken, keys, {

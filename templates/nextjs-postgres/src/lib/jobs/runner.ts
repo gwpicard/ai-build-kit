@@ -27,7 +27,7 @@ export async function runBurst(queue: Queue, signal: AbortSignal) {
         completed++;
       } catch {
         await settleJob(queue, name, job, true);
-        console.error(JSON.stringify({ event: "jobs.attempt_failed", queue: name, id: job.id }));
+        console.log(JSON.stringify({ event: "jobs.attempt_failed", queue: name, id: job.id }));
       }
     }
   }

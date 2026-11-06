@@ -65,6 +65,9 @@ screen before a visual change.
 For adopted code, follow `quality-checks/references/adoption-safety-net.md`
 before editing an area its safety net does not cover.
 
+If the project has `hosting/handover.json`, update it for changed runtime needs
+and run `npm run hosting:render` and `npm run handover:check`.
+
 Build only the agreed behaviour end to end. Avoid speculative abstraction;
 groundwork is its own piece or an expand-then-contract sequence that keeps the checks green,
 ordered ahead.

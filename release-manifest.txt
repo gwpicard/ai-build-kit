@@ -301,6 +301,8 @@ agent-plugin|
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml|
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml
 
+# Canonical contract for projects and the companion host kit.
+hosting/handover.schema.json|
 .agents/skills/maintain/scripts/docker-run.sh|
 .agents/skills/maintain/scripts/docker-run.sh|agent-plugin/skills/maintain/scripts/docker-run.sh
 .agents/skills/maintain/scripts/docker-resources.py|

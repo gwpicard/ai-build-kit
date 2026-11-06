@@ -2,11 +2,10 @@ import { createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import pg from 'pg';
 import { migrateJobs } from './migrate-jobs.mjs';
-import { reportFailure } from './local-database.mjs';
+import { databaseUrl } from '../dist/config.mjs';
 
 try {
-  if (!process.env.MIGRATION_DATABASE_URL) throw new Error('MIGRATION_DATABASE_URL is required');
-  const client = new pg.Client({ connectionString: process.env.MIGRATION_DATABASE_URL });
+  const client = new pg.Client({ connectionString: databaseUrl("migrate") });
   await client.connect();
   try {
     await client.query('BEGIN');
@@ -31,7 +30,7 @@ try {
       }
       await client.query(migration);
       await client.query('INSERT INTO private.schema_migrations VALUES ($1, $2)', [name, checksum]);
-      console.log(`Applied ${name}`);
+      console.log(JSON.stringify({ event: "migration.applied", name }));
     }
     await client.query('COMMIT');
     await migrateJobs(client);
@@ -41,6 +40,7 @@ try {
   } finally {
     await client.end();
   }
-} catch (error) {
-  reportFailure(error);
+} catch {
+  console.log(JSON.stringify({ event: "migration.failed" }));
+  process.exitCode = 1;
 }

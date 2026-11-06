@@ -8,6 +8,12 @@ import { type SignInConfig, validateConfig } from "./config";
 import { directoryProvider } from "./directory";
 import { signInStorage } from "./storage";
 
+export const signInPaths = {
+  microsoft: "/api/auth/callback/microsoft",
+  google: "/api/auth/callback/google",
+  email: "/api/auth/magic-link/verify",
+} as const;
+
 export function createSignIn(config: SignInConfig, sendLink: (email: string, url: string) => Promise<void>) {
   validateConfig(config);
   const storage = signInStorage(config.databaseURL);
@@ -52,8 +58,7 @@ export function createSignIn(config: SignInConfig, sendLink: (email: string, url
     const path = new URL(request.url).pathname.replace(/^\/api\/auth/, "");
     const allowed = request.method === "POST"
       ? ["/sign-in/social", "/sign-in/magic-link", "/sign-out"].includes(path)
-      : request.method === "GET" && (["/get-session", "/magic-link/verify"].includes(path)
-        || /^\/callback\/(microsoft|google)$/.test(path));
+      : request.method === "GET" && (path === "/get-session" || Object.values(signInPaths).some(value => value === new URL(request.url).pathname));
     if (!allowed) return new Response(null, { status: 404 });
     const started = performance.now();
     const response = await auth.handler(request);

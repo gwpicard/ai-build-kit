@@ -1,22 +1,19 @@
 {
   "review": "second-opinion",
   "outcome": "pass",
-  "date": "2026-11-04",
-  "digest": "9663e3267b6042b9dfa5e247bee01268c554ee62da23fde2096881f7b11b2868",
+  "date": "2026-11-06",
+  "digest": "fc3c6044d8539f15183c3e6eb934058720141ee597877d500db2289771c00a46",
   "evidence": [
-    "A separate fresh context reviewed the sign-in module, auth routes, all migrations, user-role definitions, dependency boundary, module-resolution configuration and review scripts. No findings remained.",
-    "The review reran 41 sign-in and digest tests against disposable Postgres. Supplied evidence showed all 106 focused sign-in, digest, permission and lint-boundary tests, TypeScript and ESLint passing.",
-    "Signed stub tokens through the real handler prove member access and rejection of Microsoft guests, missing membership claims and string membership values, including guests using the company identity provider.",
-    "Before the fix, the shadow entry point, later migration and TypeScript and Next.js alias regressions all failed. The matching tests now pass, as do inherited-configuration and alternate-configuration regressions.",
-    "Invited, uninvited, expired, revoked and staff email-link requests have identical status, headers and body. Only the invited outsider receives mail, and local sequential request durations differ by less than 100 ms.",
-    "The production entry-point test proves mail is deferred until after the generic response and SMTP failure logs no address or token. The review checked the installed Next.js response-closure scheduling and Better Auth token path.",
-    "The existing permission tests pass for authentication tables, administrator-only invitations and the database role boundary. Earlier integration evidence covered files, queued effects and planted privilege faults; this fix does not change their implementations."
+    "A separate context reviewed the current sign-in module, shared configuration, mail, authentication routes, migrations, roles, dependencies and module-resolution boundaries, including the runtime handover changes. No supported findings remain.",
+    "The reviewer independently ran 35 focused handover tests covering structural credential exclusions, labelled secret metadata, authentication tables, runtime role, callback and verification paths, and configuration metadata. All passed.",
+    "The reviewer reproduced an interruption cleanup gap in the disposable runner. After the fix, repeated SIGHUP, SIGINT and SIGTERM checks removed the temporary secret directory. These checks used stub commands and no Docker resources.",
+    "Fresh supplied evidence: all 124 handover tests passed in the template and standalone released-schema copy; 45 real-Postgres sign-in and permission tests and 27 startup, mail, storage configuration and review-boundary tests passed.",
+    "Fresh supplied evidence: TypeScript, ESLint, production build and worker/configuration bundling passed. Request-only Playwright verified production startup, protected timer and database/jobs health on port 3119 through the disposable runner."
   ],
   "limits": [
-    "No real directory registration, SMTP delivery or hosted storage permissions were exercised.",
-    "The local production build could not resolve the pre-existing dependency symlink outside the project root. GitHub build and full-suite results are recorded in the pull request.",
-    "The delivery test mocks Next.js after; its production lifecycle was checked through installed source and documentation. Deferred delivery is not a durable queue.",
-    "Timing evidence covers local sequential requests. Response padding does not guarantee constant timing under load.",
-    "The review reran 41 tests and read supplied evidence for the other focused checks. The digest verifies content correspondence, not reviewer identity; GitHub review independence remains unverified."
+    "No real directory registration, external SMTP delivery, hosted storage permissions or actual workload-role authentication were exercised.",
+    "The original browser check started its production server but macOS refused Chromium Mach port registration. Page and accessibility assertions remain unverified locally. GitHub checks could not be read because authentication returned HTTP 401.",
+    "The review guard could not create its snapshot in the protected skills directory. The reviewer reported no file changes. Reviewer identity independence remains unverified. The digest verifies content correspondence; pull request review remains necessary.",
+    "Response padding is not a constant-time guarantee under load. Deferred email delivery is not a durable queue. Multiple replicas need shared rate limiting or an ingress limit."
   ]
 }

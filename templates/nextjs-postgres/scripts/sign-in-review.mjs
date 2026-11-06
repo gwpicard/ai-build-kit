@@ -40,7 +40,7 @@ export async function signInDigest(root = project) {
     },
     onUnRecoverableConfigFileDiagnostic() { throw new Error('Cannot read module-resolution settings'); },
   });
-  files.push('src/lib/db/identity.ts', 'tsconfig.json', 'next.config.ts', 'package.json', 'package-lock.json',
+  files.push('src/lib/config.ts', 'src/lib/mail.ts', 'src/lib/db/identity.ts', 'tsconfig.json', 'next.config.ts', 'package.json', 'package-lock.json',
     'scripts/database-boundary.mjs', 'scripts/sign-in-review.mjs');
   const hash = createHash('sha256');
   for (const name of [...new Set(files)].sort()) {

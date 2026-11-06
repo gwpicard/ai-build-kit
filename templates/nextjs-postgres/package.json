@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build && npm run build:worker",
-    "start": "next start",
+    "start": "node --env-file-if-exists=.env --import ./scripts/startup.mjs node_modules/next/dist/bin/next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run",
@@ -20,7 +20,13 @@
     "build:worker": "node scripts/build-worker.mjs",
     "worker": "node --env-file-if-exists=.env dist/worker.mjs",
     "pretest": "npm run build:worker",
-    "test:privilege-fault": "node --env-file-if-exists=.env scripts/prove-privileges.mjs"
+    "test:privilege-fault": "node --env-file-if-exists=.env scripts/prove-privileges.mjs",
+    "predb:migrate": "npm run build:worker",
+    "handover:check": "node scripts/handover.mjs check",
+    "hosting:render": "node scripts/handover.mjs render",
+    "handover:found": "node scripts/found-handover.mjs",
+    "test:handover": "node --test tests/handover.test.mjs",
+    "test:image": "sh scripts/docker-run.sh -- node scripts/test-image.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",
@@ -66,7 +72,9 @@
     "tailwindcss": "4.3.3",
     "typescript": "5.9.2",
     "vitest": "5.0.5",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "ajv": "8.20.0",
+    "smtp-server": "3.21.3"
   },
   "type": "module"
 }

@@ -127,8 +127,10 @@ migration or database-administrator connection. Provision all three restricted
 roles before applying migrations. The local bootstrap script creates
 `tool_auth` alongside `tool_owner` and `tool_app` on a disposable database.
 
-The SMTP sender is confined to `mail.ts`. It uses pinned Nodemailer 10.3.1 and
-can be replaced by the template's shared mail function when that lands. Tests
+The sign-in sender calls the shared `src/lib/mail.ts` function, using pinned
+Nodemailer 10.3.1. It retains `SMTP_FROM` and `SMTP_PASSWORD_FILE`; ordinary
+application mail uses `MAIL_FROM` and `SMTP_PASSWORD`. Both read their settings
+through the typed `src/lib/config.ts` module. Tests
 capture mail in memory and send nothing externally. The library's production
 rate limiter uses process memory; a deployment with several replicas needs a
 shared rate-limit store or an equivalent ingress limit.
@@ -147,7 +149,7 @@ The existing CI workflow runs these tests through `npm run check`.
 `npm run check:sign-in-review` compares the current SHA-256 digest with
 `reviews/sign-in.json`. The digest covers the module, auth routes, every file
 in the migrations directory, user-role definitions, package manifest and
-lockfile, and the boundary and review scripts. It includes TypeScript settings
+lockfile, and the boundary and review scripts. The shared typed configuration and mail function are also covered. It includes TypeScript settings
 and their inherited configuration files, plus Next.js configuration files that
 can change module resolution. A sibling named `src/lib/sign-in.*` fails the
 check because it could shadow the reviewed entry point.
