@@ -61,11 +61,14 @@ if not files:
 # These are the recipe's own scripts, copied through the same clash checks.
 if os.path.isfile(os.path.join(starter, ".github", "workflows", "check.yml")):
     shared = os.path.join(allowed, "..", "scripts")
-    for name in ("rls.sh", "check-lib.sh"):
+    for name in ("rls.sh", "check-lib.sh", "database-check.sh"):
         source = os.path.join(shared, name)
         if not os.path.isfile(source) or os.path.islink(source):
             stop("could not run: shared row rules script is missing: " + name)
         files.append((source, os.path.join("scripts", name)))
+    cleanup = os.path.join(skill, "..", "maintain", "scripts")
+    for name in ("docker-run.sh", "docker-resources.py", "docker_proxy.py"):
+        files.append((os.path.join(cleanup, name), os.path.join("scripts", name)))
 
 clashes = []
 list_files = {".gitignore", ".env.example"}

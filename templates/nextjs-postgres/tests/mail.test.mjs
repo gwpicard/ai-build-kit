@@ -1,3 +1,8 @@
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import * as sharedMail from '../src/lib/mail';
+import { sendSignInLink } from '../src/lib/sign-in/mail';
 import { SMTPServer } from 'smtp-server';
 import { expect, test, vi } from 'vitest';
 import { sendMail } from '../src/lib/mail';
@@ -38,4 +43,24 @@ test('migrate validates only its own environment and web refuses missing configu
   vi.stubEnv('DATABASE_URL', '');
   try { expect(() => validateRuntime('migrate')).not.toThrow(); expect(() => validateRuntime('web')).toThrow('DATABASE_URL'); }
   finally { vi.unstubAllEnvs(); }
+});
+
+test('sign-in uses the shared sender and retains its SMTP secret-file configuration', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'sign-in-mail-'));
+  const file = join(dir, 'smtp');
+  writeFileSync(file, 'synthetic-smtp-password\n');
+  vi.stubEnv('SMTP_HOST', 'smtp.example.test'); vi.stubEnv('SMTP_PORT', '465');
+  vi.stubEnv('SMTP_FROM', 'sign-in@example.test'); vi.stubEnv('SMTP_USER', 'fixture-user');
+  vi.stubEnv('SMTP_PASSWORD_FILE', file);
+  vi.stubEnv('MAIL_FROM', 'ordinary@example.test'); vi.stubEnv('SMTP_PASSWORD', 'other-fixture');
+  const send = vi.spyOn(sharedMail, 'sendMail').mockResolvedValue(undefined);
+  try {
+    await sendSignInLink('invited@example.test', 'https://tool.example.test/verify');
+    expect(send).toHaveBeenCalledExactlyOnceWith({ to: 'invited@example.test', subject: 'Your sign-in link',
+      text: 'Use this link to sign in. It expires in ten minutes and works once.\n\nhttps://tool.example.test/verify' },
+    { from: 'sign-in@example.test', host: 'smtp.example.test', port: 465, secure: true, requireTLS: true,
+      auth: { user: 'fixture-user', pass: 'synthetic-smtp-password' }, logger: false, debug: false });
+    send.mockRejectedValue(new Error('synthetic private diagnostic'));
+    await expect(sendSignInLink('invited@example.test', 'https://tool.example.test/verify')).rejects.toThrow('The sign-in email could not be sent');
+  } finally { send.mockRestore(); vi.unstubAllEnvs(); rmSync(dir, { recursive: true }); }
 });

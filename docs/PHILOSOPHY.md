@@ -190,8 +190,10 @@ Each piece of work carries a "Risk areas" field. A piece with no risk area gets
 no notice. A piece with one gets a notice once: who is exposed, and what would
 normally prevent the harm. The person can have that caution done, remove the
 work from the piece, or carry on. If they carry on, the kit records their
-acceptance with the date and their words, then builds. After acceptance, the
-kit does not refuse, ask again, or block the work.
+acceptance with the date and their words and continues the current command.
+Acceptance clears that caution; it does not itself start building. Shaping
+finishes with a ready piece, and building waits for `/implement`. The kit does
+not ask for the same acceptance again.
 
 Two limits apply whatever the person says. The kit does not withdraw a notice
 because somebody pushes back. And where a caution names a person, such as a

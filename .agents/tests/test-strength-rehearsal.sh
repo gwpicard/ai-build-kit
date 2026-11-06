@@ -16,13 +16,14 @@
 # anything is broken, both answer 2: a run that tried nothing is never a pass.
 #
 # The engines are used from PATH when present and otherwise installed into a
-# throwaway folder. A machine that can do neither fails here rather than
-# skipping, since a rehearsal that passes by never running proves nothing.
+# throwaway folder. An unavailable Python engine is reported separately from
+# failures; the JavaScript cases still run.
 
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 QUALITY="$ROOT/.agents/skills/quality-checks/scripts/quality.py"
+. "$ROOT/.agents/tests/lib/could-not-run.sh"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -33,25 +34,41 @@ command -v node >/dev/null 2>&1 || fail "node is needed to run this rehearsal"
 command -v python3 >/dev/null 2>&1 || fail "python3 is needed to run this rehearsal"
 
 WORK=$(mktemp -d)
-trap 'rm -rf "$WORK"' EXIT
+trap 'rm -R "$WORK"' EXIT
 
 if ! command -v stryker >/dev/null 2>&1; then
   echo "  stryker not on PATH, installing it into a throwaway folder"
   mkdir -p "$WORK/engines"
   printf '{"name":"engines","private":true}\n' > "$WORK/engines/package.json"
-  (cd "$WORK/engines" && npm_config_cache="$WORK/npm-cache" npm install --no-audit --no-fund --silent @stryker-mutator/core@9) ||
+  (cd "$WORK/engines" && npm_config_cache="${npm_config_cache:-$WORK/npm-cache}" npm install --no-audit --no-fund --silent @stryker-mutator/core@9) ||
     fail "could not install StrykerJS, so the check could not be rehearsed"
   PATH="$WORK/engines/node_modules/.bin:$PATH"
   export PATH
 fi
 
+PYTHON_MUTATION_READY=1
 if ! command -v mutmut >/dev/null 2>&1 || ! command -v pytest >/dev/null 2>&1; then
   echo "  mutmut or pytest not on PATH, installing both into a throwaway folder"
-  python3 -m venv "$WORK/py" && PIP_CACHE_DIR="$WORK/pip-cache" "$WORK/py/bin/pip" install -q 'mutmut>=3,<4' pytest ||
-    fail "could not install mutmut, so the check could not be rehearsed"
+  if ! python3 -m venv "$WORK/py"; then
+    could_not_run "Python mutation checks could not run here: python3 -m venv failed"
+    PYTHON_MUTATION_READY=0
+  elif ! PIP_CACHE_DIR="$WORK/pip-cache" "$WORK/py/bin/pip" install -q 'mutmut>=3,<4' pytest; then
+    could_not_run "Python mutation checks could not run here: pip could not install mutmut and pytest"
+    PYTHON_MUTATION_READY=0
+  fi
   PATH="$WORK/py/bin:$PATH"
   export PATH
 fi
+if [ "$PYTHON_MUTATION_READY" -eq 1 ]; then
+  probe_status=0
+  python3 "$ROOT/.agents/tests/lib/python-mutation-probe.py" || probe_status=$?
+  case "$probe_status" in
+    0) ;;
+    2) not_run=2; PYTHON_MUTATION_READY=0 ;;
+    *) fail "the Python mutation prerequisite check failed" ;;
+  esac
+fi
+export PYTHON_MUTATION_READY
 
 node - "$QUALITY" "$WORK" <<'NODE'
 const assert = require('node:assert/strict');
@@ -165,6 +182,7 @@ console.log('  ok: once a test covers the boundary, nothing is missed and the ex
 
 // --- a Python piece ----------------------------------------------------------------
 
+if (process.env.PYTHON_MUTATION_READY === '1') {
 const py = repo('python');
 py.put({
   'pyproject.toml': '[project]\nname = "shop"\nversion = "0.1.0"\n',
@@ -209,10 +227,12 @@ assert.equal(failing.status, 2, `tests that fail before anything is broken shoul
 assert.match(failing.out, /^not-checked\tstrength\tthe tests failed before any code was broken/m, 'the failed first run was not named');
 assert.ok(!/^tried\t/m.test(failing.out), 'a run that broke nothing still printed a count');
 console.log('  ok: tests that fail on the unchanged code exit 2, with no count');
+}
 
 const bad = spawnSync('python3', [quality, 'strength', '--base', 'no-such-commit'], { cwd: js.dir, encoding: 'utf8' });
 assert.equal(bad.status, 2, 'a base that is not a commit did not exit 2');
 console.log('  ok: a base that is not a commit exits 2');
 
-console.log('\ntest-strength-rehearsal.sh: misses counted at their place, project untouched');
+console.log('\ntest-strength-rehearsal.sh: available mutation cases checked, project untouched');
 NODE
+finish_rehearsal

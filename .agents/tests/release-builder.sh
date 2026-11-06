@@ -15,7 +15,7 @@ fail() {
 [ -x "$BUILDER" ] || fail "release builder is missing or not executable"
 
 SCRATCH=$(mktemp -d)
-MARKER="$ROOT/.claude/.release-builder-untracked-$$"
+MARKER="$ROOT/.agents/skills/setup-ai-build-kit/.release-builder-untracked-$$"
 INSIDE_SOURCE="$ROOT/release-builder-inside-source-$$"
 cleanup() {
   [ ! -e "$MARKER" ] || rm -f "$MARKER"
@@ -37,7 +37,7 @@ fi
 
 printf '%s\n' "maintainer-only marker" > "$MARKER"
 "$BUILDER" v0.1.0 "$MARKER_BUILD"
-[ ! -e "$MARKER_BUILD/.claude/$(basename "$MARKER")" ] || \
+[ ! -e "$MARKER_BUILD/.agents/skills/setup-ai-build-kit/$(basename "$MARKER")" ] || \
   fail "an untracked file inside an approved folder crossed into the starter"
 rm -f "$MARKER"
 

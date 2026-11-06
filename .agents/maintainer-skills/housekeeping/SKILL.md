@@ -15,6 +15,9 @@ or a key that still opens something online.
 
 1. Run `scripts/inventory.sh` from the repository root. It lists each place
    with its size, date and a note, and changes nothing.
+   Also run `python3 .agents/skills/maintain/scripts/docker-resources.py sweep`.
+   It lists only kit-labelled Docker resources older than a day. Offer their
+   removal separately with `--remove <kind:id> ...`; Docker removal has no undo.
 2. Label every line CLEAR, KEEP or ASK by the rules below. For each, say what
    made it and what refers to it. Search the memory notes, open issues and
    pull requests (`gh issue list --search <name>`, `gh pr list --search

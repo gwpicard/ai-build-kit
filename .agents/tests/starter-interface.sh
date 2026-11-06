@@ -12,17 +12,14 @@ sh "$ROOT/.agents/skills/setup-ai-build-kit/scripts/use-starter.sh" recipes/next
 cd "$PROJECT"
 npm ci --no-fund > "$WORK/install.log" 2>&1 || { cat "$WORK/install.log"; fail "could not install the copied starter"; }
 
-# Use an unused port, and wait for sign-in rather than the database health route.
-PORT=$(node -e 'const s=require("node:net").createServer();s.listen(0,"127.0.0.1",()=>{console.log(s.address().port);s.close()})')
-cat > playwright.interface.config.ts <<CONFIG
+# The interface check waits for sign-in, without requiring a database.
+cat > playwright.interface.config.ts <<'CONFIG'
 import config from "./playwright.config";
 const interfaceConfig = {
   ...config,
-  use: { ...config.use, baseURL: "http://127.0.0.1:$PORT" },
   webServer: {
-    command: "npm run start -- --port $PORT",
-    url: "http://127.0.0.1:$PORT/login",
-    reuseExistingServer: false,
+    ...config.webServer,
+    url: `${config.use?.baseURL}/login`,
   },
 };
 export default interfaceConfig;
@@ -86,6 +83,7 @@ TS
 npm run check > "$WORK/check.log" 2>&1 || { cat "$WORK/check.log"; fail "the clean copied starter failed scripts/check.sh"; }
 echo "ok: the clean copied starter passes scripts/check.sh"
 npx playwright install chromium > "$WORK/browser.log" 2>&1 || { cat "$WORK/browser.log"; fail "could not install Chromium"; }
+node "$ROOT/.agents/tests/lib/browser-ports.mjs"
 sh "$ROOT/.agents/skills/setup-hosting/recipes/parts/scripts/interface.sh" --config playwright.interface.config.ts > "$WORK/interface.log" 2>&1 || { cat "$WORK/interface.log"; fail "the clean sign-in interface check failed"; }
 echo "ok: the clean copied starter passes lint and the axe test"
 npm run test:e2e -- e2e/field-rehearsal.spec.ts --config playwright.interface.config.ts > "$WORK/field.log" 2>&1 || { cat "$WORK/field.log"; fail "Field did not work with react-hook-form and zod"; }

@@ -96,12 +96,15 @@ nothing else: no co-author trailer naming a model, and no link to the session
 the work came from. A session link is a personal address that opens for anyone,
 and taking one out of public history means rewriting it.
 
-Each coding agent's setting stops the lines being written. `.githooks/commit-msg`
-removes them anyway, and `validate-kit.sh` refuses a tracked file that carries
-one. A fresh clone runs one command before its first commit to turn the hook
-on; `docs/MAINTAINING.md` gives it.
-
-Prose about Claude, Cursor or Gemini is fine. Only the attribution line goes.
+`.githooks/commit-msg` removes recognised co-author and session trailers,
+standalone generated footers and agent address bylines for Claude Code, Codex,
+Cursor, Gemini CLI and GitHub Copilot, including Cursor's made-with attribution.
+It keeps ordinary prose about those agents and human co-author trailers.
+[MAINTAINING.md](docs/MAINTAINING.md#configure-the-commit-hook) defines the
+matched forms, session-link removal and limits, and gives the command that
+enables the hook in a fresh clone. Agent settings can suppress some attribution
+at source. The source validator separately rejects known Claude attribution
+strings in tracked files; it does not check commit history.
 
 ## Secrets and external changes
 

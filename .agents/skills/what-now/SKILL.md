@@ -40,8 +40,8 @@ unless already named or nothing happened lately.
 
 ## Recovery
 
-- **Uncommitted work:** say what it seems to be; offer continue, checkpoint or
-  show what clearing loses. Never clear without approval.
+- **Uncommitted work:** follow the `records` skill's
+  `references/unsaved-work.md` and give its explanation now.
 - **Conflict or live break:** follow `merge` or `live-copy`.
 - **Missing capability:** name the limit, fallback and setup action.
 - **Person's step:** say where, what to do and what to bring back. Never ask

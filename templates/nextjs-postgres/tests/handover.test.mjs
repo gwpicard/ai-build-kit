@@ -81,6 +81,10 @@ for (const sign_in of questions[0].values) test(`founding records ${sign_in}, re
   found(dir, { sign_in, residency: 'eu', max_data_loss_hours: 2, max_restore_hours: 4, outside_refused_test: 'tests/outside-account.ts' });
   const h = JSON.parse(readFileSync(resolve(dir, 'hosting/handover.json')));
   assert.equal(h.sign_in.staff?.provider ?? h.sign_in.outsiders, sign_in);
+  assert.equal(h.sign_in.outsiders, 'email-link');
+  assert.equal(h.sign_in.staff_provider, sign_in === 'entra' ? 'microsoft' : sign_in === 'google' ? 'google' : 'none');
+  assert.ok(h.sign_in.configuration.AUTH_SECRET_FILE);
+  if (h.sign_in.staff) assert.equal(h.sign_in.staff.redirect_path, `/api/auth/callback/${h.sign_in.staff_provider}`);
   assert.equal(h.residency, 'eu'); assert.deepEqual(h.recovery, { max_data_loss_hours: 2, max_restore_hours: 4 });
   run('check', dir);
 });
@@ -103,3 +107,29 @@ test('a later minor may add optional metadata outside secret declarations', () =
 test('a later minor cannot extend a secret declaration with a value', () => {
   assert.equal(validate(mutate(h => { h.schema_version = '1.1'; h.config[0].default = 'synthetic-marker'; })), false);
 });
+
+for (const name of ['AUTH_BASE_URL', 'STAFF_CLIENT_SECRET_FILE']) {
+  test(`removing sign-in configuration ${name} from the handover fails`, () => {
+    assert.throws(() => checkCode(root, mutate(h => { h.config = h.config.filter(c => c.name !== name); })), /config/);
+  });
+  test(`removing typed sign-in configuration ${name} without updating the handover fails`, () => {
+    const dir = copy(), path = resolve(dir, 'src/lib/config.ts');
+    writeFileSync(path, readFileSync(path, 'utf8').replace(`  "${name}",\n`, ''));
+    assert.throws(() => run('check', dir), /config/);
+  });
+}
+test('a new typed sign-in name needs a handover update in both directions', () => {
+  const dir = copy(), path = resolve(dir, 'src/lib/config.ts');
+  const before = readFileSync(path, 'utf8');
+  writeFileSync(path, before.replace('"AUTH_BASE_URL",', '"AUTH_BASE_URL", "AUTH_NEW_SETTING",'));
+  assert.throws(() => checkCode(dir, original), /config/);
+  const updated = mutate(h => h.config.push({ name: 'AUTH_NEW_SETTING', kind: 'setting', phase: 'runtime', source: 'host' }));
+  const example = resolve(dir, '.env.example');
+  writeFileSync(example, readFileSync(example, 'utf8') + '\nAUTH_NEW_SETTING=\n');
+  assert.doesNotThrow(() => checkCode(dir, updated));
+  writeFileSync(path, before);
+  assert.throws(() => checkCode(dir, updated), /config/);
+});
+for (const [field, value] of [['staff_provider', 'oidc'], ['outsiders', 'none']]) {
+  test(`unsupported sign-in ${field} fails`, () => assert.throws(() => checkCode(root, mutate(h => { h.sign_in[field] = value; })), /sign_in/));
+}

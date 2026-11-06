@@ -1,4 +1,5 @@
 import "server-only";
+import { readFileSync } from "node:fs";
 // Deployment configuration is read only here. Local test tools have their own inputs.
 export const environmentNames = [
   "DATABASE_URL",
@@ -27,7 +28,19 @@ export const environmentNames = [
   "SMTP_SECURE",
   "SMTP_USER",
   "SMTP_PASSWORD",
-  "MAIL_FROM"
+  "MAIL_FROM",
+  "AUTH_BASE_URL",
+  "AUTH_SECRET_FILE",
+  "AUTH_DATABASE_URL",
+  "STAFF_PROVIDER",
+  "STAFF_ISSUER",
+  "STAFF_CLIENT_ID",
+  "STAFF_CLIENT_SECRET_FILE",
+  "MICROSOFT_TENANT_ID",
+  "GOOGLE_WORKSPACE_DOMAIN",
+  "SMTP_FROM",
+  "SMTP_PASSWORD_FILE",
+  "VITEST"
 ] as const;
 
 export type EnvironmentName = typeof environmentNames[number];
@@ -45,7 +58,7 @@ export type StorageConfig = {
   region: string;
   endpoint?: string;
   forcePathStyle: boolean;
-  credentials: { accessKeyId: string; secretAccessKey: string; sessionToken?: string };
+  credentials?: { accessKeyId: string; secretAccessKey: string; sessionToken?: string };
 } | {
   adapter: "azure-blob";
   container: string;
@@ -83,7 +96,9 @@ export function storageConfig(env: Record<string, string | undefined> = environm
     return { adapter, linkSeconds, bucket: required("FILES_S3_BUCKET"), region: required("FILES_S3_REGION"),
       endpoint: env.FILES_S3_ENDPOINT ? endpoint(env.FILES_S3_ENDPOINT) : undefined,
       forcePathStyle: env.FILES_S3_FORCE_PATH_STYLE === "true",
-      credentials: { accessKeyId: required("AWS_ACCESS_KEY_ID"), secretAccessKey: required("AWS_SECRET_ACCESS_KEY"), sessionToken: env.AWS_SESSION_TOKEN || undefined } };
+      ...(env.AWS_ACCESS_KEY_ID || env.AWS_SECRET_ACCESS_KEY ? { credentials: {
+        accessKeyId: required("AWS_ACCESS_KEY_ID"), secretAccessKey: required("AWS_SECRET_ACCESS_KEY"),
+        sessionToken: env.AWS_SESSION_TOKEN || undefined } } : {}) };
   }
   if (adapter === "azure-blob") {
     const account = required("FILES_AZURE_ACCOUNT");
@@ -149,4 +164,20 @@ export function validateRuntime(role: "web" | "worker" | "migrate") {
   if (env.SOURCE_COMMIT && !/^[a-f0-9]{40}$/.test(env.SOURCE_COMMIT)) throw new Error("SOURCE_COMMIT must be a full commit identifier");
   const port = Number(env.PORT ?? "3000");
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("PORT is invalid");
+}
+
+// Sign-in retains its file-based secrets and SMTP settings at the shared boundary.
+export function secretFile(name: EnvironmentName): string {
+  const location = environment()[name];
+  if (!location) throw new Error(`${name} must name a secret file`);
+  return readFileSync(location, "utf8").trim();
+}
+
+export function signInMailConfig() {
+  const env = environment();
+  if (!env.SMTP_HOST || !env.SMTP_FROM) throw new Error("SMTP_HOST and SMTP_FROM are required for email sign-in");
+  return { from: env.SMTP_FROM, host: env.SMTP_HOST, port: Number(env.SMTP_PORT ?? 587),
+    secure: env.SMTP_PORT === "465", requireTLS: true,
+    ...(env.SMTP_USER ? { auth: { user: env.SMTP_USER, pass: secretFile("SMTP_PASSWORD_FILE") } } : {}),
+    logger: false as const, debug: false as const };
 }

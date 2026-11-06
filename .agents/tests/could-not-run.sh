@@ -78,6 +78,35 @@ cp "$ROOT/.agents/tests/run-all.sh" "$TESTS/run-all.sh"
 printf '#!/bin/sh\nexit 0\n' > "$TESTS/a-pass.sh"
 printf '#!/bin/sh\necho "could-not-run: tool missing"\nexit 2\n' > "$TESTS/b-unavailable.sh"
 chmod +x "$TESTS/"*.sh
+
+# Probe the mutation tool directly, so a fault in the kit cannot be mistaken
+# for a tool that this computer cannot run.
+PROBE="$ROOT/.agents/tests/lib/python-mutation-probe.py"
+run python3 "$PROBE" "$WORK/missing-mutmut"
+[ "$status" -eq 2 ] || fail "a missing mutation tool did not return 2"
+grep -q 'could not run here: .*is not installed or is not executable' "$WORK/out" || fail "missing mutation tool reason"
+cat > "$WORK/mutmut" <<'STUB'
+#!/bin/sh
+[ "$1" = run ] || exit 99
+echo 'mutation worker cannot start on this platform' >&2
+exit 3
+STUB
+chmod +x "$WORK/mutmut"
+run python3 "$PROBE" "$WORK/mutmut"
+[ "$status" -eq 2 ] || fail "an unusable mutation tool did not return 2"
+grep -q "independent baseline exited 3: mutation worker cannot start" "$WORK/out" || fail "unusable mutation tool reason"
+# Carry the real probe result through the runner, including its exact reason.
+printf '#!/bin/sh\nexec python3 "%s" "%s"\n' "$PROBE" "$WORK/missing-mutmut" > "$TESTS/b-unavailable.sh"
+run env GITHUB_ACTIONS=false "$TESTS/run-all.sh"
+[ "$status" -eq 0 ] || fail "the suite counted a missing mutation tool as a failure"
+grep -q '1 of 2 rehearsals passed' "$WORK/out" || fail "the suite counted a missing mutation tool as passed"
+grep -q '0 failed; 1 could not run' "$WORK/out" || fail "the missing mutation tool was not counted separately"
+grep -q 'b-unavailable: Python mutation checks could not run here:' "$WORK/out" || fail "the suite lost the mutation prerequisite reason"
+printf '#!/bin/sh\nexit 0\n' > "$WORK/mutmut"
+run python3 "$PROBE" "$WORK/mutmut"
+[ "$status" -eq 0 ] || fail "a usable mutation tool was rejected"
+! grep -q 'could-not-run:' "$WORK/out" || fail "a usable tool reported an incomplete check"
+printf '#!/bin/sh\necho "could-not-run: tool missing"\nexit 2\n' > "$TESTS/b-unavailable.sh"
 for github in false true; do
   : > "$WORK/summary"
   run env GITHUB_ACTIONS="$github" GITHUB_STEP_SUMMARY="$WORK/summary" "$TESTS/run-all.sh"
@@ -94,13 +123,16 @@ for github in false true; do
 done
 printf '#!/bin/sh\necho "could-not-run: optional tool missing"\nexit 1\n' > "$TESTS/c-failure.sh"
 chmod +x "$TESTS/c-failure.sh"
-run env GITHUB_ACTIONS=false "$TESTS/run-all.sh"
+run env GITHUB_ACTIONS=false GITHUB_STEP_SUMMARY="$WORK/mixed-summary" "$TESTS/run-all.sh"
 [ "$status" -eq 1 ] || fail "local failures no longer fail the suite"
 grep -q '1 failed; 1 could not run' "$WORK/out" || fail "failure did not take precedence over a reason line"
 grep -q 'c-failure' "$WORK/out" || fail "failure disappeared from the summary"
+grep -q 'failed: `c-failure`' "$WORK/mixed-summary" || fail "the summary lost the real failure"
+! grep -q 'failed: `b-unavailable`' "$WORK/mixed-summary" || fail "the summary listed an unavailable check as failed"
+grep -q 'b-unavailable: tool missing' "$WORK/mixed-summary" || fail "the summary lost the incomplete check"
 printf '#!/bin/sh\nexit 2\n' > "$TESTS/d-unexplained.sh"
 chmod +x "$TESTS/d-unexplained.sh"
 run env GITHUB_ACTIONS=false "$TESTS/run-all.sh"
 [ "$status" -eq 1 ] || fail "an unexplained exit 2 passed locally"
 grep -q '2 failed; 1 could not run' "$WORK/out" || fail "an unexplained exit 2 was treated as incomplete"
-echo 'could-not-run.sh: missing coverage, unavailable Docker and both suite policies checked'
+echo 'could-not-run.sh: missing coverage, unavailable Docker, mutation prerequisites and both suite policies checked'

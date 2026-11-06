@@ -254,6 +254,9 @@ shared skills, confirm they work, then remove the other installation.
 
 ## Update the installed skills
 
+If v1.2.5 is installed, complete the [first-upgrade comparison](#first-upgrade-from-v125)
+before running any update command below.
+
 During `maintain`, the agent names the version this project records and the
 latest published one, reads that release's notes, and asks before changing the
 kit. Every route delivers a published release, never work that has not been
@@ -291,12 +294,14 @@ it. `maintain` offers to remove each one with `npx skills remove`, which
 removes the folder, its links and its lockfile entry. It runs that command only
 with the person's approval.
 
-That command replaces the installed skill files outright. `maintain` requires
-a clean checkpoint before updating, but does not compare installed skills
-with released copies. The checkpoint does not detect edits already committed
-to those skills, so an update can overwrite them without warning. A project
-rule belongs in `AGENTS.md`; updates change it only with approval, for a
-renamed command or a new safety rule.
+That command replaces the installed skill files outright. Once v1.2.6 is
+installed and reloaded, before a later replacement `maintain` compares them
+with the released copies recorded by the proposed release, including edits already committed. It names files that match no
+recorded copy and missing files from the release inventory, then asks before
+replacing or recreating them. If the baseline or inventory is unavailable,
+it reports that the comparison could not run and leaves the skills in place.
+A project rule belongs in `AGENTS.md`; updates change it only with approval, for a renamed command or
+a new safety rule.
 
 An Agent Plugins installation belongs to the coding agent that installed it,
 so use that agent's own plugin update command. When the agent has none,
@@ -310,6 +315,39 @@ control.
 Projects created before this installation model may not have
 `skills-lock.json`. The same command registers the installed skills on the
 next `maintain` visit, and later visits use it again.
+
+### First upgrade from v1.2.5
+
+The automatic local-edit comparison arrives in v1.2.6, so it cannot protect
+that first update. Before running any update command, save a project checkpoint
+and copy the installed skills to a separate backup folder. Include plugin
+files outside the project and the targets of any skill-folder links.
+
+Download and extract the kit archive from the [v1.2.5 release](https://github.com/gwpicard/ai-build-kit/releases/tag/v1.2.5)
+into a separate folder. From that extracted release folder, run this read-only
+comparison, replacing the last path with your installed skills folder:
+
+```sh
+diff -qr .agents/skills /absolute/path/to/installed/skills
+```
+
+Use `.agents/skills` or `.claude/skills` in a shared installation, the plugin's
+`.agents/skills` folder for Claude, or `agent-plugin/skills` for Agent Plugins.
+Repeat for each separate installed copy. The command lists changed, added and
+missing files, including committed edits; it may also list generated caches
+or unrelated skills. Exit 0 means no differences, 1 means differences were
+found, and 2 means the comparison could not finish. Resolve any read error and
+review every difference before approving replacement. Keep local rules in
+`AGENTS.md` or preserve them separately before updating. After v1.2.6 is
+installed and reloaded, `/maintain` uses the automatic comparison for later
+updates; a direct installer command does not run that check.
+
+The v1.2.6 backup, restore and container checks also require a local Docker
+engine reached through a Unix socket. With a TCP or SSH context, use a local
+Docker context for these checks or run them on another computer with a local
+engine. Restore leaves the project's local database running and still needs
+the default local ports, including 54322; see [live data and recovery](https://gwpicard.github.io/ai-build-kit/live-data/)
+if a port is occupied.
 
 ## Coding agent map
 
@@ -372,13 +410,14 @@ briefs are installed, enforcement depends on the coding agent:
 
 | Coding agent | What keeps a read-only agent from changing files |
 |---|---|
-| Claude Code | Its tool list has no editing tool. A review agent keeps the command line, which can change files. No check after the review restores them. |
+| Claude Code | Its tool list has no editing tool. A review agent keeps the command line, because a review runs commands. The review guard restores changed files under review and pre-existing unsaved work, including staged entries, and reports other changes; if it cannot run, the agent reports that limit. |
 | Cursor | Only the `.claude/agents/` copy carries `readonly: true`, which disallows edits and commands that change files. The `.codex/agents/` copy has no read-only setting. |
 | Gemini CLI | Its tool list contains only reading and searching tools, with no command line. |
 | GitHub Copilot | Its tool list holds reading, searching and the web, with no editing or commands. |
-| Codex | Nothing in the agent's file. Codex keeps the session's own sandbox and approval settings for every agent. The brief instructs the agent to read only; no check after the review restores changed files. |
+| Codex | Nothing in the agent's file. Codex keeps the session's own sandbox and approval settings for every agent. The brief instructs the agent to read only; the review guard restores changed files under review and pre-existing unsaved work, including staged entries, and reports other changes, or reports that it could not run. |
 
-The review guard script is present, but no review step calls it on any agent.
+The guard refuses restoration through a symlinked parent folder and keeps its
+snapshot for recovery. It reports directories and submodules as skipped.
 
 VS Code reads agents from both `.github/agents/` and `.claude/agents/` and may
 list the kit's agents twice. Both copies run the same brief. Cursor lists

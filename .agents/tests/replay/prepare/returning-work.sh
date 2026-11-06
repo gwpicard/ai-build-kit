@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
-# Seed interrupted work, a failing check and an unresolved review for case 60.
+# Seed the failed check and waiting review for cases 60, 79 and 81.
+# returning-work.after-commit.sh leaves the person's repair unsaved.
 set -eu
 project=${1:?project directory}
 mkdir -p "$project/review"

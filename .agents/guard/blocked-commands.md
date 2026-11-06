@@ -24,10 +24,13 @@ which reduce to a single shell pattern.
 
 ## Commands
 
-- git reset --hard (throws away unsaved work)
-- git checkout ., git restore ., git stash drop and git stash clear (the same thing wearing different clothes; a project's repair runs the repair skill's scripts/reset-attempt.sh instead)
+- `git reset --hard` (throws away unsaved work)
+- `git checkout .` and `git checkout -- <path>` (replace unsaved files; a project's repair runs the repair skill's scripts/reset-attempt.sh instead)
+- `git restore` without --staged, or with --worktree or -W (replaces unsaved files)
+- `git stash`, `git stash push`, `git stash save` and `git stash -u`, including other options to these forms (remove unsaved work from view)
+- `git stash drop` and `git stash clear` (delete stored work)
 - git push --force, or -f, or --force-with-lease, wherever the option sits (rewrites shared history under teammates' feet)
-- git clean -fd (deletes files git never saved)
+- `git clean` (can delete files git never saved)
 - rm -rf, and the same delete spelled -fr, -Rf, -r -f or --recursive --force (deletes anything, recursively, with no undo)
 - any command that drops or empties a database table
 
@@ -45,5 +48,13 @@ guard can express them:
 - no activating a flagged capability before its recorded condition is met or the person has accepted the risk on the record;
 - no withdrawing, softening, or redefining a risk notice already given, and no treating your own work as the independent review a notice names.
 
-Commit before anything sweeping. If one of these ever looks necessary,
-stop, say why, and let the human decide with the reason in front of them.
+For blocked commands and unsaved work, follow the `records` skill's
+`references/unsaved-work.md`, including its explanation to the person.
+
+Claude's deny patterns block all `git restore` and `git clean` forms, including
+unstaging and dry runs, because the patterns cannot express the safe
+exceptions. Use `git reset HEAD -- <path>` to unstage while keeping the file,
+and `git ls-files --others --exclude-standard` to list untracked files.
+
+Commit before anything sweeping. If a blocked action seems necessary, explain
+the limit and a route that keeps the work.

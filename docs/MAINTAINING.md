@@ -6,9 +6,29 @@ it out of the kit a project receives.
 ## Configure the commit hook
 
 Run `git config core.hooksPath .githooks` in a fresh clone before its first
-commit. Git does not inherit this local setting; the hook removes attribution
-lines and session links from commit messages. [AGENTS.md](../AGENTS.md) explains
-the rule and its other enforcement.
+commit. Git does not inherit this local setting. [AGENTS.md](../AGENTS.md#attribution)
+sets the attribution rule; `.githooks/commit-msg` enforces these message forms
+for Claude Code, Codex, Cursor, Gemini CLI and GitHub Copilot:
+
+- Co-author trailers whose name matches a recognised agent or model family,
+  or whose address matches a recognised agent address.
+- Agent session trailers, including session-id and session-url keys.
+- Whole-line generated-with, generated-by and made-with footers, with plain
+  or Markdown-linked agent names, an optional leading symbol and final full stop.
+- Standalone agent addresses and bylines ending in an agent address.
+- Lines containing recognised Claude Code, Codex or ChatGPT, Cursor, Gemini
+  or Copilot session and sharing URLs, even when surrounded by prose.
+
+Matching ignores case. The hook lists the names, addresses and URL paths it
+recognises, with sources for the documented attribution formats. It also removes
+a separator above a removed block, trims trailing blank lines and collapses
+consecutive blank lines. Ordinary sentences mentioning an agent, human co-author
+trailers and sign-offs stay. New formats need new patterns and tests.
+
+The hook changes message text only. It does not change Git author or committer
+metadata, scrub pull requests or rewrite history. It runs only when configured
+and can be bypassed with Git's `--no-verify` option. The source validator's
+separate attribution scan covers known Claude strings in tracked files.
 
 ## How the issues are organised
 
@@ -195,9 +215,9 @@ reviewer share one GitHub login; that result does not stop setup.
 ## Changing a skill
 
 This section covers canonical skills in `.agents/skills/` and agents in
-`.agents/agents/`. Read [PHILOSOPHY.md](PHILOSOPHY.md) first and answer its four
-questions in the pull request description. Reshape a change that cannot answer
-them. When retiring a term, mode or behaviour, add its old phrases to the stale
+`.agents/agents/`. Read [PHILOSOPHY.md](PHILOSOPHY.md) first and answer the
+questions under "What earns a place" in the pull request description. Reshape a
+change that cannot answer them. When retiring a term, mode or behaviour, add its old phrases to the stale
 claim checks in `.agents/tools/validate-kit.sh`. Keep numbers owned by a check
 in that check rather than repeating them in prose.
 
@@ -353,6 +373,18 @@ close first.
 `validate-kit.sh` on pull requests. The `rehearsal` job runs
 `.agents/tests/run-all.sh` once for the whole suite.
 
+The source validation check requires the reusable Postgres starter workflow to
+succeed. That workflow runs once per pull request through `source-checks.yml`,
+and directly on pushes to `main`. The source workflow has no path filter, so a
+template change always runs the starter checks. The rehearsal runs on pull
+requests only; compare its timings with the runs that preceded merges to
+`main`, since there is no rehearsal job on a push to `main`.
+
+The runner records each test's duration and runs selected isolated tests with
+two workers. Browser installers run in separate groups. Other tests run alone;
+adding a test always includes it in the suite. Use
+`REHEARSAL_JOBS=1 .agents/tests/run-all.sh` for a serial run.
+
 The runner continues after failures and names each one in its output and run
 summary. It reads the test folder, so new rehearsals run when saved. Only
 `mutate.sh` is excluded because it audits the suite. A rehearsal that cannot
@@ -360,6 +392,14 @@ run reports `could-not-run: <reason>` and exits 2; failures exit 1 and take
 precedence. Locally, only failures make the suite exit non-zero. GitHub also
 fails the job for incomplete rehearsals. `validate-kit.sh` checks the workflow
 jobs, repository gate and call to `run-all.sh`.
+
+The starter's browser checks choose a free local port. Set `PORT` to choose
+one explicitly; the checks refuse to reuse a server already listening there.
+The Python mutation rehearsal first runs a small independent baseline with
+the mutation tool. If that tool is missing or cannot run, the rehearsal reports
+"could not run here" with the reason and still runs its JavaScript cases.
+Once the tool passes that baseline, faults in the kit's mutation check remain
+failures.
 
 The validator runs some of the rehearsals itself, so the hosted job repeats
 them. Keep both runs; do not add a skip switch. The hosted duplication costs
@@ -435,7 +475,8 @@ evidence. The [replay guide](../.agents/tests/replay/README.md#updating-the-olde
 describes options and report locations. These runs leave the source test beds
 unchanged.
 
-Apply PHILOSOPHY.md's four questions to the existing kit and proposed changes.
+Apply PHILOSOPHY.md's questions under "What earns a place" to the existing kit
+and proposed changes.
 A part that no longer passes a question it once passed has drifted; use the
 method in [PHILOSOPHY.md](PHILOSOPHY.md) to decide what to change. Check
 `docs/SOURCES.md` in the same review: add new borrowed ideas and remove credit
@@ -546,9 +587,12 @@ release because a `release` event runs the workflow from the tagged commit.
 ### After publication
 
 On the next branch, run `.agents/tools/record-released-copies.py` with the
-release archive. It adds whole-copy files to the record `/maintain` uses to
-offer removal of untouched copies. If a release is missing from the record,
-its files are listed rather than offered for removal.
+release archive and `--source-tag <released tag>`. The tag supplies hashes for
+files the shared installer copies from source but the archive omits. It adds
+whole-copy files to the record `/maintain` uses to offer removal of untouched copies, and keeps each release's skill-file inventory
+for the update check. An update check without the installed release's version
+and inventory is inconclusive. If a release is missing from the record,
+its whole-copy files are listed rather than offered for removal.
 
 The companion site deploys from `stable` after verification. See
 [The companion site](#the-companion-site) for its publication path.
@@ -569,9 +613,14 @@ aimed at `stable` and explains how to retarget it. It is not required because a
 required check on `stable` would reject the release job's update.
 
 `main` requires a pull request and the `source-kit-validation` and `rehearsal`
-checks; it rejects deletion and force-push. `stable` rejects deletion and
-force-push but cannot require a pull request: the release job updates its ref
-through the API, while a pull-request rule rejects any ref update.
+checks; it rejects deletion and force-push. The branch-push fallback reports
+`maintainer-source-validation`, leaving the required check name exclusive to the
+pull-request job that waits for the starter. See [The pull request
+check](#the-pull-request-check) for the workflow and coverage rules.
+
+`stable` rejects deletion and force-push but cannot require a pull request: the
+release job updates its ref through the API, while a pull-request rule rejects
+any ref update.
 
 An ordinary fast-forward push to `stable` by someone with write access is not
 blocked. The ruleset's update restriction would also block the workflow token,

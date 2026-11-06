@@ -5,36 +5,38 @@ absent from the release allowlist, so it is neither offered at founding nor
 included in a public kit. The existing starter and recipes are unchanged.
 
 It keeps the existing TypeScript, Next.js 16, Tailwind, shadcn, Vitest,
-Playwright and ESLint base. It needs Node.js 22.23.2 and Docker Compose for the
-local database. The root page is a placeholder; it exposes no records or
-sign-in route. [Jobs and schedules](JOBS.md) describes the worker, protected
-timer route and heartbeat health check.
+Playwright and ESLint base. It needs Node.js 22.23.2, Python 3.9 or later and Docker Compose for the
+local database and check cleanup. The root page is a placeholder. The [sign-in module](SIGN-IN.md) supplies
+company sign-in and email links for invited outsiders. [Jobs and schedules](JOBS.md)
+describes the worker, protected timer route and database and heartbeat health check.
 
 ## Try it locally
 
 Copy this folder to an empty working directory, then run:
 
 ```sh
-cp .env.example .env
 npm ci
-docker compose up -d --wait
-npm run db:bootstrap
-npm run db:migrate
 npm run check
-npm run test:policy-fault
-npm run test:privilege-fault
-npm test
-npm run dev
+```
+
+For an interactive development session, run:
+
+```sh
+cp .env.example .env
+sh scripts/docker-run.sh -- sh -c '
+  docker compose up -d --wait && npm run db:bootstrap &&
+  npm run db:migrate && npm run dev
+'
 ```
 
 The example credentials in `.env.example` are for a disposable local database.
 Compose binds it to loopback and keeps its data in memory. Stopping and removing
 the container loses its data. Use it only for development and tests.
 
-`db:bootstrap` creates the two local database roles and gives the owner role
+`db:bootstrap` creates the three local database roles and gives the owner role
 ownership of the public schema, so migrations can manage its grants. It refuses remote
 connections, production mode and databases other than `tool_test` or
-`tool_dev`. It requires all three URLs to point at the same database. Do not
+`tool_dev`. It requires all four URLs to point at the same database. Do not
 use this script to provision a live database.
 
 `db:migrate` connects as `tool_owner`, applies SQL files in filename order in
@@ -42,13 +44,21 @@ one transaction and records their checksums. It serialises concurrent runs
 with a transaction advisory lock and rejects changes to an applied file.
 Repeat it to check that applying migrations twice is harmless. A live database
 needs separately provisioned roles and a rehearsed migration with a backup.
-The app and worker receive only `DATABASE_URL`; keep both privileged URLs out
-of their environments.
+The app receives `DATABASE_URL` and the restricted `AUTH_DATABASE_URL`; keep
+the migration and administrator URLs out of its environment. The worker uses the runtime settings listed in
+[the handover](hosting/handover.json), including `DATABASE_URL`.
 
-The starter workflow runs its checks against a Postgres service. The source
-repository also runs them from this folder. CI uses trust authentication on
-its disposable service; Compose uses the example passwords. Neither setup is
-a production configuration.
+The checks create a disposable Postgres database and two local file servers.
+Each run has its own Compose project name, and every container, image built by
+a check, volume and network carries the kit's run label. An exit trap removes
+those resources after success, failure or interruption. Registry base images
+stay cached for later runs. If the computer or Docker stops before cleanup can
+finish, `/maintain` can list labelled leftovers older than a day and offer to
+remove them. It leaves unlabelled resources alone.
+
+The starter and source workflows use the same disposable database runner.
+It chooses a free loopback port and generates test credentials in memory.
+These databases are for checks and local development only.
 
 ## Database choice
 
@@ -84,12 +94,13 @@ Migration scripts and tests live outside the app source and use privileged
 connections only for setup or inspection. Lint tests exercise the real ESLint
 configuration with deliberately invalid query code.
 
-User identities have no production constructor yet. `tests/support/identity.ts`
-is a test-only sign-in stand-in; it throws unless both test mode and Vitest
-are present. App imports of test support fail lint. There is no HTTP endpoint,
-header or production environment flag for choosing a user or role. A later
-sign-in module must construct the identity from a verified server session,
-never from request-supplied user or role values.
+`sessionIdentity(headers)` from the sign-in module constructs the identity from
+an authenticated server session. `/api/identity` passes it to `withDatabase`.
+The [sign-in notes](SIGN-IN.md) explain directory restrictions, invitations,
+role assignment and the review check. `tests/support/identity.ts` remains a
+test-only factory; it throws unless both test mode and Vitest are present, and
+app imports of test support fail lint. No request header or production flag
+lets a caller choose a user or role.
 
 These settings trust the server application. The helper and lint rule prevent
 accidental bypasses; they do not protect against arbitrary SQL execution or
@@ -127,9 +138,10 @@ the audit table is append-only for the app role.
 `tests/role-matrix.ts` is the single list of expected access. The generated
 suite tries reading and each change for every role, table and ownership scope.
 Positive cases make a removed permission visible; negative cases check row
-isolation and denied writes. Schema inspection requires every app table to
+isolation and denied writes. Schema inspection requires every business table to
 appear in the matrix, every record table to force row rules, and every
-business table to have the audit trigger.
+business table to have the audit trigger. The separate sign-in suite checks
+authentication tables and invitation permissions.
 
 `npm run test:policy-fault` removes the `records_read` policy on the disposable
 local database and runs the generated member read test. That test must fail.
@@ -146,8 +158,8 @@ port. Its five actions are `save(identity, title, bytes)`, `fetch(identity, id)`
 `temporaryLink(identity, id)`, `delete(identity, id)` and `list(identity)`.
 `save` returns the new file record; `fetch` returns bytes; `list` returns only
 records the caller may read in the configured store. These operations need the
-same verified server identity as database queries. There is no file HTTP route
-until the sign-in module supplies that identity.
+same verified server identity as database queries. Server code obtains that identity from `sessionIdentity(headers)`. The starter
+has no file HTTP route.
 
 The `files` table forces row-level security. Members manage their own files,
 viewers read their own files, administrators manage all files, and unassigned
@@ -214,16 +226,20 @@ tests as part of the starter check.
 
 The shared storage suite also claims a queued file job, reads its input through
 `files()` and writes one audited result through `withDatabase()`. Its handler
-receives a verified test identity separately from the payload. It proves that
+receives an identity from a real sign-in session separately from the payload. It proves that
 the queue's fixed system identity and another user cannot read that file, while
 the owner can process it and replay the result without a second audit event.
+Changing that user to viewer or unassigned changes the next attempt's file and
+record permissions, even when the payload claims administrator access.
 The example worker and timer retain their existing record-only handlers; a
 project that adds file processing must choose its verified identity and row
 policies explicitly. Queue access grants no access to user files.
 
 `npm run test:privilege-fault` plants excessive grants on records, files, the
 queue and runtime tables, a writable file ownership column, a public trigger
-grant, a privileged queue function, schema creation and owner membership. Each
+grant, a privileged queue function, schema creation and owner membership. Sign-in
+table and column grants are checked for both database roles across all schemas;
+authentication tables have a separate exact catalogue. Each
 must fail its named catalogue assertion. The script restores each fault in
 `finally` and runs the boundary suite before and after the faults. Like the
 policy check, it requires a disposable local database.
@@ -262,11 +278,16 @@ file. `npm run handover:check` fails on a hand edit or code mismatch.
 `npm run test:handover` plants these mismatches and checks all three founding
 sign-in choices. The founding script exposes the questions with `--questions`
 and records an answer file with `--answers`. The current founding menu still
-does not offer this template. Sign-in is unconfigured here until its module
-lands; a company choice requires an existing outside-account test reference.
+does not offer this template. Company sign-in adds Microsoft or Google staff to invited email users;
+email-only sign-in uses `STAFF_PROVIDER=none`. A company choice requires an
+existing outside-account test reference. AI Host Kit supplies the selected
+`STAFF_PROVIDER`, directory registration and secret files declared in the
+handover. Its callback must use the HTTPS origin in `AUTH_BASE_URL`.
 The example recovery targets are placeholders for the founding conversation.
 
 `npm run test:image` builds one image, runs each role against a fresh local
 database and checks health before, during and after the worker runs. It also
 checks database failure and JSON output, then removes its containers and image.
 The database and website receive Docker-assigned loopback ports.
+Dependency advisory findings and their runtime reach are recorded in
+[Dependency audit](DEPENDENCIES.md).

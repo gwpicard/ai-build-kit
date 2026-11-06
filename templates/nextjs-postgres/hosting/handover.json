@@ -190,6 +190,78 @@
       "kind": "setting",
       "phase": "runtime",
       "source": "host"
+    },
+    {
+      "name": "AUTH_BASE_URL",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "AUTH_SECRET_FILE",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "AUTH_DATABASE_URL",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "STAFF_PROVIDER",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "STAFF_ISSUER",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "STAFF_CLIENT_ID",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "STAFF_CLIENT_SECRET_FILE",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "MICROSOFT_TENANT_ID",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "GOOGLE_WORKSPACE_DOMAIN",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "SMTP_FROM",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "SMTP_PASSWORD_FILE",
+      "kind": "secret",
+      "phase": "runtime",
+      "source": "host"
+    },
+    {
+      "name": "VITEST",
+      "kind": "setting",
+      "phase": "runtime",
+      "source": "host"
     }
   ],
   "postgres": {
@@ -197,7 +269,22 @@
     "extensions": [],
     "roles": {
       "migrate": "owner",
-      "app": "no-owner-no-bypassrls"
+      "app": "no-owner-no-bypassrls",
+      "auth": "no-owner-no-bypassrls"
+    },
+    "sign_in": {
+      "schema": "sign_in",
+      "tables": [
+        "user",
+        "session",
+        "account",
+        "verification",
+        "invitations"
+      ],
+      "owner": "tool_owner",
+      "migration": "db/migrations/002_sign_in.sql",
+      "runtime_role": "tool_auth",
+      "permissions": "tool_auth can operate authentication tables and read invitations; tool_app can manage invitations only as an administrator through row-level security."
     }
   },
   "files": {
@@ -228,7 +315,37 @@
   },
   "sign_in": {
     "staff": null,
-    "outsiders": "none"
+    "outsiders": "email-link",
+    "staff_provider": "none",
+    "public_origin_env": "AUTH_BASE_URL",
+    "configuration": {
+      "AUTH_BASE_URL": "HTTPS public origin without a path, used for cookies and callback addresses.",
+      "AUTH_SECRET_FILE": "Host-mounted file containing a random sign-in encryption secret of at least 32 characters, stable across replicas.",
+      "AUTH_DATABASE_URL": "Postgres connection for tool_auth; never an owner or administrator connection.",
+      "STAFF_PROVIDER": "none for invited email users only; microsoft or google for one company directory alongside invited email users.",
+      "STAFF_ISSUER": "Company tenant issuer for Microsoft, or the Google accounts issuer for Google.",
+      "STAFF_CLIENT_ID": "Client ID of the company directory application registered by AI Host Kit.",
+      "STAFF_CLIENT_SECRET_FILE": "Host-mounted file containing the directory application client secret; needed for staff sign-in.",
+      "MICROSOFT_TENANT_ID": "One permitted company tenant UUID in lower case; required for Microsoft staff sign-in.",
+      "GOOGLE_WORKSPACE_DOMAIN": "One permitted Workspace domain in lower case; required for Google staff sign-in.",
+      "SMTP_FROM": "Sender address for invited outsider sign-in links; ordinary application mail uses MAIL_FROM.",
+      "SMTP_PASSWORD_FILE": "Host-mounted SMTP password file for sign-in mail when SMTP_USER is supplied; ordinary mail uses SMTP_PASSWORD.",
+      "VITEST": "Test-runner marker only; leave unset in deployed processes. Local stub issuers also require NODE_ENV test."
+    },
+    "host_setup": {
+      "owner": "AI Host Kit",
+      "request": "For company sign-in, register one company directory application and supply issuer, client ID and the client-secret file through the host secret store. Register the callback on AUTH_BASE_URL. No directory registration is needed for email-only sign-in.",
+      "microsoft": "Single-tenant application; request acct in optionalClaims.idToken so only numeric acct 0 members can sign in.",
+      "google": "Restrict access to the configured Workspace domain using the verified hd claim.",
+      "callbacks": {
+        "microsoft": "/api/auth/callback/microsoft",
+        "google": "/api/auth/callback/google"
+      }
+    },
+    "email_link": {
+      "verification_path": "/api/auth/magic-link/verify",
+      "requires": "HTTPS origin, SMTP settings and a current administrator-created invitation; links expire after ten minutes and work once."
+    }
   },
   "access": "private",
   "residency": "any",

@@ -12,9 +12,10 @@ One piece per pass, always, directed by someone who judges it by behaviour.
 
 Read the whole piece, its `Under the hood` notes, its `Risk areas:` line, the
 masterplan's risk record and anything the masterplan or AGENTS.md's stack
-section points to. Uncommitted work stops the build; `/what-now` owns that
-conversation. Start from up-to-date `main`. If it cannot be reached, use the
-local copy and say so.
+section points to. Uncommitted work stops the build; follow `/what-now`'s
+recovery step and offer a checkpoint that keeps it.
+Start from up-to-date `main`. If it cannot be reached, use the local copy and
+say so.
 
 Choose the route before changing files:
 

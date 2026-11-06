@@ -18,6 +18,7 @@ Optional parts: none
 Work-team default: yes (Vercel Pro, Supabase Pro)
 Deploy target: Vercel, with the project's GitHub repository connected so that each push builds
 Command-line tools: vercel, supabase, docker, psql, curl, git
+Docker connection: backup, restore and container checks require a local Unix socket. TCP and SSH contexts are not supported; use a local Docker context for these checks, or run them on another computer with a local engine.
 Health-check tool: curl
 Last checked: 2026-10-14
 Last proven: 2026-10-23

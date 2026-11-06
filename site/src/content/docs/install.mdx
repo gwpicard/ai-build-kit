@@ -11,6 +11,8 @@ Open a terminal in your tool’s project folder, either a new empty folder or on
 
 You need Git, Python 3 and the GitHub CLI (`gh`), the command-line tool for GitHub. Sign in to `gh` before setup. The shared installer uses `npx`, which requires Node.js. The setup script checks Git, Python 3, GitHub sign-in and access to the project repository and its issues, where the work list lives.
 
+The hosting recipes need Docker for backup, restore and container checks. These checks require a local Docker engine reached through a Unix socket; TCP and SSH contexts are not supported. Use a local Docker context for the checks, or run them on another computer with a local engine.
+
 The kit has six commands: `/setup-ai-build-kit`, `/shape`, `/implement`, `/setup-hosting`, `/maintain` and `/what-now`. See [supported agents](/ai-build-kit/agents/) for the evidence behind each agent’s support grade.
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';

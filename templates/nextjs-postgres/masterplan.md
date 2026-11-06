@@ -7,7 +7,7 @@ The owner, sign-in method and recovery targets must be settled at founding.
 
 This section comes from hosting/handover.json. Update that file and run npm run hosting:render.
 
-Sign-in: not configured. Data region: any. Recovery allows up to 24 hours of recent work to be lost and 8 hours to restore the tool.
+Sign-in: email link. Data region: any. Recovery allows up to 24 hours of recent work to be lost and 8 hours to restore the tool.
 
 The requirements below describe what the tool needs. They do not confirm that a live copy exists.
 
@@ -134,10 +134,69 @@ The requirements below describe what the tool needs. They do not confirm that a 
 | config / 26 / kind | setting |
 | config / 26 / phase | runtime |
 | config / 26 / source | host |
+| config / 27 / name | AUTH_BASE_URL |
+| config / 27 / kind | setting |
+| config / 27 / phase | runtime |
+| config / 27 / source | host |
+| config / 28 / name | AUTH_SECRET_FILE |
+| config / 28 / kind | secret |
+| config / 28 / phase | runtime |
+| config / 28 / source | host |
+| config / 29 / name | AUTH_DATABASE_URL |
+| config / 29 / kind | secret |
+| config / 29 / phase | runtime |
+| config / 29 / source | host |
+| config / 30 / name | STAFF_PROVIDER |
+| config / 30 / kind | setting |
+| config / 30 / phase | runtime |
+| config / 30 / source | host |
+| config / 31 / name | STAFF_ISSUER |
+| config / 31 / kind | setting |
+| config / 31 / phase | runtime |
+| config / 31 / source | host |
+| config / 32 / name | STAFF_CLIENT_ID |
+| config / 32 / kind | setting |
+| config / 32 / phase | runtime |
+| config / 32 / source | host |
+| config / 33 / name | STAFF_CLIENT_SECRET_FILE |
+| config / 33 / kind | secret |
+| config / 33 / phase | runtime |
+| config / 33 / source | host |
+| config / 34 / name | MICROSOFT_TENANT_ID |
+| config / 34 / kind | setting |
+| config / 34 / phase | runtime |
+| config / 34 / source | host |
+| config / 35 / name | GOOGLE_WORKSPACE_DOMAIN |
+| config / 35 / kind | setting |
+| config / 35 / phase | runtime |
+| config / 35 / source | host |
+| config / 36 / name | SMTP_FROM |
+| config / 36 / kind | setting |
+| config / 36 / phase | runtime |
+| config / 36 / source | host |
+| config / 37 / name | SMTP_PASSWORD_FILE |
+| config / 37 / kind | secret |
+| config / 37 / phase | runtime |
+| config / 37 / source | host |
+| config / 38 / name | VITEST |
+| config / 38 / kind | setting |
+| config / 38 / phase | runtime |
+| config / 38 / source | host |
 | postgres / min major | 17 |
 | postgres / extensions | None |
 | postgres / roles / migrate | owner |
 | postgres / roles / app | no-owner-no-bypassrls |
+| postgres / roles / auth | no-owner-no-bypassrls |
+| postgres / sign in / schema | sign_in |
+| postgres / sign in / tables / 0 | user |
+| postgres / sign in / tables / 1 | session |
+| postgres / sign in / tables / 2 | account |
+| postgres / sign in / tables / 3 | verification |
+| postgres / sign in / tables / 4 | invitations |
+| postgres / sign in / owner | tool_owner |
+| postgres / sign in / migration | db/migrations/002_sign_in.sql |
+| postgres / sign in / runtime role | tool_auth |
+| postgres / sign in / permissions | tool_auth can operate authentication tables and read invitations; tool_app can manage invitations only as an administrator through row-level security. |
 | files / port | s3 |
 | files / buckets / 0 / name | private-files |
 | files / buckets / 0 / private | true |
@@ -151,7 +210,29 @@ The requirements below describe what the tool needs. They do not confirm that a 
 | jobs / schedules / 0 / name | weekly-reminder |
 | jobs / schedules / 0 / cron | 0 9 * * 1 |
 | sign in / staff | Not configured |
-| sign in / outsiders | none |
+| sign in / outsiders | email-link |
+| sign in / staff provider | none |
+| sign in / public origin env | AUTH_BASE_URL |
+| sign in / configuration / AUTH BASE URL | HTTPS public origin without a path, used for cookies and callback addresses. |
+| sign in / configuration / AUTH SECRET FILE | Host-mounted file containing a random sign-in encryption secret of at least 32 characters, stable across replicas. |
+| sign in / configuration / AUTH DATABASE URL | Postgres connection for tool_auth; never an owner or administrator connection. |
+| sign in / configuration / STAFF PROVIDER | none for invited email users only; microsoft or google for one company directory alongside invited email users. |
+| sign in / configuration / STAFF ISSUER | Company tenant issuer for Microsoft, or the Google accounts issuer for Google. |
+| sign in / configuration / STAFF CLIENT ID | Client ID of the company directory application registered by AI Host Kit. |
+| sign in / configuration / STAFF CLIENT SECRET FILE | Host-mounted file containing the directory application client secret; needed for staff sign-in. |
+| sign in / configuration / MICROSOFT TENANT ID | One permitted company tenant UUID in lower case; required for Microsoft staff sign-in. |
+| sign in / configuration / GOOGLE WORKSPACE DOMAIN | One permitted Workspace domain in lower case; required for Google staff sign-in. |
+| sign in / configuration / SMTP FROM | Sender address for invited outsider sign-in links; ordinary application mail uses MAIL_FROM. |
+| sign in / configuration / SMTP PASSWORD FILE | Host-mounted SMTP password file for sign-in mail when SMTP_USER is supplied; ordinary mail uses SMTP_PASSWORD. |
+| sign in / configuration / VITEST | Test-runner marker only; leave unset in deployed processes. Local stub issuers also require NODE_ENV test. |
+| sign in / host setup / owner | AI Host Kit |
+| sign in / host setup / request | For company sign-in, register one company directory application and supply issuer, client ID and the client-secret file through the host secret store. Register the callback on AUTH_BASE_URL. No directory registration is needed for email-only sign-in. |
+| sign in / host setup / microsoft | Single-tenant application; request acct in optionalClaims.idToken so only numeric acct 0 members can sign in. |
+| sign in / host setup / google | Restrict access to the configured Workspace domain using the verified hd claim. |
+| sign in / host setup / callbacks / microsoft | /api/auth/callback/microsoft |
+| sign in / host setup / callbacks / google | /api/auth/callback/google |
+| sign in / email link / verification path | /api/auth/magic-link/verify |
+| sign in / email link / requires | HTTPS origin, SMTP settings and a current administrator-created invitation; links expire after ten minutes and work once. |
 | access | private |
 | residency | any |
 | data risk | None |

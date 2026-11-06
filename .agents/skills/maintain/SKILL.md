@@ -18,11 +18,12 @@ its sentence and stop.
 
 ## Every visit
 
-1. Load `references/truing.md` and follow it. Keep the person's uncommitted
-   work out of every commit. Report it and point to `/what-now`; clean-checkpoint
-   steps wait, while read-only steps continue.
-   Read the project's recipe with `scripts/recipe-freshness.py`. If it reports
-   a stale or superseded recipe, say its one-line finding and offer to open a
+1. Follow `references/truing.md`. Keep the person's work out of records commits.
+   For uncommitted work, follow the `records` skill's `references/unsaved-work.md`
+   and explain it now. Say clean-checkpoint steps wait; continue
+   read-only checks.
+   Read the recipe with `scripts/recipe-freshness.py`. If stale or superseded,
+   report its finding and offer to open a
    piece to move to a current recommendation. On a no, change no project files.
 2. Compare the live copy with `main` using the `live-copy` skill. Do not change
    the live service or changelog. Offer `/setup-hosting` for backups, restores,
@@ -44,6 +45,8 @@ its sentence and stop.
 7. Finish a kit update using `references/kit-update.md` on every visit. The
    monthly routine's first step does it instead. In Codex, offer its
    session-start GitHub check.
+
+Run `scripts/docker-resources.py sweep`.
 
 ## Due routines
 

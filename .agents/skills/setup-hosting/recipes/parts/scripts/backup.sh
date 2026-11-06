@@ -68,6 +68,11 @@ case "$folder/" in
 esac
 cl_password
 
+cleanup_tools="$here/../../../../maintain/scripts"
+if [ -z "${ABK_DOCKER_SCOPE:-}" ]; then
+  exec sh "$cleanup_tools/docker-run.sh" --proxy -- sh "$0" "$@"
+fi
+
 folder="$folder/$(date +%Y-%m-%d)"
 mkdir -p "$folder"
 supabase db dump --linked --role-only -f "$folder/roles.sql" >&2 &&

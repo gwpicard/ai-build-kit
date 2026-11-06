@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
 
+if (!process.env.ABK_DOCKER_SCOPE) throw new Error('Run through scripts/docker-run.sh');
 const id = `handover-image-${randomBytes(6).toString('hex')}`;
 const scratch = mkdtempSync(join(tmpdir(), id));
 const image = process.argv[2] ?? `${id}:test`;
@@ -39,6 +40,7 @@ try {
   const url = (role, host) => `postgresql://${role}:${password}@${host}/tool_test`;
   run(process.execPath, ['scripts/bootstrap.mjs'], { NODE_ENV: 'test',
     ADMIN_DATABASE_URL: url('postgres', `127.0.0.1:${port}`),
+    AUTH_DATABASE_URL: url('tool_auth', `127.0.0.1:${port}`),
     MIGRATION_DATABASE_URL: url('tool_owner', `127.0.0.1:${port}`), DATABASE_URL: url('tool_app', `127.0.0.1:${port}`) });
   const migration = { MIGRATION_DATABASE_URL: url('tool_owner', 'database:5432') };
   for (let i = 0; i < 2; i++) docker(['run', '--rm', '--network', id, '-e', 'MIGRATION_DATABASE_URL', image, 'migrate'], migration);

@@ -58,8 +58,17 @@ export function checkCode(root, handover) {
     const member = ts.isPropertyAccessExpression(node) ? node.name.text
       : ts.isElementAccessExpression(node) && ts.isStringLiteral(node.argumentExpression) ? node.argumentExpression.text : null;
     if (member && ['env', 'process.env', 'environment()'].includes(node.expression.getText()) && !names.includes(member)) throw new Error('config: undeclared environment access');
-    if (ts.isCallExpression(node) && node.expression.getText() === 'required' && ts.isStringLiteral(node.arguments[0]) && !names.includes(node.arguments[0].text)) throw new Error('config: undeclared required name');
+    if (ts.isCallExpression(node) && ['required', 'secretFile'].includes(node.expression.getText()) && ts.isStringLiteral(node.arguments[0]) && !names.includes(node.arguments[0].text)) throw new Error('config: undeclared required name');
   });
+  const signInConfig = resolve(root, 'src/lib/sign-in/config.ts');
+  if (existsSync(signInConfig)) {
+    same(handover.sign_in.outsiders, 'email-link', 'sign_in.outsiders');
+    const provider = handover.sign_in.staff?.provider;
+    if (provider && !['entra', 'google'].includes(provider)) throw new Error('sign_in: unsupported staff provider');
+    same(handover.sign_in.staff_provider, provider === 'entra' ? 'microsoft' : provider ?? 'none', 'sign_in.staff_provider');
+    same(handover.sign_in.public_origin_env, 'AUTH_BASE_URL', 'sign_in.public_origin_env');
+    if (provider) same(handover.sign_in.staff.redirect_path, `/api/auth/callback/${provider === 'entra' ? 'microsoft' : provider}`, 'sign_in.redirect_path');
+  }
   const declared = handover.config.map(c => c.name);
   if (new Set(names).size !== names.length || new Set(declared).size !== declared.length) throw new Error('config: duplicate name');
   same([...names].sort(), [...declared].sort(), 'config');

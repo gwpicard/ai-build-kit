@@ -1,5 +1,7 @@
 # Finishing a kit update
 
+Before replacement, follow `latest-release.md`'s local-edit check and file-specific approval.
+
 From the project root, run `python3 <installed maintain skill>/scripts/upgrade-check.py`,
 with `--monthly` when the monthly part runs. It changes nothing. Exit 0:
 nothing left. Exit 1: a step is left. Exit 2: it could not run; say so and
