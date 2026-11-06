@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync, chmodSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
@@ -45,13 +45,20 @@ try {
   const migration = { MIGRATION_DATABASE_URL: url('tool_owner', 'database:5432') };
   for (let i = 0; i < 2; i++) docker(['run', '--rm', '--network', id, '-e', 'MIGRATION_DATABASE_URL', image, 'migrate'], migration);
   console.log('Passed: the image migrates and repeats migration');
-  const runtime = { DATABASE_URL: url('tool_app', 'database:5432'), JOBS_MODE: 'worker',
+  const secretPath = join(scratch, 'sign-in-secret');
+  writeFileSync(secretPath, password);
+  chmodSync(scratch, 0o755); chmodSync(secretPath, 0o644);
+  const secrets = ['--mount', `type=bind,source=${secretPath},target=/run/secrets/sign-in,readonly`];
+  const runtime = { AUTH_BASE_URL: 'https://tool.example.test', STAFF_PROVIDER: 'none',
+    AUTH_SECRET_FILE: '/run/secrets/sign-in', AUTH_DATABASE_URL: url('tool_auth', 'database:5432'),
+    SMTP_FROM: 'sign-in@example.test', SMTP_PASSWORD_FILE: '/run/secrets/sign-in',
+    DATABASE_URL: url('tool_app', 'database:5432'), JOBS_MODE: 'worker',
     FILES_S3_BUCKET: 'private-files', FILES_S3_REGION: 'local', AWS_ACCESS_KEY_ID: password, AWS_SECRET_ACCESS_KEY: password,
     SMTP_HOST: 'smtp.example.test', SMTP_PORT: '587', SMTP_USER: 'fixture', SMTP_PASSWORD: password,
     MAIL_FROM: 'tool@example.test', SOURCE_COMMIT: 'a'.repeat(40) };
   const options = Object.keys(runtime).flatMap(name => ['-e', name]);
   const web = `${id}-web`; containers.push(web);
-  docker(['run', '-d', '--name', web, '--network', id, '-p', '127.0.0.1::3000', ...options, image, 'web'], runtime);
+  docker(['run', '-d', '--name', web, '--network', id, '-p', '127.0.0.1::3000', ...secrets, ...options, image, 'web'], runtime);
   const webPort = docker(['port', web, '3000/tcp']).split(':').at(-1);
   const health = () => fetch(`http://127.0.0.1:${webPort}/api/health`, { signal: AbortSignal.timeout(3000) });
   await until(async () => (await health()).status === 503);

@@ -133,3 +133,97 @@ test('a new typed sign-in name needs a handover update in both directions', () =
 for (const [field, value] of [['staff_provider', 'oidc'], ['outsiders', 'none']]) {
   test(`unsupported sign-in ${field} fails`, () => assert.throws(() => checkCode(root, mutate(h => { h.sign_in[field] = value; })), /sign_in/));
 }
+
+// Complete records exercise only the published schema, with no reader-side scan.
+const credentialSamples = [
+  'postgres://fixture:fixture@database.test/tool',
+  'https://fixture:fixture@example.test',
+  'custom+driver://fixture@example.test/resource',
+  'POSTGRESQL://fixture:fixture@database.test/tool',
+  '-----BEGIN PRIVATE KEY-----',
+  'token=synthetic-marker',
+  'Secret = synthetic-marker',
+  'AKIA' + 'X'.repeat(16),
+  'ghp_' + 'x'.repeat(36),
+  'sk-' + 'x'.repeat(32),
+];
+function leaves(value, path = []) {
+  if (value && typeof value === 'object') return Object.entries(value).flatMap(([key, child]) => leaves(child, [...path, key]));
+  return [path];
+}
+function parent(record, path) { return path.slice(0, -1).reduce((value, key) => value[key], record); }
+test('schema alone rejects recognisable credentials in every declaration value', () => {
+  for (const path of leaves(original)) for (const sample of credentialSamples) {
+    const h = structuredClone(original);
+    parent(h, path)[path.at(-1)] = sample;
+    assert.equal(validate(h), false, path.join('.'));
+  }
+});
+test('schema alone rejects credentials in nested extension values throughout the record', () => {
+  function objects(value, path = []) {
+    if (!value || typeof value !== 'object') return [];
+    return [...(Array.isArray(value) ? [] : [path]), ...Object.entries(value).flatMap(([key, child]) => objects(child, [...path, key]))];
+  }
+  for (const path of objects(original)) for (const sample of credentialSamples) {
+    const h = structuredClone(original);
+    path.reduce((value, key) => value[key], h).optional_note = { nested: [sample] };
+    assert.equal(validate(h), false, path.join('.'));
+  }
+});
+test('ordinary prose and credential-free URL extensions remain valid', () => {
+  assert.equal(validate({ ...original, optional_note: { text: 'An arbitrary secret can resemble prose', url: 'postgres://database.test/tool' } }), true);
+});
+const company = mutate(h => {
+  h.sign_in.staff = { provider: 'entra', directory: 'company tenant', outside_refused_test: 'tests/outside-account.ts', redirect_path: '/api/auth/callback/microsoft' };
+  h.sign_in.staff_provider = 'microsoft';
+});
+const requiredPaths = [
+  'sign_in.public_origin_env', 'sign_in.staff_provider', 'sign_in.configuration',
+  ...Object.keys(original.sign_in.configuration).filter(n => n !== 'VITEST' && n !== 'GOOGLE_WORKSPACE_DOMAIN').map(n => `sign_in.configuration.${n}`),
+  'sign_in.secret_files', 'sign_in.secret_files.0.name', 'sign_in.secret_files.0.required_when', 'sign_in.secret_files.0.description',
+  'sign_in.host_setup', 'sign_in.host_setup.owner', 'sign_in.host_setup.request',
+  'sign_in.host_setup.microsoft', 'sign_in.host_setup.google', 'sign_in.host_setup.callbacks',
+  'sign_in.host_setup.callbacks.microsoft', 'sign_in.host_setup.callbacks.google',
+  'sign_in.email_link', 'sign_in.email_link.verification_path', 'sign_in.email_link.requires',
+  'postgres.sign_in', ...Object.keys(original.postgres.sign_in).map(n => `postgres.sign_in.${n}`), 'postgres.roles.auth',
+];
+for (const field of requiredPaths) test(`missing or malformed ${field} fails the schema and project check`, () => {
+  const dir = copy();
+  for (const value of [undefined, 42, true, []]) {
+    const h = structuredClone(company), path = field.split('.');
+    if (value === undefined) delete parent(h, path)[path.at(-1)];
+    else parent(h, path)[path.at(-1)] = value;
+    assert.equal(validate(h), false, `${field}: ${JSON.stringify(value)}`);
+    writeFileSync(resolve(dir, 'hosting/handover.json'), JSON.stringify(h));
+    assert.throws(() => run('check', dir));
+  }
+});
+for (const name of ['AUTH_BASE_URL', 'AUTH_SECRET_FILE', 'AUTH_DATABASE_URL', 'STAFF_CLIENT_SECRET_FILE', 'SMTP_PASSWORD_FILE']) {
+  test(`schema and project check require the active sign-in config declaration ${name}`, () => {
+    const dir = copy(), h = structuredClone(company);
+    h.config = h.config.filter(c => c.name !== name);
+    assert.equal(validate(h), false);
+    writeFileSync(resolve(dir, 'hosting/handover.json'), JSON.stringify(h));
+    assert.throws(() => run('check', dir));
+  });
+}
+test('an unfinished sign-in declaration does not require provisioned sign-in fields', () => {
+  const h = structuredClone(original);
+  h.sign_in = { staff: null, outsiders: 'none' };
+  delete h.postgres.sign_in; delete h.postgres.roles.auth;
+  assert.equal(validate(h), true);
+});
+test('the response contract also refuses copied key shapes in references', () => {
+  for (const sample of credentialSamples) assert.equal(response({ status: 'passed', evidence: sample }), false);
+});
+test('Google sign-in requires its directory setting declaration and description', () => {
+  for (const edit of [h => { delete h.sign_in.configuration.GOOGLE_WORKSPACE_DOMAIN; }, h => { h.config = h.config.filter(c => c.name !== 'GOOGLE_WORKSPACE_DOMAIN'); }]) {
+    const h = structuredClone(company), dir = copy();
+    h.sign_in.staff.provider = 'google'; h.sign_in.staff_provider = 'google';
+    h.sign_in.staff.redirect_path = '/api/auth/callback/google';
+    edit(h);
+    assert.equal(validate(h), false);
+    writeFileSync(resolve(dir, 'hosting/handover.json'), JSON.stringify(h));
+    assert.throws(() => run('check', dir));
+  }
+});

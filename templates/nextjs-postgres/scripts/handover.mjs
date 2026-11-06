@@ -13,14 +13,7 @@ export function validateRecord(record, schema) {
   if (!/^1\./.test(record.schema_version ?? '')) throw new Error('schema_version: update the reader to support this major version');
   const validate = new Ajv2020({ strict: false, allErrors: true }).compile(schema);
   if (!validate(record)) throw new Error(validate.errors.map(e => `${e.instancePath || '/'}: ${e.keyword}`).join('\n'));
-  // Known key markers are refused even in descriptive text. Arbitrary secrets can resemble prose.
-  function scan(value, path = '') {
-    if (typeof value === 'string' && /-----BEGIN|(?:password|secret|token|signature|sig|key)\s*=|[?&](?:sig|token|key)=|https?:\/\/[^/\s]*@/i.test(value)) {
-      throw new Error(`${path}: credential-like text is not a reference`);
-    }
-    if (value && typeof value === 'object') for (const [key, child] of Object.entries(value)) scan(child, `${path}/${key}`);
-  }
-  scan(record);
+
 }
 function source(path) { return ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest, true); }
 function walk(node, visit) { visit(node); ts.forEachChild(node, child => walk(child, visit)); }

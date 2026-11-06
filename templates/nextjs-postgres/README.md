@@ -183,7 +183,7 @@ HTTPS is required except for loopback emulators outside production.
 
 | Adapter | Configuration |
 | --- | --- |
-| S3 | `FILES_S3_BUCKET`, `FILES_S3_REGION`; optional `FILES_S3_ENDPOINT` and `FILES_S3_FORCE_PATH_STYLE=true` for compatible stores. Supply `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and optional `AWS_SESSION_TOKEN` through the environment. |
+| S3 | `FILES_S3_BUCKET`, `FILES_S3_REGION`; optional `FILES_S3_ENDPOINT` and `FILES_S3_FORCE_PATH_STYLE=true` for compatible stores. Use workload credentials through the SDK credential chain, or supply static `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and optional `AWS_SESSION_TOKEN` through the environment. |
 | Azure Blob | `FILES_AZURE_ACCOUNT`, `FILES_AZURE_ACCOUNT_KEY`, `FILES_AZURE_CONTAINER`; optional `FILES_AZURE_ENDPOINT`, otherwise the account's standard HTTPS Blob endpoint. |
 
 The host must supply a private bucket or container and credentials restricted

@@ -330,7 +330,10 @@
       "GOOGLE_WORKSPACE_DOMAIN": "One permitted Workspace domain in lower case; required for Google staff sign-in.",
       "SMTP_FROM": "Sender address for invited outsider sign-in links; ordinary application mail uses MAIL_FROM.",
       "SMTP_PASSWORD_FILE": "Host-mounted SMTP password file for sign-in mail when SMTP_USER is supplied; ordinary mail uses SMTP_PASSWORD.",
-      "VITEST": "Test-runner marker only; leave unset in deployed processes. Local stub issuers also require NODE_ENV test."
+      "VITEST": "Test-runner marker only; leave unset in deployed processes. Local stub issuers also require NODE_ENV test.",
+      "SMTP_HOST": "SMTP server hostname for sign-in mail.",
+      "SMTP_PORT": "SMTP server port for sign-in mail, using TLS.",
+      "SMTP_USER": "SMTP account name, supplied with its password file when authentication is needed."
     },
     "host_setup": {
       "owner": "AI Host Kit",
@@ -345,7 +348,24 @@
     "email_link": {
       "verification_path": "/api/auth/magic-link/verify",
       "requires": "HTTPS origin, SMTP settings and a current administrator-created invitation; links expire after ten minutes and work once."
-    }
+    },
+    "secret_files": [
+      {
+        "name": "AUTH_SECRET_FILE",
+        "required_when": "always",
+        "description": "Host-mounted sign-in encryption secret, stable across replicas."
+      },
+      {
+        "name": "STAFF_CLIENT_SECRET_FILE",
+        "required_when": "staff",
+        "description": "Host-mounted company directory application secret."
+      },
+      {
+        "name": "SMTP_PASSWORD_FILE",
+        "required_when": "smtp-auth",
+        "description": "Host-mounted SMTP password when SMTP_USER is supplied."
+      }
+    ]
   },
   "access": "private",
   "residency": "any",

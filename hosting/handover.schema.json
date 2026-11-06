@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AI Build Kit handover v1",
-  "description": "AI Build Kit owns hosting/handover.json and this schema. AI Host Kit vendors the published release copy unchanged. The config list declares secrets and settings by name only. Requests are defined in $defs/request. Readers accept 1.x; minor versions may add optional fields outside config entries and readers report unknown fields before ignoring them. Config entries remain closed to their descriptive fields in every minor version. A removal, changed meaning or new required field needs a new major version and a supporting reader update. Reference fields accept credential-free HTTPS addresses or repository paths, without queries, fragments, user information, escapes or key text. Validation cannot detect arbitrary secrets disguised as ordinary prose.",
+  "description": "AI Build Kit owns hosting/handover.json and this schema. AI Host Kit vendors the published release copy unchanged. The config list declares secrets and settings by name only. Requests are defined in $defs/request. Readers accept 1.x; minor versions may add optional fields outside config entries and readers report unknown fields before ignoring them. Config entries remain closed to their descriptive fields in every minor version. After publication, a removal, changed meaning or new required field needs a new major version and a supporting reader update. Reference fields accept credential-free HTTPS addresses or repository paths, without queries, fragments, user information, escapes or key text. Validation cannot detect arbitrary secrets disguised as ordinary prose.",
   "type": "object",
   "properties": {
     "schema_version": {
@@ -233,11 +233,56 @@
             "app": {
               "const": "no-owner-no-bypassrls",
               "description": "The app role owns no table and cannot bypass row-level security."
+            },
+            "auth": {
+              "const": "no-owner-no-bypassrls"
             }
           },
           "required": [
             "migrate",
             "app"
+          ],
+          "additionalProperties": true
+        },
+        "sign_in": {
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tables": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "owner": {
+              "type": "string",
+              "minLength": 1
+            },
+            "migration": {
+              "$ref": "#/$defs/path"
+            },
+            "runtime_role": {
+              "type": "string",
+              "minLength": 1
+            },
+            "permissions": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "schema",
+            "tables",
+            "owner",
+            "migration",
+            "runtime_role",
+            "permissions"
           ],
           "additionalProperties": true
         }
@@ -414,6 +459,130 @@
             "email-link",
             "none"
           ]
+        },
+        "staff_provider": {
+          "enum": [
+            "none",
+            "microsoft",
+            "google",
+            "oidc"
+          ]
+        },
+        "public_origin_env": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "configuration": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "secret_files": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "required_when": {
+                "enum": [
+                  "always",
+                  "staff",
+                  "smtp-auth"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "name",
+              "required_when",
+              "description"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "host_setup": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "string",
+              "minLength": 1
+            },
+            "request": {
+              "type": "string",
+              "minLength": 1
+            },
+            "microsoft": {
+              "type": "string",
+              "minLength": 1
+            },
+            "google": {
+              "type": "string",
+              "minLength": 1
+            },
+            "callbacks": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^/[^\\s?#]*$"
+              },
+              "properties": {
+                "microsoft": {
+                  "type": "string",
+                  "pattern": "^/[^\\s?#]*$"
+                },
+                "google": {
+                  "type": "string",
+                  "pattern": "^/[^\\s?#]*$"
+                }
+              },
+              "required": [
+                "microsoft",
+                "google"
+              ]
+            }
+          },
+          "required": [
+            "owner",
+            "request",
+            "microsoft",
+            "google",
+            "callbacks"
+          ],
+          "additionalProperties": true
+        },
+        "email_link": {
+          "type": "object",
+          "properties": {
+            "verification_path": {
+              "type": "string",
+              "pattern": "^/[^\\s?#]*$"
+            },
+            "requires": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "verification_path",
+            "requires"
+          ],
+          "additionalProperties": true
         }
       },
       "required": [
@@ -575,6 +744,9 @@
   "additionalProperties": true,
   "allOf": [
     {
+      "$ref": "#/$defs/credentialFreeValue"
+    },
+    {
       "if": {
         "properties": {
           "jobs": {
@@ -662,6 +834,468 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "sign_in": {
+            "anyOf": [
+              {
+                "properties": {
+                  "staff": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "staff"
+                ]
+              },
+              {
+                "properties": {
+                  "outsiders": {
+                    "const": "email-link"
+                  }
+                },
+                "required": [
+                  "outsiders"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "sign_in"
+        ]
+      },
+      "then": {
+        "properties": {
+          "sign_in": {
+            "properties": {
+              "configuration": {
+                "required": [
+                  "AUTH_BASE_URL",
+                  "AUTH_SECRET_FILE",
+                  "AUTH_DATABASE_URL",
+                  "STAFF_PROVIDER"
+                ]
+              },
+              "secret_files": {
+                "allOf": [
+                  {
+                    "contains": {
+                      "properties": {
+                        "name": {
+                          "const": "AUTH_SECRET_FILE"
+                        },
+                        "required_when": {
+                          "const": "always"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "required_when"
+                      ]
+                    }
+                  },
+                  {
+                    "contains": {
+                      "properties": {
+                        "name": {
+                          "const": "STAFF_CLIENT_SECRET_FILE"
+                        },
+                        "required_when": {
+                          "const": "staff"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "required_when"
+                      ]
+                    }
+                  },
+                  {
+                    "contains": {
+                      "properties": {
+                        "name": {
+                          "const": "SMTP_PASSWORD_FILE"
+                        },
+                        "required_when": {
+                          "const": "smtp-auth"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "required_when"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "staff_provider",
+              "public_origin_env",
+              "configuration",
+              "secret_files",
+              "host_setup"
+            ]
+          },
+          "config": {
+            "allOf": [
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "AUTH_BASE_URL"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "AUTH_SECRET_FILE"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "AUTH_DATABASE_URL"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "STAFF_PROVIDER"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            ]
+          },
+          "postgres": {
+            "required": [
+              "sign_in"
+            ],
+            "properties": {
+              "roles": {
+                "required": [
+                  "auth"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "sign_in": {
+            "properties": {
+              "outsiders": {
+                "const": "email-link"
+              }
+            },
+            "required": [
+              "outsiders"
+            ]
+          }
+        },
+        "required": [
+          "sign_in"
+        ]
+      },
+      "then": {
+        "properties": {
+          "sign_in": {
+            "properties": {
+              "configuration": {
+                "required": [
+                  "SMTP_HOST",
+                  "SMTP_PORT",
+                  "SMTP_FROM",
+                  "SMTP_USER",
+                  "SMTP_PASSWORD_FILE"
+                ]
+              }
+            },
+            "required": [
+              "email_link"
+            ]
+          },
+          "config": {
+            "allOf": [
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "SMTP_HOST"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "SMTP_PORT"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "SMTP_FROM"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "SMTP_USER"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "SMTP_PASSWORD_FILE"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "sign_in": {
+            "properties": {
+              "staff": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "staff"
+            ]
+          }
+        },
+        "required": [
+          "sign_in"
+        ]
+      },
+      "then": {
+        "properties": {
+          "sign_in": {
+            "properties": {
+              "configuration": {
+                "required": [
+                  "STAFF_ISSUER",
+                  "STAFF_CLIENT_ID",
+                  "STAFF_CLIENT_SECRET_FILE"
+                ]
+              }
+            },
+            "required": []
+          },
+          "config": {
+            "allOf": [
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "STAFF_ISSUER"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "STAFF_CLIENT_ID"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "STAFF_CLIENT_SECRET_FILE"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "sign_in": {
+            "properties": {
+              "staff": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "const": "entra"
+                  }
+                },
+                "required": [
+                  "provider"
+                ]
+              }
+            },
+            "required": [
+              "staff"
+            ]
+          }
+        },
+        "required": [
+          "sign_in"
+        ]
+      },
+      "then": {
+        "properties": {
+          "sign_in": {
+            "properties": {
+              "configuration": {
+                "required": [
+                  "MICROSOFT_TENANT_ID"
+                ]
+              }
+            }
+          },
+          "config": {
+            "allOf": [
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "MICROSOFT_TENANT_ID"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "sign_in": {
+            "properties": {
+              "staff": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "const": "google"
+                  }
+                },
+                "required": [
+                  "provider"
+                ]
+              }
+            },
+            "required": [
+              "staff"
+            ]
+          }
+        },
+        "required": [
+          "sign_in"
+        ]
+      },
+      "then": {
+        "properties": {
+          "sign_in": {
+            "properties": {
+              "configuration": {
+                "required": [
+                  "GOOGLE_WORKSPACE_DOMAIN"
+                ]
+              }
+            }
+          },
+          "config": {
+            "allOf": [
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "GOOGLE_WORKSPACE_DOMAIN"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
     }
   ],
   "$id": "https://github.com/gwpicard/ai-build-kit/hosting/handover.schema.json",
@@ -670,11 +1304,21 @@
       "type": "string",
       "maxLength": 512,
       "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:https://[a-zA-Z0-9.-]+(?::[0-9]{1,5})?(?:/[A-Za-z0-9_.-]+)*/?|[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)$",
-      "description": "A repository path or HTTPS address without credentials, query, fragment, percent encoding or copied key material. Use an evidence file path instead of a signed address."
+      "description": "A repository path or HTTPS address without credentials, query, fragment, percent encoding or copied key material. Use an evidence file path instead of a signed address.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/credentialFreeValue"
+        }
+      ]
     },
     "path": {
       "type": "string",
-      "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$"
+      "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$",
+      "allOf": [
+        {
+          "$ref": "#/$defs/credentialFreeValue"
+        }
+      ]
     },
     "request": {
       "oneOf": [
@@ -788,7 +1432,12 @@
           "description": "Put this merged commit live after the host side obtains the required approval and rehearses its migration."
         }
       ],
-      "description": "The four requests to AI Host Kit. A request is intent, not approval. The host owns execution and writes its own records; the build kit never writes host-record.json."
+      "description": "The four requests to AI Host Kit. A request is intent, not approval. The host owns execution and writes its own records; the build kit never writes host-record.json.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/credentialFreeValue"
+        }
+      ]
     },
     "response": {
       "type": "object",
@@ -811,7 +1460,47 @@
         "status",
         "evidence"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "$ref": "#/$defs/credentialFreeValue"
+        }
+      ]
+    },
+    "credentialFreeValue": {
+      "description": "Reject recognisable credential URLs and copied key material throughout declarations and extensions. Arbitrary secrets can resemble ordinary prose.",
+      "anyOf": [
+        {
+          "type": "string",
+          "not": {
+            "pattern": "(?:[a-zA-Z][a-zA-Z0-9+.-]*://[^/\\s?#]*@|-----[bB][eE][gG][iI][nN]|(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[sS][iI][gG][nN][aA][tT][uU][rR][eE]|[sS][iI][gG]|[kK][eE][yY])\\s*=|(?:AKIA|ASIA)[A-Z0-9]{16}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})"
+          }
+        },
+        {
+          "type": "object",
+          "propertyNames": {
+            "not": {
+              "pattern": "(?:[a-zA-Z][a-zA-Z0-9+.-]*://[^/\\s?#]*@|-----[bB][eE][gG][iI][nN]|(?:[pP][aA][sS][sS][wW][oO][rR][dD]|[sS][eE][cC][rR][eE][tT]|[tT][oO][kK][eE][nN]|[sS][iI][gG][nN][aA][tT][uU][rR][eE]|[sS][iI][gG]|[kK][eE][yY])\\s*=|(?:AKIA|ASIA)[A-Z0-9]{16}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/credentialFreeValue"
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/credentialFreeValue"
+          }
+        },
+        {
+          "type": [
+            "number",
+            "boolean",
+            "null"
+          ]
+        }
+      ]
     }
   }
 }

@@ -225,6 +225,9 @@ The requirements below describe what the tool needs. They do not confirm that a 
 | sign in / configuration / SMTP FROM | Sender address for invited outsider sign-in links; ordinary application mail uses MAIL_FROM. |
 | sign in / configuration / SMTP PASSWORD FILE | Host-mounted SMTP password file for sign-in mail when SMTP_USER is supplied; ordinary mail uses SMTP_PASSWORD. |
 | sign in / configuration / VITEST | Test-runner marker only; leave unset in deployed processes. Local stub issuers also require NODE_ENV test. |
+| sign in / configuration / SMTP HOST | SMTP server hostname for sign-in mail. |
+| sign in / configuration / SMTP PORT | SMTP server port for sign-in mail, using TLS. |
+| sign in / configuration / SMTP USER | SMTP account name, supplied with its password file when authentication is needed. |
 | sign in / host setup / owner | AI Host Kit |
 | sign in / host setup / request | For company sign-in, register one company directory application and supply issuer, client ID and the client-secret file through the host secret store. Register the callback on AUTH_BASE_URL. No directory registration is needed for email-only sign-in. |
 | sign in / host setup / microsoft | Single-tenant application; request acct in optionalClaims.idToken so only numeric acct 0 members can sign in. |
@@ -233,6 +236,15 @@ The requirements below describe what the tool needs. They do not confirm that a 
 | sign in / host setup / callbacks / google | /api/auth/callback/google |
 | sign in / email link / verification path | /api/auth/magic-link/verify |
 | sign in / email link / requires | HTTPS origin, SMTP settings and a current administrator-created invitation; links expire after ten minutes and work once. |
+| sign in / secret files / 0 / name | AUTH_SECRET_FILE |
+| sign in / secret files / 0 / required when | always |
+| sign in / secret files / 0 / description | Host-mounted sign-in encryption secret, stable across replicas. |
+| sign in / secret files / 1 / name | STAFF_CLIENT_SECRET_FILE |
+| sign in / secret files / 1 / required when | staff |
+| sign in / secret files / 1 / description | Host-mounted company directory application secret. |
+| sign in / secret files / 2 / name | SMTP_PASSWORD_FILE |
+| sign in / secret files / 2 / required when | smtp-auth |
+| sign in / secret files / 2 / description | Host-mounted SMTP password when SMTP_USER is supplied. |
 | access | private |
 | residency | any |
 | data risk | None |
