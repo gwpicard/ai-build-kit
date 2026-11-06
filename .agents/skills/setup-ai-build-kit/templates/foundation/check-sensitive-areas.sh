@@ -207,7 +207,7 @@ def validate_map(project, lines):
     extensions = {".c", ".cc", ".cpp", ".cs", ".go", ".java", ".js", ".jsx", ".kt", ".php",
                   ".py", ".rb", ".rs", ".swift", ".ts", ".tsx"}
     ignored = {"build", "coverage", "dist", "docs", "node_modules", "test", "tests", "vendor",
-               "venv", ".venv", "__pycache__"}
+               "venv", "__pycache__"}
     try:
         names = os.listdir(project)
     except OSError as error:
@@ -217,10 +217,23 @@ def validate_map(project, lines):
         folder = os.path.join(project, name)
         if name.startswith(".") or name in ignored or not os.path.isdir(folder):
             continue
-        if git("check-ignore", "-q", "--", name, cwd=project).returncode == 0:
-            continue
-        if not git("ls-files", "--", name, cwd=project).stdout.strip():
-            continue
+        try:
+            ignored_folder = git("check-ignore", "-q", "--", folder, cwd=project)
+            if ignored_folder.returncode not in (0, 1):
+                raise RuntimeError("git check-ignore failed for %s (exit %s)" %
+                                   (name, ignored_folder.returncode))
+            if ignored_folder.returncode == 0:
+                continue
+            known_files = git("--literal-pathspecs", "ls-files", "--cached", "--others",
+                              "--exclude-standard", "--", name, cwd=project)
+            if known_files.returncode not in (0, 1):
+                raise RuntimeError("git ls-files failed for %s (exit %s)" %
+                                   (name, known_files.returncode))
+            if not known_files.stdout.strip():
+                continue
+        except (OSError, RuntimeError) as error:
+            fail("Risk-area map: could not inspect %s: %s" % (name, error))
+            return 2
         source = any(os.path.splitext(file)[1] in extensions
                      for current, _, files in os.walk(folder) for file in files)
         if source and name not in assigned:

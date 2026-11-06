@@ -45,17 +45,104 @@ else
 fi
 check "a current map passes" "$pass"
 
+# Each fixture isolates the reason a folder is skipped or rejected.
+(
+folder_case=0
+folder_project() {
+  folder_case=$((folder_case + 1))
+  project="$tmp/folder-$folder_case"
+  mkdir -p "$project/.agents/hooks" "$project/src/billing"
+  git -C "$project" init -q
+  cp "$CHECK" "$project/.agents/hooks/check-sensitive-areas.sh"
+  cp "$tmp/project/masterplan.md" "$project/masterplan.md"
+  printf '%s\n' 'export const charge = true' > "$project/src/billing/charge.ts"
+  git -C "$project" add .
+}
+expect_exit() {
+  expected=$1
+  label=$2
+  code=0
+  run_check > "$tmp/out" 2>&1 || code=$?
+  [ "$code" -eq "$expected" ] && matched=yes || matched=no
+  check "$label (exit $code, expected $expected): $(cat "$tmp/out")" "$matched"
+}
+folder_project
 mkdir -p "$project/ignored-src"
 printf '%s\n' 'print("local helper")' > "$project/ignored-src/helper.py"
 printf '%s\n' 'ignored-src/' > "$project/.gitignore"
-git -C "$project" add .gitignore
-git -C "$project" commit -qm 'Ignore a local source folder'
-if run_check > "$tmp/out" 2>&1; then
-  ignored=yes
-else
-  ignored=no
+# Git does not report a directory as ignored when it contains tracked files.
+# Make a needless lookup fail so only the ignore branch can pass this case.
+(
+  export REAL_GIT=$(command -v git)
+  mkdir -p "$tmp/ignore-bin"
+  cat > "$tmp/ignore-bin/git" <<'SH'
+#!/bin/sh
+if [ "$1" = --literal-pathspecs ]; then shift; fi
+if [ "$1" = ls-files ]; then
+  for arg do
+    if [ "$arg" = ignored-src ]; then exit 128; fi
+  done
 fi
-check "a git-ignored source folder is skipped" "$ignored"
+exec "$REAL_GIT" "$@"
+SH
+  chmod +x "$tmp/ignore-bin/git"
+  export PATH="$tmp/ignore-bin:$PATH"
+  expect_exit 0 "an ignored source folder needs no file lookup"
+)
+
+for folder in venv .venv __pycache__; do
+  folder_project
+  mkdir -p "$project/$folder"
+  printf '%s\n' 'print("environment helper")' > "$project/$folder/helper.py"
+  git -C "$project" add -- "$folder/helper.py"
+  expect_exit 0 "tracked source in $folder is skipped"
+done
+
+folder_project
+mkdir -p "$project/new-source"
+printf '%s\n' 'print("new source")' > "$project/new-source/helper.py"
+expect_exit 1 "untracked source is checked before the first commit"
+
+folder_project
+mkdir -p "$project/services/nested"
+printf '%s\n' 'print("nested source")' > "$project/services/nested/helper.py"
+git -C "$project" add services/nested/helper.py
+expect_exit 1 "nested tracked source without an area fails"
+
+for folder in :source ':(bad)source'; do
+  folder_project
+  mkdir -p "$project/$folder"
+  printf '%s\n' 'print("literal source")' > "$project/$folder/helper.py"
+  git -C "$project" --literal-pathspecs add -- "$folder/helper.py"
+  expect_exit 1 "tracked source in $folder is treated literally"
+done
+
+folder_project
+mkdir -p "$project/local-data"
+printf '%s\n' 'local-data/*.py' > "$project/.gitignore"
+printf '%s\n' 'print("ignored file")' > "$project/local-data/helper.py"
+expect_exit 0 "a folder containing only ignored files is skipped"
+
+# Fail Git lookups independently without affecting the initial root lookup.
+real_git=$(command -v git)
+mkdir -p "$tmp/git-bin"
+cat > "$tmp/git-bin/git" <<'SH'
+#!/bin/sh
+if [ "$1" = --literal-pathspecs ]; then shift; fi
+if [ "$1" = "$FAIL_GIT_COMMAND" ]; then exit 128; fi
+exec "$REAL_GIT" "$@"
+SH
+chmod +x "$tmp/git-bin/git"
+for command in check-ignore ls-files; do
+  (
+    export REAL_GIT="$real_git" FAIL_GIT_COMMAND="$command"
+    export PATH="$tmp/git-bin:$PATH"
+    expect_exit 2 "a git $command error stops the check"
+    grep -Fq "git $command failed" "$tmp/out" && named=yes || named=no
+    check "the git $command error is named" "$named"
+  )
+done
+)
 
 if run_check --change "" > "$tmp/out" 2>&1; then
   empty_base=no
