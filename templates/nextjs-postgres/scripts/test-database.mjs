@@ -13,6 +13,7 @@ function run(command, args, capture = false) {
   return result.stdout?.trim();
 }
 try {
+  run("npm", ["run", "build:worker"]);
   run("docker", [...compose, "up", "-d", "--wait"]);
   const port = run("docker", [...compose, "port", "postgres", "5432"], true).split(":").at(-1);
   env.ADMIN_DATABASE_URL = `postgresql://postgres:${env.POSTGRES_PASSWORD}@127.0.0.1:${port}/tool_test`;
