@@ -1,6 +1,6 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, cpSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, cpSync, readFileSync, writeFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
@@ -273,6 +273,21 @@ test('the authentication migration path is read from the declaration', () => {
   cpSync(resolve(dir, original.postgres.sign_in.migration), resolve(dir, migration));
   rmSync(resolve(dir, original.postgres.sign_in.migration));
   assert.doesNotThrow(() => checkCode(dir, mutate(h => { h.postgres.sign_in.migration = migration; })));
+});
+test('the authentication migration cannot link outside the project', () => {
+  const dir = copy(), outside = copy(), migration = 'db/migrations/outside.sql';
+  symlinkSync(resolve(outside, original.postgres.sign_in.migration), resolve(dir, migration));
+  const h = mutate(h => { h.postgres.sign_in.migration = migration; });
+  assert.equal(validate(h), true);
+  assert.throws(() => checkCode(dir, h), /postgres.sign_in.migration: resolved file must be inside db\/migrations/);
+});
+for (const location of ['root', 'extension']) test(`schema alone rejects copied key material as a ${location} field name`, () => {
+  const key = 'ghp_' + 'a'.repeat(36);
+  const h = mutate(h => {
+    if (location === 'root') h[key] = 'synthetic-marker';
+    else h.optional_note = { [key]: 'synthetic-marker' };
+  });
+  assert.equal(validate(h), false);
 });
 test('authentication ownership must match the migration execution role', () => {
   const dir = copy(), path = resolve(dir, 'scripts/migrate.mjs');

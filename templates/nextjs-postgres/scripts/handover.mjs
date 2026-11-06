@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
-import { resolve, dirname, relative } from 'node:path';
+import { readFileSync, writeFileSync, existsSync, readdirSync, realpathSync } from 'node:fs';
+import { resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import ts from 'typescript';
@@ -61,7 +61,10 @@ export function checkCode(root, handover) {
     same(handover.sign_in.email_link.verification_path, paths.email, 'sign_in.email_link');
     const migrationPath = resolve(root, handover.postgres.sign_in.migration);
     if (!existsSync(migrationPath)) throw new Error('postgres.sign_in.migration: declared file is missing');
-    const migration = readFileSync(migrationPath, 'utf8');
+    const resolvedMigration = realpathSync(migrationPath);
+    const migrationsFolder = resolve(realpathSync(root), 'db/migrations');
+    if (!resolvedMigration.startsWith(migrationsFolder + sep)) throw new Error('postgres.sign_in.migration: resolved file must be inside db/migrations');
+    const migration = readFileSync(resolvedMigration, 'utf8');
     const createdSchema = migration.match(/CREATE SCHEMA ([a-z_]+) AUTHORIZATION ([a-z_]+);/);
     if (!createdSchema) throw new Error('postgres.sign_in: schema ownership missing from migration');
     same(handover.postgres.sign_in.schema, createdSchema[1], 'postgres.sign_in.schema');
