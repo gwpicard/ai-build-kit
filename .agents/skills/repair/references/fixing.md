@@ -21,6 +21,10 @@ change the ranking. If the person or changelog identifies when it last worked,
 bisect saved history before testing causes and report the change and date. Do
 not bisect without a known-good point.
 
+Before the first code change, tell the person in one or two plain sentences
+what you think is wrong and what result would prove or disprove it. If they
+reject the diagnosis, re-rank the causes without making a fix.
+
 ## Change one cause at a time
 
 Change one variable per attempt. Commit useful work, such as a reproducing
