@@ -40,10 +40,9 @@ unless already named or nothing happened lately.
 
 ## Recovery
 
-- **Piece going in circles:** suggest saving the work through
-  `records/references/unsaved-work.md` and starting a fresh chat. Tell the
-  person which piece, failed check and repair notes the new agent should read;
-  `repair/references/escalation.md` still applies.
+- **Circling piece:** offer saving via `records/references/unsaved-work.md`;
+  suggest a fresh chat reading the piece, failed check and notes. Apply
+  `repair/references/escalation.md`.
 
 - **Uncommitted work:** follow the `records` skill's
   `references/unsaved-work.md` and give its explanation now.
