@@ -122,6 +122,14 @@ provider_session_records() {
   return 0
 }
 
+# Keep earlier session evidence without changing the caller's shell variables.
+provider_keep_session() (
+  prefix=$1
+  printf '%s\n' "${PROVIDER_SESSION:-}" > "$prefix.session"
+  provider_session_records "$prefix" > "$prefix.previous-records"
+  mv "$prefix.previous-records" "$prefix.extra-records"
+)
+
 # real_gh_answered
 # Read file names from stdin, one to a line, and print the first sign that the
 # real GitHub CLI answered a command. During a run the real one finds no

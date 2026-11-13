@@ -438,7 +438,7 @@ run_once() {
       esac
     fi
     if [ "$message" != "$filler" ] && [ -f "${turnfile%.txt}.new-session" ]; then
-      provider_session_records "$project" >> "$WORK/s${number}-r${repeat}.extra-records"
+      provider_keep_session "$project"
       provider_new_session
       rm -f "$lastreply.session-started"
       printf '(fresh session; project and repair history kept)\n' >> "$transcript"
