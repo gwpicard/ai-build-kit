@@ -22,14 +22,14 @@ checks from the project root; keep only exit codes:
 
 ## Tell them where things stand
 
-Start with the build state, next command and reason. Put broken work first,
-then failed checks, reviews and unfinished setup. Give counts of ready,
+Start with build state, next command and reason. Put broken work first,
+then failed checks, reviews and unfinished setup. Count ready,
 waiting, blocked and half-done pieces; before launch, say how many entries are
 still notes rather than pieces. Say what
 waiting pieces need and whether the person must act. If more pieces wait on
 them than are ready, recommend planning.
 
-Name pieces, never issue numbers. Name at most three, or give the total and
+Name pieces, never issue numbers: at most three, or give the total and
 nearest. State dependencies in sentences. `/implement` shows ready pieces.
 Before launch, suggest `/implement`, `/shape` or `/setup-hosting`; once live,
 `/shape` or `/maintain`.
@@ -40,8 +40,9 @@ unless already named or nothing happened lately.
 
 ## Recovery
 
-- **Circling piece:** offer saving via `records/references/unsaved-work.md`;
-  suggest a fresh chat reading the piece, failed check and notes. Apply
+- **Circling piece:** say: save the work (`records/references/unsaved-work.md`)
+  before starting a fresh chat; tell it to read the piece, failed check and
+  notes. Apply
   `repair/references/escalation.md`.
 
 - **Uncommitted work:** follow the `records` skill's

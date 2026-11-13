@@ -6,6 +6,7 @@ evidence. Give one address; stop previews you started after they try it, and
 never use a browser tab they are using. Confirm behaviour where judgement is
 needed. For work with no visible screen, run a made-up case and show output.
 Describe failures as expected versus actual and fix the cause.
+For a repair, end the report with one plain sentence saying which fault a check now guards.
 
 Run the reach check and its named tests, boundary check and loops read as
 `quality-checks` directs. Run
