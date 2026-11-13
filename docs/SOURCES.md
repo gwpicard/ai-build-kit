@@ -37,6 +37,10 @@ This list identifies ideas used in the kit and the files that implement them.
 |---|---|---|
 | [Ben's Bites, Become Technical in 1 Day](https://cookbook.bensbites.com/cookbook/become-technical-in-1-day/) | Explain the suspected cause before repairing it, so the person can challenge it. Ideas only; no text copied. | `.agents/skills/repair/references/fixing.md`. |
 
+The fresh-chat recovery advice in `.agents/skills/what-now/SKILL.md` borrows
+Ben's Bites' idea, "Before You Go In Circles": save the work and give a new
+session a clear focus. Only the idea is borrowed.
+
 ## Review and teamwork
 
 | Source | Contribution | Where it is in the kit |

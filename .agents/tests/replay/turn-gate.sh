@@ -68,6 +68,12 @@ split_turns() {
         close(marker)
         granting = 0
       }
+      if (new_session) {
+        marker = sprintf("%s/turn-%02d.new-session", dir, count)
+        print "yes" > marker
+        close(marker)
+        new_session = 0
+      }
       if (interrupting) {
         marker = sprintf("%s/turn-%02d.interrupt", dir, count)
         printf "%s\n", interrupted > marker
@@ -77,6 +83,7 @@ split_turns() {
       buffer = ""
       started = 0
     }
+    /^# new-session: yes$/ { new_session = 1; next }
     /^# when:/ {
       line = $0
       sub(/^# when: */, "", line)

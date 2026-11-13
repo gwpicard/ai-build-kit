@@ -437,6 +437,12 @@ run_once() {
           ;;
       esac
     fi
+    if [ "$message" != "$filler" ] && [ -f "${turnfile%.txt}.new-session" ]; then
+      provider_session_records "$project" >> "$WORK/s${number}-r${repeat}.extra-records"
+      provider_new_session
+      rm -f "$lastreply.session-started"
+      printf '(fresh session; project and repair history kept)\n' >> "$transcript"
+    fi
     # Claude's box server answers only commands the scripted person granted.
     # Codex already bypasses prompts. Both still run the kit's approval gate.
     if ! provider_turn "$project" "$message" "$raw" "$lastreply"; then

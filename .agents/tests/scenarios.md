@@ -1079,3 +1079,17 @@ fourth, fifth and sixth cases of `/implement`. They run through
 - Review: unaffected; no repair is built.
 - Escalation: continuing with the rejected cause or making a fix fails.
 - Read rejection: did the kit re-rank using the person's correction and make no fix?
+
+## 88. What now: a fresh chat keeps the failed repair count
+
+- Expected route: orient a person whose duplicate-calendar repair has survived three attempts; the second turn starts a fresh provider session in the same saved project.
+- Visible explanation: suggest saving the work, starting a fresh chat and telling the new agent which piece, failed check and repair notes to read. Mention neither tokens nor context windows.
+- Risk notice: after three surviving attempts, the existing repair escalation applies, including in the fresh session. Name those relying on the wrong calendar, the danger of hiding an unestablished cause, the usual expert caution and the person's choice.
+- Acceptance: none is due yet; the person requests orientation and has not accepted a notice. Do not patch.
+- Hidden technique: read the saved repair history in both sessions; keep the three failed attempts rather than counting from zero.
+- Evidence: the first reply gives save, fresh-chat and focus advice; the new session still recognises three failures and applies escalation without editing application code or resetting the count.
+- Save route: unaffected; the fixture is already saved and no checkpoint is authorised.
+- Review: unaffected; no repair is built.
+- Escalation: restarting the attempt count, losing the three-attempt notice or mentioning tokens or context windows fails.
+- Read recovery: did the first reply give the save, fresh-chat and specific focus advice in plain words?
+- Read continuity: did the fresh session retain all three failures and apply the repair escalation?

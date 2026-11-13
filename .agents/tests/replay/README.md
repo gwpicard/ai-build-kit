@@ -343,6 +343,10 @@ costs a little and leaves a note; it can never hold a line back for good and
 fail a run that would otherwise have passed. `../gated-turns.sh` pins that down
 with replies written by hand, at no model cost.
 
+A turn marked `# new-session: yes` starts a fresh provider session in the same
+project. Earlier session records remain available to the evidence checks;
+project files and repair history stay in place.
+
 ## A turn that says the fix was merged
 
 The kit saves a fix as a pull request and merges it only on a yes that names
