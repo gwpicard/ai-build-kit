@@ -1,0 +1,6 @@
+# setup: fixture
+# prepare: calendar-feed
+/shape A single confirmed loan shows twice after the calendar reconnects. Investigate this, but stop before changing application code.
+---
+# interrupts: the person rejects the suspected cause before any fix
+That diagnosis is wrong. I checked again: there was no reconnection that day. The duplicate appeared when we changed the return date. Leave the code alone for now.

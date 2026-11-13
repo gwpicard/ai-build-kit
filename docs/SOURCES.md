@@ -31,6 +31,14 @@ This list identifies ideas used in the kit and the files that implement them.
 | [Architecture decision records](https://martinfowler.com/bliki/ArchitectureDecisionRecord.html), as described by Martin Fowler | Record each settled choice with its reason, so a later session does not reopen it. | The `## Decided` section on a piece, `.agents/skills/records/references/pieces.md`. |
 | [arc42](https://arc42.org/) and [C4 model](https://c4model.com/) | Diagram the tool and the external systems it connects to. | The system connections diagram in the masterplan, `.agents/skills/setup-ai-build-kit/templates/masterplan.md`, `.agents/skills/records/SKILL.md`. |
 
+## Learning during repairs
+
+| Source | Contribution | Where it is in the kit |
+|---|---|---|
+| [Ben's Bites, Become Technical in 1 Day](https://cookbook.bensbites.com/cookbook/become-technical-in-1-day/) | Explain the suspected cause before repairing it, so the person can challenge it. Ideas only; no text copied. | `.agents/skills/repair/references/fixing.md`. |
+| [Ben's Bites, Before You Go In Circles](https://cookbook.bensbites.com/cookbook/become-technical-in-1-day/) | Save the work and give a fresh chat a clear focus. Ideas only; no text copied. | `.agents/skills/what-now/SKILL.md`. |
+| [Ben's Bites, Become Technical in 1 Day](https://cookbook.bensbites.com/cookbook/become-technical-in-1-day/) | Tell the person what will catch a returning fault or prevent a repeated mistake. Ideas only; no text copied. | `.agents/skills/build-piece/references/build-limits.md`, `.agents/skills/maintain/references/truing.md`. |
+
 ## Review and teamwork
 
 | Source | Contribution | Where it is in the kit |

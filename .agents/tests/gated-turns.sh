@@ -91,6 +91,7 @@ First line.
 ---
 Second line.
 ---
+# new-session: yes
 # when: named the risk
 Third line.
 CASE
@@ -119,6 +120,13 @@ grep -q '^First line\.$' "$turns/turn-01.txt" \
 grep -q 'when:' "$turns/turn-03.txt" \
   && bad "the precondition line was sent to the kit as part of the turn" \
   || ok "the precondition is not spoken to the kit"
+
+[ -f "$turns/turn-03.new-session" ] && [ ! -f "$turns/turn-02.new-session" ] \
+  && ok "only the marked turn starts a fresh session" \
+  || bad "the fresh-session boundary moved"
+grep -q 'new-session:' "$turns/turn-03.txt" \
+  && bad "session metadata leaked into the message" \
+  || ok "session metadata is not spoken to the kit"
 
 # --- an interruption is marked, not answered -------------------------------
 # A scripted line may be the person speaking without answering the kit's last

@@ -1,0 +1,7 @@
+# setup: fixture
+# prepare: calendar-feed
+# merge-box: answered
+/shape After reconnecting the calendar and catching up, one confirmed loan shows twice. Its dates did not change. Reproduce this and build the repair here.
+---
+# when: ready|implement|build|repair|reproduc
+/implement Build the duplicate calendar repair. Save it for review and tell me the outcome in plain words. Do not merge it.

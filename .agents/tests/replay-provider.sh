@@ -515,6 +515,28 @@ python3 "$TT" codex "$TEST_WORK/turn-codex.jsonl" "$TEST_WORK/turn-codex-reply"
   && pass "a Codex turn keeps every agent message" \
   || fail_provider "a Codex turn kept: $(cat "$TEST_WORK/turn-codex-reply")"
 
+# A fresh chat keeps both sessions, and collecting evidence must not replace
+# the next turn's output path with the preceding turn's path.
+(
+  REPLAY_PROVIDER=codex
+  CODEX_HOME="$TEST_WORK/session-history"
+  mkdir -p "$CODEX_HOME/sessions"
+  printf '%s\n' first-thread > "$CODEX_HOME/sessions/first.jsonl"
+  printf '%s\n' second-thread > "$CODEX_HOME/sessions/second.jsonl"
+  raw="$TEST_WORK/next-turn.json"
+  PROVIDER_SESSION=first-thread
+  provider_keep_session "$TEST_WORK/fresh"
+  PROVIDER_SESSION=second-thread
+  provider_keep_session "$TEST_WORK/fresh"
+  [ "$raw" = "$TEST_WORK/next-turn.json" ] \
+    || fail_provider "saving session evidence changed the next turn's output path"
+  provider_session_records "$TEST_WORK/fresh" > "$TEST_WORK/kept-records"
+  for session in first second; do
+    grep -qxF "$CODEX_HOME/sessions/$session.jsonl" "$TEST_WORK/kept-records" \
+      || fail_provider "the fresh chat lost $session session evidence"
+  done
+) && pass "fresh chats retain both sessions without overwriting turn output"
+
 if (REPLAY_PROVIDER=unknown; provider_check) >/dev/null 2>&1; then
   fail_provider "an unknown replay provider was accepted"
 else

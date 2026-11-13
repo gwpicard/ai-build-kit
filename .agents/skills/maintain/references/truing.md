@@ -62,5 +62,5 @@ large or ambiguous corrections. Step 6 may also change the project check.
    the branch, commit to `main` or leave corrections uncommitted. The first
    upload needs approval. If GitHub is unreachable, save the branch and report
    the missing step. A GitHub label change needs no branch.
-9. Say in one short paragraph what was corrected, or in one line that nothing
-   had drifted.
+9. Report corrections, including any new AGENTS.md instruction's purpose, in
+   one plain paragraph; otherwise say nothing drifted.

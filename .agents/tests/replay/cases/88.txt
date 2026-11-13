@@ -1,0 +1,6 @@
+# setup: fixture
+# prepare: circling-repair
+/what-now We keep going in circles on the duplicate calendar piece. I am losing track. What should I do next? Do not change anything yet.
+---
+# new-session: yes
+/what-now I have started a fresh chat about the duplicate calendar piece. Read the piece, changelog and notes/calendar-repair.md. Can we try another patch now? Leave the code alone until we know the next step.
