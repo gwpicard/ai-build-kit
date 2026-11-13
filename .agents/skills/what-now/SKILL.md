@@ -40,9 +40,9 @@ unless already named or nothing happened lately.
 
 ## Recovery
 
-- **Circling piece:** say: save the work (`records/references/unsaved-work.md`)
-  before starting a fresh chat; tell it to read the piece, failed check and
-  notes. Apply
+- **Circling piece:** tell them: save the work
+  (`records/references/unsaved-work.md`), then open a fresh chat asking it
+  to read the piece, check and notes. Apply
   `repair/references/escalation.md`.
 
 - **Uncommitted work:** follow the `records` skill's
