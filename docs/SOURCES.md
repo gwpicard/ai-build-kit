@@ -41,6 +41,11 @@ The fresh-chat recovery advice in `.agents/skills/what-now/SKILL.md` borrows
 Ben's Bites' idea, "Before You Go In Circles": save the work and give a new
 session a clear focus. Only the idea is borrowed.
 
+The same [Ben's Bites repair lesson](https://cookbook.bensbites.com/cookbook/become-technical-in-1-day/)
+informs the reports in `.agents/skills/repair/references/fixing.md` and
+`.agents/skills/maintain/references/truing.md`: tell the person what will catch
+a returning fault or prevent a repeated mistake. No text is copied.
+
 ## Review and teamwork
 
 | Source | Contribution | Where it is in the kit |

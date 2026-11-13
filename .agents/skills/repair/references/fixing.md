@@ -51,6 +51,7 @@ without them. Clear this piece's shaping files from `.agents/tmp/`. Apply the `q
 `references/trim.md`. Confirm the original symptom is gone, record its cause
 in the changelog, update the other records and use the build-piece save and
 review route. Report what was removed and that the evidence still passed.
+In one plain sentence, say which fault a check now guards.
 Remove the `broken` label once the symptom is gone.
 
 After three unsuccessful attempts, follow `escalation.md` before trying again.

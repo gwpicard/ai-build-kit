@@ -63,4 +63,5 @@ large or ambiguous corrections. Step 6 may also change the project check.
    upload needs approval. If GitHub is unreachable, save the branch and report
    the missing step. A GitHub label change needs no branch.
 9. Say in one short paragraph what was corrected, or in one line that nothing
-   had drifted.
+   had drifted. If you added a standing instruction to AGENTS.md, say in plain
+   words what it prevents.

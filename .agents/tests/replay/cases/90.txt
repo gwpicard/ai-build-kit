@@ -1,0 +1,3 @@
+# setup: fixture
+# prepare: truing-lesson
+/maintain True the records only today, including the two recent calendar assessments in the changelog. Save any small corrections as a local checkpoint and report what changed. Leave application code alone. Do not update dependencies, upload anything or change a live service.

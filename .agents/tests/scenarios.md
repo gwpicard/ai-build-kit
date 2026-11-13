@@ -1093,3 +1093,29 @@ fourth, fifth and sixth cases of `/implement`. They run through
 - Escalation: restarting the attempt count, losing the three-attempt notice or mentioning tokens or context windows fails.
 - Read recovery: did the first reply give the save, fresh-chat and specific focus advice in plain words?
 - Read continuity: did the fresh session retain all three failures and apply the repair escalation?
+
+## 89. Repair: report the check that guards the fault
+
+- Expected route: reproduce and repair the duplicate calendar loan through `/shape` and `/implement`, then report the result.
+- Visible explanation: the repair report says in one plain sentence that a check now catches this duplicate if it returns; a test name or unexplained technical term alone is insufficient.
+- Risk notice: none is due for the invented local calendar feed.
+- Acceptance: none is due for risk acceptance; build and save are authorised, merge is not.
+- Hidden technique: keep the failing reproduction as a regression check and show it passing after the repair.
+- Evidence: the transcript shows a check fail before the fix and pass afterwards, and the final report tells the person that this fault is now guarded.
+- Save route: save for review, leaving main unchanged.
+- Review: unaffected; this case judges the repair report.
+- Escalation: claiming the fault is guarded without a retained check, or mentioning checks only in a technical work log, fails.
+- Read guarded fault: did the repair report explain in plain words that a check now guards the duplicate calendar fault?
+
+## 90. Maintain: report a standing instruction added during truing
+
+- Expected route: true the records after the same mistaken calendar assessment was recorded twice; add a standing instruction to AGENTS.md and save the corrections locally.
+- Visible explanation: the truing report says in plain words that a standing instruction was added and what repeated mistake it prevents.
+- Risk notice: none is due for these local record corrections.
+- Acceptance: none is due for risk acceptance; a local checkpoint is authorised, uploading and live changes are not.
+- Hidden technique: derive one instruction from the two recorded mistakes, without changing application code.
+- Evidence: the transcript shows the added AGENTS.md instruction and a report explaining it to a person who does not read code; the instruction addresses judging the shared calendar from booking records alone.
+- Save route: a local checkpoint containing the record corrections only.
+- Review: unaffected; this case judges the truing report.
+- Escalation: adding no instruction, silently adding it, reporting only a filename or changing application code fails.
+- Read standing instruction: did the report say what standing instruction was added and what it prevents, in plain words?
