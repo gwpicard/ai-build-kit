@@ -150,6 +150,13 @@ protection script requires both for a recipe project.
 
 ## Portable hosting handover
 
+AI Host Kit's host record schema and contract fixtures are vendored unchanged
+from its [contracts](https://github.com/gwpicard/ai-host-kit/tree/1b30443bd80e3540d4ee266e9e3ae3dc4f641929/contracts).
+The merge reader follows its value-free diagnostics, timestamp validation and
+obvious-secret scan. The [pin](../.agents/skills/merge/contracts/ai-host-kit/upstream.json)
+records the schema's origin and byte fingerprints. The local suite checks
+those fingerprints without fetching upstream.
+
 The [handover schema](../hosting/handover.schema.json) starts from AI Host Kit's
 [provisional draft](https://github.com/gwpicard/ai-host-kit/blob/a7a16e9/contracts/provisional-ai-build-kit/handover.schema.json).
 AI Build Kit owns the adopted contract. The adoption closes descriptive secret

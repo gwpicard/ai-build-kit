@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { schemaFor, validateRecord, renderMasterplan } from './handover.mjs';
+import { schemaFor, validateRecord, renderMasterplan, hostRecordFor } from './handover.mjs';
 
 export const questions = [
   { name: 'sign_in', question: 'How will people sign in?', choices: ['Company Microsoft and invited email users', 'Company Google and invited email users', 'Invited email users only'], values: ['entra', 'google', 'email-link'] },
@@ -27,7 +27,9 @@ export function found(root, answers) {
   if (answers.name !== undefined) handover.tool.name = answers.name;
   validateRecord(handover, schemaFor(root));
   const masterplanPath = resolve(root, 'masterplan.md');
-  const masterplan = renderMasterplan(readFileSync(masterplanPath, 'utf8'), handover);
+  const host = hostRecordFor(root);
+  if (!['valid', 'absent'].includes(host.status)) throw new Error(host.diagnostics.join('\n'));
+  const masterplan = renderMasterplan(readFileSync(masterplanPath, 'utf8'), handover, host);
   writeFileSync(path, JSON.stringify(handover, null, 2) + '\n');
   writeFileSync(masterplanPath, masterplan);
 }

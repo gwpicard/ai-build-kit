@@ -1,0 +1,80 @@
+[
+  {
+    "file": "host-record/invalid-merge-setting.json",
+    "kind": "host-record",
+    "field": "deploys_on_merge"
+  },
+  {
+    "file": "host-record/invalid-date.json",
+    "kind": "host-record",
+    "field": "last_backup_check.at"
+  },
+  {
+    "file": "host-record/invalid-drill-duration.json",
+    "kind": "host-record",
+    "field": "last_restore_drill.duration_hours"
+  },
+  {
+    "file": "host-record/invalid-acceptance.json",
+    "kind": "host-record",
+    "field": "gaps[0].acceptance"
+  },
+  {
+    "file": "host-record/invalid-gap-done.json",
+    "kind": "host-record",
+    "field": "gaps[0].status"
+  },
+  {
+    "file": "host-record/invalid-rollback-image.json",
+    "kind": "host-record",
+    "field": "rollback_targets[0].image"
+  },
+  {
+    "file": "host-record/invalid-health-token.json",
+    "kind": "host-record",
+    "field": "health_address",
+    "withheld": "synthetic-secret-marker"
+  },
+  {
+    "file": "host-record/invalid-address-user-info.json",
+    "kind": "host-record",
+    "field": "address",
+    "withheld": "synthetic-secret-marker"
+  },
+  {
+    "file": "host-record/invalid-evidence-fragment.json",
+    "kind": "host-record",
+    "field": "last_backup_check.evidence",
+    "withheld": "synthetic-secret-marker"
+  },
+  {
+    "file": "host-record/invalid-text-password.json",
+    "kind": "host-record",
+    "field": "gaps[0].reason",
+    "withheld": "synthetic-secret-marker"
+  },
+  {
+    "file": "host-record/invalid-text-entropy.json",
+    "kind": "host-record",
+    "field": "gaps[0].acceptance.words",
+    "withheld": "SyntheticAbCd0123456789EfGhIjKlMnOpQrStUvWxYz"
+  },
+  {
+    "file": "host-record/invalid-rollback-user-info.json",
+    "kind": "host-record",
+    "field": "rollback_targets[0].image",
+    "withheld": "https://user:synthetic-secret-marker@registry.example.invalid/tool:previous"
+  },
+  {
+    "file": "host-record/invalid-rollback-query.json",
+    "kind": "host-record",
+    "field": "rollback_targets[0].image",
+    "withheld": "registry.example.invalid/tool:previous?synthetic-secret-marker"
+  },
+  {
+    "file": "host-record/invalid-text-hex-entropy.json",
+    "kind": "host-record",
+    "field": "recipe",
+    "withheld": "0123456789abcde0123456789abcde0123456789abcde0123456789abcde"
+  }
+]

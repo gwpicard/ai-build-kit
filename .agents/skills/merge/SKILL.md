@@ -65,7 +65,9 @@ For `UNKNOWN`, wait briefly and reread.
 ## Ask and merge
 
 Name the pull request and what it changes, then ask for approval naming the
-merge. Say whether it goes live: it does when `Deploys on merge:` is `yes`, or,
+merge. Run `scripts/merge.py --effect <full pull request head commit>` and use
+its release wording when the host record is valid. Otherwise keep the current
+route: it goes live when `Deploys on merge:` is `yes`, or,
 with no such answer, when the recipe or masterplan deploys every merge to
 `main`. For `no`, name the redeploy. A clear “merge it” already
 counts; do not ask again. Approval for building, saving, uploading, going live or

@@ -382,7 +382,36 @@ def check_sensitive_area(base, head, automatic=False):
              (": " + detail if detail else ""), 2)
 
 
+def merge_effect(head):
+    """Read the proposed tree, rather than an uncommitted local host record."""
+    if not re.fullmatch(r'[0-9a-f]{40}', head):
+        stop('merge: use the full pull request head commit for --effect', 2)
+    paths = git('ls-tree', '--name-only', head, '--', 'hosting/host-record.json')
+    if paths.returncode:
+        stop('merge: could not read the proposed host record', 2)
+    if not paths.stdout.strip():
+        print('hosting/host-record.json: absent; use the existing recipe and masterplan merge setting')
+        return
+    record = git('show', head + ':hosting/host-record.json')
+    if record.returncode:
+        print('hosting/host-record.json: could not read; use the existing recipe and masterplan merge setting')
+        return
+    reader = Path(__file__).with_name('host-record.cjs')
+    try:
+        result = subprocess.run(['node', str(reader), 'merge', str(Path.cwd()), '--stdin'],
+                                input=record.stdout, capture_output=True, text=True)
+    except OSError:
+        result = None
+    if result is None or result.returncode not in (0, 1, 2) or not result.stdout.strip():
+        print('hosting/host-record.json: reader could not run; use the existing recipe and masterplan merge setting')
+    else:
+        print(result.stdout.strip())
+
+
 def main(argv):
+    if len(argv) == 2 and argv[0] == '--effect':
+        merge_effect(argv[1])
+        return
     if len(argv) == 2 and argv[0] == "--pause":
         pause_auto(argv[1])
         return
@@ -437,6 +466,7 @@ def main(argv):
 
     if mode == "--approved":
         approved_yes("merge pull request " + number)
+    merge_effect(head)
     merged = gh("pr", "merge", number, "--merge", "--match-head-commit", head)
     if merged.returncode != 0:
         detail = (merged.stderr or merged.stdout).strip()

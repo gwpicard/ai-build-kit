@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/gwpicard/ai-host-kit.git",
+  "ref": "main",
+  "commit": "621011b0cbe38ec046f26a9b9f6334f1b5549fa9",
+  "path": "contracts/host-record.schema.json",
+  "blob": "44d144df9a0f8e63664acd7b11a06b87d2640453",
+  "sha256": "7bed0414619dd8833284b027426ac4dd11e9a95070dae27e40e7410c02ac8635"
+}
