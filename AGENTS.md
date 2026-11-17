@@ -11,9 +11,9 @@ machinery that assembles the public kit. It is never a project built with the
 kit, so never run `/setup-ai-build-kit` here. `masterplan.md` and
 `CHANGELOG.md` do not exist here by design.
 
-Before any work, read `docs/PHILOSOPHY.md`, then the parts of
-`docs/MAINTAINING.md` the work touches. Check the branch and any unsaved work
-before editing.
+Before you add to the kit, change what a command does, or cut something, read
+`docs/PHILOSOPHY.md`. Read the parts of `docs/MAINTAINING.md` the work touches.
+Check the branch and any unsaved work before editing.
 
 ## Where things live
 
@@ -42,7 +42,7 @@ before editing.
 - `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `.github/ISSUE_TEMPLATE/`:
   public, and ship as they are.
 - `.claude/settings.json` here is the maintainer's own. A project's copy comes
-  from `templates/foundation/claude-settings.json`.
+  from `.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json`.
 
 ## How changes are made
 
@@ -96,15 +96,10 @@ nothing else: no co-author trailer naming a model, and no link to the session
 the work came from. A session link is a personal address that opens for anyone,
 and taking one out of public history means rewriting it.
 
-`.githooks/commit-msg` removes recognised co-author and session trailers,
-standalone generated footers and agent address bylines for Claude Code, Codex,
-Cursor, Gemini CLI and GitHub Copilot, including Cursor's made-with attribution.
-It keeps ordinary prose about those agents and human co-author trailers.
-[MAINTAINING.md](docs/MAINTAINING.md#configure-the-commit-hook) defines the
-matched forms, session-link removal and limits, and gives the command that
-enables the hook in a fresh clone. Agent settings can suppress some attribution
-at source. The source validator separately rejects known Claude attribution
-strings in tracked files; it does not check commit history.
+`.githooks/commit-msg` removes agent attribution from commit messages, and
+[MAINTAINING.md](docs/MAINTAINING.md#configure-the-commit-hook) gives the
+command that enables it in a fresh clone. Nothing removes attribution from a
+pull request description, so write it without any.
 
 ## Secrets and external changes
 
