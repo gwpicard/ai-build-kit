@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # rehearse-merged-tree.sh: assemble what the public repository will hold after
-# consolidation, in a throwaway folder, and run the three steps a hosted check
+# consolidation, in a throwaway folder, and run the steps a hosted check
 # runs against it.
 #
 # The cutover pushes this repository's tracked files into the public repository
@@ -18,6 +18,8 @@
 #   build-adapters.sh --check   the committed adapters match their source
 #   validate-kit.sh             the source and the generated adapters
 #   run-all.sh                  every rehearsal in .agents/tests/
+# It also checks the sign-in review, and runs the full Postgres starter job when
+# that template differs from origin/main.
 #
 # This lives here rather than in .agents/tests/ on purpose. run-all.sh runs
 # every script in that folder, so a rehearsal that called run-all.sh would run
@@ -68,7 +70,7 @@ elif [ "$#" -eq 1 ]; then
 else
   SCRATCH=$(mktemp -d)
   TREE="$SCRATCH/merged"
-  trap 'rm -rf "$SCRATCH"' EXIT INT TERM
+  trap 'rm -R "$SCRATCH"' EXIT INT TERM
 fi
 
 if [ -n "$(git -C "$ROOT" status --porcelain)" ]; then
@@ -84,6 +86,16 @@ if [ -n "$(git -C "$ROOT" status --porcelain)" ]; then
   echo "note: rehearsing unsaved work, because --allow-dirty was passed. This is"
   echo "      not the tree a cutover would push."
   echo
+fi
+
+# Compare in the source repository: the clean copy has no upstream history.
+FULL_STARTER=1
+if git -C "$ROOT" rev-parse --verify origin/main >/dev/null 2>&1; then
+  if git -C "$ROOT" diff --quiet origin/main -- templates/nextjs-postgres/; then
+    FULL_STARTER=0
+  fi
+else
+  echo "note: origin/main is unavailable; the full Postgres starter job is required."
 fi
 
 echo "Assembling the merged tree at $TREE"
@@ -122,6 +134,47 @@ for step in \
   fi
 done
 
+name="postgres-starter/sign-in-review"
+printf '\n########## %s ##########\n' "$name"
+if (cd "$TREE/templates/nextjs-postgres" && npm ci && npm run check:sign-in-review); then
+  printf '  passed: %s\n' "$name"
+else
+  printf '  FAILED: %s\n' "$name"
+  failed="$failed $name"
+fi
+
+if [ "$FULL_STARTER" -eq 1 ]; then
+  name="postgres-starter/build-check"
+  printf '\n########## %s ##########\n' "$name"
+  if ! docker info >/dev/null 2>&1; then
+    printf '  could not run: %s: Docker is unavailable or is not running\n' "$name"
+    failed="$failed $name"
+  elif (
+    cd "$TREE/templates/nextjs-postgres"
+    export CI=true NEXT_TELEMETRY_DISABLED=1 DOCKER_BUILDKIT=1
+    export BUILDX_CONFIG="$TREE/.buildx"
+    npx --no-install playwright install --with-deps chromium &&
+    sh scripts/docker-run.sh -- node scripts/test-database.mjs sh -c '
+      npm run check && npm run test:policy-fault &&
+      npm run test:privilege-fault && npm test
+    ' &&
+    # The socket proxy labels runtime resources; build labels cover the image.
+    sh "$TREE/.agents/skills/maintain/scripts/docker-run.sh" --proxy -- sh -c '
+      image="abk-starter-$ABK_DOCKER_SCOPE:test"
+      docker build --label "ai-build-kit.run=$CODEX_RUN_ID" \
+        --label "ai-build-kit.scope=$ABK_DOCKER_SCOPE" -t "$image" . &&
+      npm run test:image -- "$image"
+    '
+  ); then
+    printf '  passed: %s\n' "$name"
+  else
+    printf '  FAILED: %s\n' "$name"
+    failed="$failed $name"
+  fi
+else
+  echo "Skipped the full Postgres starter job: templates/nextjs-postgres/ matches origin/main."
+fi
+
 printf '\n===================================\n'
 if [ -n "$failed" ]; then
   printf 'The merged tree is not green. These steps failed:\n'
@@ -132,6 +185,6 @@ if [ -n "$failed" ]; then
   exit 1
 fi
 
-printf 'The merged tree is green: all three steps passed.\n'
+printf 'The merged tree is green: all required steps passed.\n'
 [ "$KEEP" -eq 1 ] && printf 'The tree is at %s\n' "$TREE"
 exit 0
