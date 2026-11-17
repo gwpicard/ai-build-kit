@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AI Build Kit handover v1",
-  "description": "AI Build Kit owns hosting/handover.json and this schema. AI Host Kit vendors the published release copy unchanged. The config list declares secrets and settings by name only. Version 1.1 adds request-bound results, running commits, migration rehearsals and held releases in $defs/response; 1.0 handover files remain valid unchanged. Requests are defined in $defs/request. Version 1.1 completes the result contract before its first reader; its required fields do not add requirements to handover files. Subsequent incompatible request or result changes also require a new major version. Readers accept 1.x; minor versions may add optional fields outside config entries and readers report unknown fields before ignoring them. Config entries remain closed to their descriptive fields in every minor version. After publication, a removal, changed meaning or new required field needs a new major version and a supporting reader update. Free text rejects scheme URLs. Extension keys cannot contain password, passwd, secret, token, key or credential in any letter case. Reference fields accept credential-free HTTPS addresses or repository paths, without queries, fragments, user information, escapes or key text. Validation cannot detect arbitrary secrets disguised as ordinary prose.",
+  "description": "AI Build Kit owns hosting/handover.json and this schema. AI Host Kit vendors the published release copy unchanged. The config list declares secrets and settings by name only. Version 1.1 adds request-bound results, running commits, migration rehearsals and held releases in $defs/response; 1.0 handover files remain valid unchanged. Requests are defined in $defs/request. Result definitions became normative in 1.1, before any reader of results existed, so their new required fields do not require a major version. They do not add requirements to handover files. Later changes to results follow the normal version rule: a removal, changed meaning or new required field requires a new major version. Readers accept 1.x; minor versions may add optional fields outside config entries and readers report unknown fields before ignoring them. Config entries remain closed to their descriptive fields in every minor version. After publication, a removal, changed meaning or new required field needs a new major version and a supporting reader update. Free text rejects scheme URLs. Extension keys cannot contain password, passwd, secret, token, key or credential in any letter case. Reference fields accept credential-free HTTPS addresses or repository paths, without queries, fragments, user information, escapes or key text. Validation cannot detect arbitrary secrets disguised as ordinary prose.",
   "type": "object",
   "properties": {
     "schema_version": {
@@ -2003,7 +2003,8 @@
             "status",
             "evidence",
             "commit",
-            "migration"
+            "migration",
+            "rehearsal"
           ],
           "additionalProperties": false,
           "allOf": [
@@ -2019,9 +2020,56 @@
                 ]
               },
               "then": {
+                "properties": {
+                  "rehearsal": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "passed",
+                          "failed",
+                          "could-not-check"
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "rehearsal": {
+                    "properties": {
+                      "status": {
+                        "const": "not-needed"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "passed"
+                  }
+                },
                 "required": [
-                  "rehearsal"
+                  "status"
                 ]
+              },
+              "then": {
+                "properties": {
+                  "rehearsal": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "passed",
+                          "not-needed"
+                        ]
+                      }
+                    }
+                  }
+                }
               }
             }
           ]
@@ -2148,7 +2196,8 @@
             "evidence",
             "commit",
             "migration",
-            "running_commit"
+            "running_commit",
+            "rehearsal"
           ],
           "additionalProperties": false,
           "allOf": [
@@ -2164,9 +2213,30 @@
                 ]
               },
               "then": {
-                "required": [
-                  "rehearsal"
-                ]
+                "properties": {
+                  "rehearsal": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "passed",
+                          "failed",
+                          "could-not-check"
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "rehearsal": {
+                    "properties": {
+                      "status": {
+                        "const": "not-needed"
+                      }
+                    }
+                  }
+                }
               }
             },
             {
@@ -2188,6 +2258,78 @@
               "else": {
                 "properties": {
                   "reason": false
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "passed"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "rehearsal": {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "passed",
+                          "not-needed"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "reason": {
+                    "const": "rehearsal-failed"
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "rehearsal": {
+                    "properties": {
+                      "status": {
+                        "const": "failed"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "reason": {
+                    "const": "rehearsal-could-not-check"
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "rehearsal": {
+                    "properties": {
+                      "status": {
+                        "const": "could-not-check"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -2272,7 +2414,7 @@
         "evidence"
       ],
       "additionalProperties": false,
-      "description": "The database rehearsal outcome for this commit, with evidence even when no rehearsal was needed or possible. Reverting code does not reverse database changes."
+      "description": "Every preview and release result reports the database rehearsal outcome for this commit, with an evidence reference. With no migration, the outcome is not-needed; with a migration, not-needed is refused. A passed result requires a passed or not-needed rehearsal. Evidence accepts the same credential-free HTTPS addresses or repository paths as other reference fields. Reverting code does not reverse database changes."
     }
   },
   "patternProperties": {

@@ -67,27 +67,59 @@ test('each request rejects a valid result for every other action', () => {
     assert.equal(response({ ...fixture.response, action: 'rollback' }), false);
   }
 });
-for (const action of ['preview', 'release']) test(`${action} rehearsal outcomes and migration binding`, () => {
-  const fixture = resultFixtures.find(f => f.request.action === action && f.valid);
-  for (const status of ['passed', 'failed', 'not-needed', 'could-not-check']) {
-    const result = structuredClone(fixture.response);
-    result.rehearsal.status = status;
-    assert.equal(boundResponse(fixture.request)(result), true);
-    delete result.rehearsal.evidence;
-    assert.equal(response(result), false);
+for (const action of ['preview', 'release']) {
+  const fixture = resultFixtures.find(f => f.name === `${action} passed`);
+  for (const migration of [true, false, undefined]) {
+    const item = { ...fixture.request };
+    if (migration === undefined) delete item.migration;
+    else item.migration = migration;
+    const validateResult = boundResponse(item);
+    const statuses = action === 'release' ? ['passed', 'failed', 'could-not-check', 'held'] : ['passed', 'failed', 'could-not-check'];
+    for (const status of statuses) {
+      test(`${action} ${status} requires rehearsal when migration is ${migration}`, () => {
+        const result = { ...fixture.response, status, migration: migration ?? false };
+        if (status === 'held') result.reason = 'awaiting-approval';
+        delete result.rehearsal;
+        assert.equal(response(result), false);
+        assert.equal(validateResult(result), false);
+      });
+      for (const outcome of ['passed', 'failed', 'not-needed', 'could-not-check']) {
+        test(`${action} ${status}, migration ${migration}, rehearsal ${outcome} is consistent`, () => {
+          const result = { ...fixture.response, status, migration: migration ?? false,
+            rehearsal: { status: outcome, evidence: 'evidence/rehearsal.txt' } };
+          if (status === 'held') result.reason = 'awaiting-approval';
+          const expected = migration === true
+            ? outcome !== 'not-needed' && (status !== 'passed' || outcome === 'passed')
+            : outcome === 'not-needed';
+          assert.equal(response(result), expected);
+          assert.equal(validateResult(result), expected);
+          delete result.rehearsal.evidence;
+          assert.equal(response(result), false);
+        });
+      }
+    }
+    test(`${action} binds the migration flag when the request has migration ${migration}`, () => {
+      const result = { ...fixture.response, migration: migration !== true,
+        rehearsal: { status: migration === true ? 'not-needed' : 'passed', evidence: 'evidence/rehearsal.txt' } };
+      assert.equal(response(result), true);
+      assert.equal(validateResult(result), false);
+    });
   }
-  const result = structuredClone(fixture.response);
-  result.migration = false;
-  delete result.rehearsal;
-  assert.equal(response(result), true);
-  assert.equal(boundResponse(fixture.request)(result), false);
-  const withoutMigration = { ...fixture.request };
-  delete withoutMigration.migration;
-  assert.equal(boundResponse(withoutMigration)(result), true);
-});
+}
+for (const [reason, expected] of [['rehearsal-failed', 'failed'], ['rehearsal-could-not-check', 'could-not-check']]) {
+  for (const outcome of ['passed', 'failed', 'not-needed', 'could-not-check']) {
+    test(`release held for ${reason} requires rehearsal ${expected}, reports ${outcome}`, () => {
+      const fixture = resultFixtures.find(f => f.name === 'release passed');
+      const result = { ...fixture.response, status: 'held', reason,
+        rehearsal: { status: outcome, evidence: 'evidence/rehearsal.txt' } };
+      assert.equal(response(result), outcome === expected);
+      assert.equal(boundResponse(fixture.request)(result), outcome === expected);
+    });
+  }
+}
 test('action-specific fields, required fields and fixed hold reasons are enforced', () => {
   for (const fixture of resultFixtures.filter(f => f.valid)) {
-    for (const field of ['action', 'status', 'evidence', ...(['preview', 'release'].includes(fixture.request.action) ? ['commit', 'migration'] : []), ...(['health', 'release'].includes(fixture.request.action) ? ['running_commit'] : [])]) {
+    for (const field of ['action', 'status', 'evidence', ...(['preview', 'release'].includes(fixture.request.action) ? ['commit', 'migration', 'rehearsal'] : []), ...(['health', 'release'].includes(fixture.request.action) ? ['running_commit'] : [])]) {
       const result = structuredClone(fixture.response);
       delete result[field];
       assert.equal(response(result), false, `${fixture.name}: ${field}`);
@@ -405,9 +437,33 @@ test('result and request fields refuse recognisable credentials without a reader
   }
 });
 
-test('rehearsal evidence refuses signed, encoded and credential-bearing references', () => {
-  const result = resultFixtures.find(f => f.name === 'release passed').response;
-  for (const evidence of ['https://example.test/file?token=synthetic-marker', 'https://example.test/file?sig=synthetic-marker', 'https://user:password@example.test/path', 'https://example.test/file%3Fsig%3Dmarker', '../key.pem']) {
-    assert.equal(response({ ...result, rehearsal: { status: 'passed', evidence } }), false);
+test('result references accept credential-free HTTPS addresses and repository paths', () => {
+  for (const fixture of resultFixtures.filter(f => f.valid)) {
+    const paths = [['location'], ['evidence'], ...(fixture.response.rehearsal ? [['rehearsal', 'evidence']] : [])];
+    for (const path of paths) {
+      for (const reference of ['https://example.test/evidence/run.txt', 'evidence/run.txt']) {
+        const result = structuredClone(fixture.response);
+        parent(result, path)[path.at(-1)] = reference;
+        assert.equal(boundResponse(fixture.request)(result), true, `${fixture.name}: ${path.join('.')}`);
+      }
+    }
+  }
+});
+test('result references reject other schemes, unsafe addresses, invalid paths and key text', () => {
+  const invalidReferences = [
+    'http://example.test/file', 'ftp://example.test/file', 'file://evidence/run.txt', 's3://example/file',
+    'mailto:person@example.test', 'https://example.test/file?token=synthetic-marker',
+    'https://example.test/file?sig=synthetic-marker', 'https://example.test/file?view=plain',
+    'https://example.test/file#section', 'https://user:password@example.test/path',
+    'https://example.test/file%3Fsig%3Dmarker', '../key.pem', '/evidence/run.txt',
+    'evidence/../run.txt', 'evidence/run file.txt', 'evidence\\run.txt', '', ...credentialSamples,
+  ];
+  for (const fixture of resultFixtures.filter(f => f.valid)) {
+    const paths = [['location'], ['evidence'], ...(fixture.response.rehearsal ? [['rehearsal', 'evidence']] : [])];
+    for (const path of paths) for (const reference of invalidReferences) {
+      const result = structuredClone(fixture.response);
+      parent(result, path)[path.at(-1)] = reference;
+      assert.equal(response(result), false, `${fixture.name}: ${path.join('.')}`);
+    }
   }
 });

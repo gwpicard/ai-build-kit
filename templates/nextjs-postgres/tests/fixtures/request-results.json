@@ -536,5 +536,169 @@
       "reason": "health-could-not-check"
     },
     "valid": true
+  },
+  {
+    "name": "preview migration false not needed",
+    "request": {
+      "action": "preview",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "branch": "feature/example",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": false
+    },
+    "response": {
+      "action": "preview",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": false,
+      "rehearsal": {
+        "status": "not-needed",
+        "evidence": "evidence/rehearsal.txt"
+      }
+    },
+    "valid": true
+  },
+  {
+    "name": "preview migration false without rehearsal",
+    "request": {
+      "action": "preview",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "branch": "feature/example",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": false
+    },
+    "response": {
+      "action": "preview",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": false
+    },
+    "valid": false
+  },
+  {
+    "name": "preview migration omitted not needed",
+    "request": {
+      "action": "preview",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "branch": "feature/example",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "response": {
+      "action": "preview",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": false,
+      "rehearsal": {
+        "status": "not-needed",
+        "evidence": "evidence/rehearsal.txt"
+      }
+    },
+    "valid": true
+  },
+  {
+    "name": "preview migration omitted without rehearsal",
+    "request": {
+      "action": "preview",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "branch": "feature/example",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "response": {
+      "action": "preview",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": false
+    },
+    "valid": false
+  },
+  {
+    "name": "release migration false not needed",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": false
+    },
+    "response": {
+      "action": "release",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": false,
+      "rehearsal": {
+        "status": "not-needed",
+        "evidence": "evidence/rehearsal.txt"
+      },
+      "running_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "valid": true
+  },
+  {
+    "name": "release migration false without rehearsal",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": false
+    },
+    "response": {
+      "action": "release",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": false,
+      "running_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "valid": false
+  },
+  {
+    "name": "release migration omitted not needed",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "response": {
+      "action": "release",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": false,
+      "rehearsal": {
+        "status": "not-needed",
+        "evidence": "evidence/rehearsal.txt"
+      },
+      "running_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "valid": true
+  },
+  {
+    "name": "release migration omitted without rehearsal",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "response": {
+      "action": "release",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": false,
+      "running_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "valid": false
   }
 ]
