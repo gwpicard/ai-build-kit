@@ -125,8 +125,7 @@ British spelling, no em dashes, short paragraphs. Write precisely and naturally,
 never in forced simple words. Public documents use plain, adult prose for people
 who do not read code; maintainer documents may be technical. Define a technical
 term once where a public reader would not know it, and use established
-terminology where it suits the reader. The writing framework replaces any
-Simplified Technical English instruction for this repository.
+terminology where it suits the reader.
 
 Before saving prose, load `.agents/maintainer-skills/writing-review/SKILL.md` and
 use its embedded mode. Follow the house rules in `docs/MAINTAINING.md`.
