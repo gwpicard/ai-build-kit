@@ -1,0 +1,540 @@
+[
+  {
+    "name": "preview passed",
+    "request": {
+      "action": "preview",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "branch": "feature/example",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "preview",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      }
+    },
+    "valid": true
+  },
+  {
+    "name": "preview failed",
+    "request": {
+      "action": "preview",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "branch": "feature/example",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "preview",
+      "status": "failed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      }
+    },
+    "valid": true
+  },
+  {
+    "name": "preview could-not-check",
+    "request": {
+      "action": "preview",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "branch": "feature/example",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "preview",
+      "status": "could-not-check",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      }
+    },
+    "valid": true
+  },
+  {
+    "name": "preview missing evidence",
+    "request": {
+      "action": "preview",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "branch": "feature/example",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "preview",
+      "status": "passed",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "preview wrong commit",
+    "request": {
+      "action": "preview",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "branch": "feature/example",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "preview",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      }
+    },
+    "valid": false,
+    "shape_valid": true
+  },
+  {
+    "name": "preview migration without rehearsal",
+    "request": {
+      "action": "preview",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "branch": "feature/example",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "preview",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "valid": false
+  },
+  {
+    "name": "logs passed",
+    "request": {
+      "action": "logs",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "minutes": 60
+    },
+    "response": {
+      "action": "logs",
+      "status": "passed",
+      "evidence": "evidence/run.txt"
+    },
+    "valid": true
+  },
+  {
+    "name": "logs failed",
+    "request": {
+      "action": "logs",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "minutes": 60
+    },
+    "response": {
+      "action": "logs",
+      "status": "failed",
+      "evidence": "evidence/run.txt"
+    },
+    "valid": true
+  },
+  {
+    "name": "logs could-not-check",
+    "request": {
+      "action": "logs",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "minutes": 60
+    },
+    "response": {
+      "action": "logs",
+      "status": "could-not-check",
+      "evidence": "evidence/run.txt"
+    },
+    "valid": true
+  },
+  {
+    "name": "logs missing evidence",
+    "request": {
+      "action": "logs",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "minutes": 60
+    },
+    "response": {
+      "action": "logs",
+      "status": "passed"
+    },
+    "valid": false
+  },
+  {
+    "name": "logs wrong action",
+    "request": {
+      "action": "logs",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "minutes": 60
+    },
+    "response": {
+      "action": "health",
+      "running_commit": null,
+      "status": "passed",
+      "evidence": "evidence/run.txt"
+    },
+    "valid": false,
+    "shape_valid": true
+  },
+  {
+    "name": "health passed",
+    "request": {
+      "action": "health",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json"
+    },
+    "response": {
+      "action": "health",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "running_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "valid": true
+  },
+  {
+    "name": "health failed",
+    "request": {
+      "action": "health",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json"
+    },
+    "response": {
+      "action": "health",
+      "status": "failed",
+      "evidence": "evidence/run.txt",
+      "running_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "valid": true
+  },
+  {
+    "name": "health could-not-check",
+    "request": {
+      "action": "health",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json"
+    },
+    "response": {
+      "action": "health",
+      "status": "could-not-check",
+      "evidence": "evidence/run.txt",
+      "running_commit": null
+    },
+    "valid": true
+  },
+  {
+    "name": "health missing evidence",
+    "request": {
+      "action": "health",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json"
+    },
+    "response": {
+      "action": "health",
+      "status": "passed",
+      "running_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "valid": false
+  },
+  {
+    "name": "health wrong action",
+    "request": {
+      "action": "health",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json"
+    },
+    "response": {
+      "action": "logs",
+      "status": "passed",
+      "evidence": "evidence/run.txt"
+    },
+    "valid": false,
+    "shape_valid": true
+  },
+  {
+    "name": "release passed",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "release",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      },
+      "running_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "valid": true
+  },
+  {
+    "name": "release failed",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "release",
+      "status": "failed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      },
+      "running_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "valid": true
+  },
+  {
+    "name": "release could-not-check",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "release",
+      "status": "could-not-check",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      },
+      "running_commit": null
+    },
+    "valid": true
+  },
+  {
+    "name": "release missing evidence",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "release",
+      "status": "passed",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      },
+      "running_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "valid": false
+  },
+  {
+    "name": "release wrong commit",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "release",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      },
+      "running_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "valid": false,
+    "shape_valid": true
+  },
+  {
+    "name": "release migration without rehearsal",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "release",
+      "status": "passed",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "running_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "valid": false
+  },
+  {
+    "name": "release held awaiting-approval",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "release",
+      "status": "held",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      },
+      "running_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "reason": "awaiting-approval"
+    },
+    "valid": true
+  },
+  {
+    "name": "release held rehearsal-failed",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "release",
+      "status": "held",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "failed",
+        "evidence": "evidence/rehearsal.txt"
+      },
+      "running_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "reason": "rehearsal-failed"
+    },
+    "valid": true
+  },
+  {
+    "name": "release held rehearsal-could-not-check",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "release",
+      "status": "held",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "could-not-check",
+        "evidence": "evidence/rehearsal.txt"
+      },
+      "running_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "reason": "rehearsal-could-not-check"
+    },
+    "valid": true
+  },
+  {
+    "name": "release held health-failed",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "release",
+      "status": "held",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      },
+      "running_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "reason": "health-failed"
+    },
+    "valid": true
+  },
+  {
+    "name": "release held health-could-not-check",
+    "request": {
+      "action": "release",
+      "tool": "team-tool",
+      "handover": "hosting/handover.json",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true
+    },
+    "response": {
+      "action": "release",
+      "status": "held",
+      "evidence": "evidence/run.txt",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "migration": true,
+      "rehearsal": {
+        "status": "passed",
+        "evidence": "evidence/rehearsal.txt"
+      },
+      "running_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "reason": "health-could-not-check"
+    },
+    "valid": true
+  }
+]
