@@ -75,7 +75,9 @@ plainly that the two disagree.
 - `.agents/tests/mutate.sh` breaks one promise at a time and reports which
   checks noticed.
 - `.agents/tools/rehearse-merged-tree.sh` runs the validator and the suite on
-  a clean copy of the branch. Run it before pushing the branch.
+  a clean copy of the branch. Run it before pushing the branch. If it fails, do
+  not push: fix the cause, or make the check skip or report could not run
+  where it does not apply, in its own change first.
 - `.agents/tools/build-release.sh <version> <new-folder>` assembles a public
   release outside this repository.
 

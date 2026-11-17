@@ -1,12 +1,10 @@
 #!/usr/bin/env sh
-# rehearse-merged-tree.sh: assemble what the public repository will hold after
-# consolidation, in a throwaway folder, and run the steps a hosted check
-# runs against it.
+# rehearse-merged-tree.sh: assemble the branch's committed tree in a throwaway
+# folder, and run the steps a hosted check runs against it.
 #
-# The cutover pushes this repository's tracked files into the public repository
-# as one commit. That is irreversible, and until it happens nobody can look at
-# the merged tree, so "the merged repository is green" is a belief rather than a
-# measurement. This makes it a measurement, for nothing, before the push.
+# Run it before pushing a branch. The hosted checks must never fail, and a
+# failure found after the push is already public and has used a hosted run.
+# This finds it first, on this computer.
 #
 # What it builds is every tracked file, copied at its current mode, into a fresh
 # repository holding one commit. The fresh repository matters. Several checks
@@ -26,11 +24,11 @@
 # the suite inside the suite, reach its own copy, and never finish. Run this one
 # by hand.
 #
-# A dirty working tree stops it. This copies what is on disk, while the cutover
-# reads the commit, so an unsaved change makes the two measure different things
-# and the rehearsal stops meaning what it claims. Pass --allow-dirty to rehearse
-# before committing, which is worth doing and is how this tool caught its own
-# untracked file the first time it ran.
+# A dirty working tree stops it. This copies what is on disk, while the hosted
+# checks read the commit, so an unsaved change makes the two measure different
+# things and the rehearsal stops meaning what it claims. Pass --allow-dirty to
+# rehearse before committing, which is worth doing and is how this tool caught
+# its own untracked file the first time it ran.
 #
 # Usage:
 #   rehearse-merged-tree.sh              build in a temporary folder and delete it
