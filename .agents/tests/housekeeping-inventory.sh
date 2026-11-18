@@ -51,6 +51,15 @@ printf '%s\n' "$out" | grep -qF "credential-name	$WORK/projects/abk-wt/old-run/.
 printf '%s\n' "$out" | grep -q 'do-not-print' && fail "the inventory printed a key's value"
 ok "it flags a file named like a key without printing what is in it"
 
+repo_out=$(HOME="$WORK/home" TMPDIR="$WORK/user" VAR_TMP="$WORK/var" PRIVATE_TMP="$WORK/private" \
+  "$INVENTORY" --repo "$repo")
+printf '%s\n' "$repo_out" | grep -qF "repo-tmp	$repo/.agents/tmp/old-note.md" || fail "--repo missed the repository's own scratch"
+printf '%s\n' "$repo_out" | grep -q "^branch	merged-branch	" || fail "--repo missed a local branch"
+for outside in "sibling	" "var-tmp	" "private-tmp	" "mutate	" "replay-state	" "credential-name	$WORK/projects/abk-wt"; do
+  printf '%s\n' "$repo_out" | grep -qF "$outside" && fail "--repo listed something outside the repository: $outside"
+done
+ok "with --repo it lists only the repository's scratch, worktrees and branches"
+
 after=$(cd "$WORK" && find . -print | sort; cat projects/abk-wt/old-run/.env)
 [ "$before" = "$after" ] || fail "the inventory changed the files it listed"
 ok "it moves, deletes and changes nothing"

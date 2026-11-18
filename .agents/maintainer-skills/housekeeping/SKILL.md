@@ -13,23 +13,30 @@ or a key that still opens something online.
 
 ## Steps
 
-1. Run `scripts/inventory.sh` from the repository root. It lists each place
-   with its size, date and a note, and changes nothing.
-   Also run `python3 .agents/skills/maintain/scripts/docker-resources.py sweep`.
+1. Ask the maintainer for the scope, unless they already gave it: this
+   repository only (its `.agents/tmp`, worktrees and local branches), or the
+   whole computer (also run folders in system temporary folders, replay state
+   and Docker). Other sessions often work in the shared temporary folders at
+   the same time, so the repository scope is the safer default.
+2. Run `scripts/inventory.sh --repo` from the repository root for the
+   repository scope, or `scripts/inventory.sh` for the whole computer. It lists
+   each place with its size, date and a note, and changes nothing. For the
+   whole computer, also run
+   `python3 .agents/skills/maintain/scripts/docker-resources.py sweep`.
    It lists only kit-labelled Docker resources older than a day. Offer their
    removal separately with `--remove <kind:id> ...`; Docker removal has no undo.
-2. Label every line CLEAR, KEEP or ASK by the rules below. For each, say what
+3. Label every line CLEAR, KEEP or ASK by the rules below. For each, say what
    made it and what refers to it. Search the memory notes, open issues and
    pull requests (`gh issue list --search <name>`, `gh pr list --search
    <name>`), and the repository for the path or branch name.
-3. Show the maintainer one list: CLEAR items with sizes and the total, KEEP
+4. Show the maintainer one list: CLEAR items with sizes and the total, KEEP
    items with the reason, and ASK items with what clearing each would cost.
    Ask once for the whole CLEAR list.
-4. With approval, move each item to the Bin with `trash`. A deletion with no
+5. With approval, move each item to the Bin with `trash`. A deletion with no
    undo is on the blocked list. Delete a local branch only after checking it
    again at that moment. A branch on GitHub, an issue edit or an online
    project is the maintainer's to change; give the command.
-5. Run the inventory again and report what moved, what stayed and why, and
+6. Run the inventory again and report what moved, what stayed and why, and
    that the space returns when the Bin is emptied. Save the list in
    `.agents/tmp/housekeeping/<date>.md`.
 

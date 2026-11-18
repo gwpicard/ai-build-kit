@@ -9,7 +9,10 @@
 # "in use" means a running process names the path, so leave it alone however
 # old it looks.
 #
-# Usage: inventory.sh [repository-root]
+# Usage: inventory.sh [--repo] [repository-root]
+#
+# With --repo it lists only the repository's own leftovers: .agents/tmp, its
+# worktrees, its local branches, and files named like credentials in .agents/tmp.
 #
 # The places come from the tools that write them: mutate.sh ($TMPDIR),
 # replay/run.sh and seeded/run.sh (~/.local/state), testbed.sh and
@@ -20,6 +23,8 @@
 
 set -u
 
+SCOPE=all
+if [ "${1:-}" = "--repo" ]; then SCOPE=repo; shift; fi
 ROOT=$(cd -- "${1:-$(dirname -- "$0")/../../../..}" && pwd)
 PROJECTS=$(dirname -- "$ROOT")
 VAR_TMP=${VAR_TMP:-/var/tmp}
@@ -79,6 +84,7 @@ git -C "$ROOT" for-each-ref --format='%(refname:short)	%(committerdate:short)' r
     printf 'branch\t%s\t-\t%s\t%s\n' "$branch" "$date" "$note"
   done
 
+if [ "$SCOPE" = all ]; then
 # Sibling folders that kit runs write beside the repository.
 each sibling "$PROJECTS"/abk-wt/* "$PROJECTS"/abk-testbeds/.runs/*/work
 
@@ -87,10 +93,16 @@ each var-tmp "$VAR_TMP"/abk-* "$VAR_TMP"/nextscaffold-*
 each mutate "$USER_TMP"/abk-mutate-*
 each private-tmp "$PRIVATE_TMP"/abk-*
 each replay-state "$STATE"/abk-replay/results-* "$STATE"/abk-seeded/* "$STATE"/abk-cutover
+fi
 
 # Files named like credentials, by name only and never opened, in the places
 # above. Each one needs its online service checked before its folder goes.
-for base in "$ROOT/.agents/tmp" "$PROJECTS/abk-wt" "$VAR_TMP" "$PRIVATE_TMP"; do
+if [ "$SCOPE" = all ]; then
+  set -- "$ROOT/.agents/tmp" "$PROJECTS/abk-wt" "$VAR_TMP" "$PRIVATE_TMP"
+else
+  set -- "$ROOT/.agents/tmp"
+fi
+for base in "$@"; do
   [ -d "$base" ] || continue
   find "$base" -maxdepth 4 \( -name '.env' -o -name '.env.*' -o -name '*secret*' \
     -o -name '*.pem' -o -name '*.key' -o -name 'service_role*' \) \
