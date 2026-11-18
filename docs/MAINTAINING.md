@@ -380,6 +380,14 @@ template change always runs the starter checks. The rehearsal runs on pull
 requests only; compare its timings with the runs that preceded merges to
 `main`, since there is no rehearsal job on a push to `main`.
 
+Before pushing, `.agents/tools/rehearse-merged-tree.sh` checks the adapters,
+source and rehearsal suite in a clean copy. It always installs the Postgres
+starter's locked packages and checks its sign-in review. If that template
+differs from `origin/main`, or that reference is unavailable, it also runs the
+starter workflow's browser installation, disposable database checks and image
+checks. Docker resources carry the run label and are removed on exit. An
+unavailable Docker engine makes a required starter job fail the rehearsal.
+
 The runner records each test's duration and runs selected isolated tests with
 two workers. Browser installers run in separate groups. Other tests run alone;
 adding a test always includes it in the suite. Use
