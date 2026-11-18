@@ -14,6 +14,7 @@ done
 cp "$WORK/release/hosting/handover.schema.json" "$PROJECT/hosting/handover.schema.json"
 mkdir "$PROJECT/tests"
 cp "$ROOT/templates/nextjs-postgres/tests/handover.test.mjs" "$PROJECT/tests/"
+cp -R "$ROOT/templates/nextjs-postgres/tests/fixtures" "$PROJECT/tests/"
 node --input-type=module - "$ROOT" "$PROJECT" <<'JS'
 import { readFileSync, writeFileSync } from 'node:fs';
 const [root, project] = process.argv.slice(2);
