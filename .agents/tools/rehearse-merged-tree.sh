@@ -151,20 +151,13 @@ if [ "$FULL_STARTER" -eq 1 ]; then
     failed="$failed $name"
   elif (
     cd "$TREE/templates/nextjs-postgres"
-    export CI=true NEXT_TELEMETRY_DISABLED=1 DOCKER_BUILDKIT=1
-    export BUILDX_CONFIG="$TREE/.buildx"
+    export CI=true NEXT_TELEMETRY_DISABLED=1
     npx --no-install playwright install --with-deps chromium &&
     sh scripts/docker-run.sh -- node scripts/test-database.mjs sh -c '
-      npm run check && npm run test:policy-fault &&
-      npm run test:privilege-fault && npm test
-    ' &&
-    # The socket proxy labels runtime resources; build labels cover the image.
-    sh "$TREE/.agents/skills/maintain/scripts/docker-run.sh" --proxy -- sh -c '
-      image="abk-starter-$ABK_DOCKER_SCOPE:test"
-      docker build --label "ai-build-kit.run=$CODEX_RUN_ID" \
-        --label "ai-build-kit.scope=$ABK_DOCKER_SCOPE" -t "$image" . &&
-      npm run test:image -- "$image"
-    '
+  npm run check && npm run test:policy-fault &&
+  npm run test:privilege-fault && npm test
+' &&
+    npm run test:image
   ); then
     printf '  passed: %s\n' "$name"
   else

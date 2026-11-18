@@ -7,6 +7,7 @@ trap 'rm -R "$WORK"' EXIT INT TERM
 python3 - "$ROOT" "$WORK" <<'PY'
 from pathlib import Path
 import os
+import re
 import subprocess
 import sys
 
@@ -35,13 +36,6 @@ write('templates/nextjs-postgres/scripts/docker-run.sh', '''#!/bin/sh
 echo "database $*" >> "$CALLS"
 [ "$1" = -- ]
 shift
-exec "$@"
-''')
-write('.agents/skills/maintain/scripts/docker-run.sh', '''#!/bin/sh
-echo "image-wrapper $*" >> "$CALLS"
-[ "$1" = --proxy ] && [ "$2" = -- ]
-shift 2
-export ABK_DOCKER_SCOPE=fixture-scope
 exec "$@"
 ''')
 git('init', '--quiet')
@@ -97,14 +91,26 @@ print('ok: a stale review fails the rehearsal')
 write('templates/nextjs-postgres/reviews/sign-in.json', 'pass\n')
 write('templates/nextjs-postgres/package.json', '{"changed":true}\n')
 out, calls = run('changed', 0)
-for command in ('npx --no-install playwright install --with-deps chromium',
-                'npm run check', 'npm run test:policy-fault',
-                'npm run test:privilege-fault', 'npm test', 'npm run test:image --',
-                'image-wrapper --proxy --', '--label ai-build-kit.run=fixture-run',
-                '--label ai-build-kit.scope=fixture-scope'):
-    assert command in calls, command
+# Execute the workflow's run steps with the same stand-ins and compare every
+# command, its arguments and order, including the locked install in the review step.
+workflow = (root / '.github/workflows/postgres-starter.yml').read_text()
+steps = re.findall(r'^        run: (.+(?:\n          .*)*)',
+                   workflow, re.MULTILINE)
+assert steps, 'the starter workflow has no run steps'
+expected_calls = work / 'workflow.calls'
+env = {**os.environ, 'PATH': str(bin_dir) + os.pathsep + os.environ['PATH'],
+       'CALLS': str(expected_calls), 'CI': 'true', 'NEXT_TELEMETRY_DISABLED': '1'}
+for step in steps:
+    command = step if not step.startswith('|') else '\n'.join(
+        line[10:] for line in step.splitlines()[1:])
+    subprocess.run(['sh', '-eu', '-c', command],
+                   cwd=work / 'changed-tree/templates/nextjs-postgres', env=env, check=True)
+actual = '\n'.join(line for line in calls.splitlines()
+                   if line not in ('source-check', 'suite', 'docker info')
+                   and not line.startswith('npm run check:sign-in-review ')) + '\n'
+assert actual == expected_calls.read_text(), actual
 assert 'Skipped the full' not in out
-print('ok: a changed starter runs the workflow steps and labels the image')
+print('ok: a changed starter runs the workflow commands with identical arguments and order')
 
 out, calls = run('docker-down', 1, down=True)
 assert 'could not run: postgres-starter/build-check: Docker' in out
@@ -113,6 +119,6 @@ print('ok: unavailable Docker makes a required full job exit non-zero')
 
 git('update-ref', '-d', 'refs/remotes/origin/main')
 out, calls = run('no-upstream', 0)
-assert 'origin/main is unavailable' in out and 'npm run test:image --' in calls
+assert 'origin/main is unavailable' in out and 'npm run test:image ' in calls
 print('ok: missing upstream history requires the full job')
 PY
