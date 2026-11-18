@@ -31,6 +31,7 @@ function fixture(fault, commandTimeout = false) {
         error: commandTimeout ? Object.assign(new Error(output), { code: 'ETIMEDOUT' }) : undefined };
     }
     if (fault === 'database readiness' && args[0] === 'exec') return { status: 1, stdout: output, stderr: output };
+    if (fault === 'migration readiness' && args.includes('--entrypoint')) return { status: 1, stdout: output, stderr: output };
     if (args[0] === 'port') return success('127.0.0.1:12345');
     if (args[0] === 'run' && role === 'worker') worker = true;
     if (args[0] === 'stop') {
@@ -64,6 +65,7 @@ const commandFailures = [
 const failures = [
   ...commandFailures.map(row => [...row, 'exit code 23']),
   ['database readiness', 'migrate', 'start', 'timeout after 0s'],
+  ['migration readiness', 'migrate', 'readiness', 'timeout after 0s'],
   ['health', 'web', 'health', 'timeout after 0s'],
   ['heartbeat', 'worker', 'heartbeat', 'timeout after 0s'],
   ['stopped heartbeat', 'worker', 'heartbeat', 'timeout after 0s'],
@@ -92,6 +94,12 @@ for (const [fault, role, stage, reason] of failures) test(`names a planted ${fau
   const removed = f.calls.filter(call => call.args[0] === 'rm').map(call => call.args.at(-1));
   expect(removed.sort()).toEqual(created.sort());
   expect(f.calls.some(call => call.args[0] === 'image' && call.args[1] === 'rm')).toBe(true);
+  if (fault === 'migration readiness') {
+    expect(f.calls.filter(call => call.args.at(-1) === 'migrate')).toHaveLength(0);
+  }
+  if (fault === 'migrate') {
+    expect(f.calls.filter(call => call.args.at(-1) === 'migrate')).toHaveLength(1);
+  }
 });
 
 for (const [fault, role, stage] of commandFailures) test(`reports a ${fault} command timeout without its error text`, async () => {
@@ -111,6 +119,39 @@ test('keeps every image assertion and removes containers after a pass', async ()
   ]);
   expect(f.calls.filter(call => call.args[0] === 'run' && call.args.at(-1) === 'migrate')).toHaveLength(2);
   expect(f.calls.filter(call => call.args[0] === 'rm')).toHaveLength(3);
+  for (const { args } of f.calls.filter(call => ['build', 'run'].includes(call.args[0])
+    || call.args[0] === 'network' && call.args[1] === 'create')) {
+    expect(args).toContain('ai-build-kit.run=image-diagnostics-test');
+    expect(args).toContain('ai-build-kit.scope=fixture');
+  }
+});
+
+test('waits past the socket-only temporary server and migration login failures', async () => {
+  const f = fixture();
+  let elapsed = 0, tcpAttempts = 0, loginAttempts = 0, bootstrapped = false;
+  vi.spyOn(performance, 'now').mockImplementation(() => elapsed);
+  await checkImage({ ...f.options, waitMs: undefined, sleep: async ms => { elapsed += ms; },
+    spawn: (command, args, options) => {
+      if (args[0] === 'exec' && args.includes('pg_isready')) {
+        // A socket probe succeeds throughout initialisation, while TCP refuses.
+        if (args.includes('-h') && tcpAttempts++ < 2) return { status: 1, stdout: '', stderr: '' };
+      }
+      if (command === process.execPath) {
+        expect(tcpAttempts).toBe(3);
+        bootstrapped = true;
+      }
+      if (args.includes('--entrypoint')) {
+        expect(bootstrapped).toBe(true);
+        expect(options.env.MIGRATION_DATABASE_URL).toMatch(/^postgresql:\/\/tool_owner:.*@database:5432\/tool_test$/);
+        expect(args).toContain('--network');
+        if (loginAttempts++ < 2) return { status: 1, stdout: '', stderr: '' };
+      }
+      if (args.at(-1) === 'migrate') expect(loginAttempts).toBe(3);
+      return f.options.spawn(command, args, options);
+    },
+  });
+  expect(elapsed).toBe(2000);
+  expect(f.calls.filter(call => call.args.at(-1) === 'migrate')).toHaveLength(2);
 });
 
 for (const readiness of ['database', 'web']) test(`waits for ${readiness} readiness beyond the old 45-second limit`, async () => {

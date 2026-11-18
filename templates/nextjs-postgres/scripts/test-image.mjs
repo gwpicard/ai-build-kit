@@ -24,6 +24,8 @@ export async function checkImage({ spawn = spawnSync, request = fetch, sleep = d
   const containers = [];
   let network = false;
   const env = { ...process.env, BUILDX_CONFIG: join(scratch, 'buildx') };
+  const labels = ['--label', `ai-build-kit.run=${env.CODEX_RUN_ID}`,
+    '--label', `ai-build-kit.scope=${env.ABK_DOCKER_SCOPE}`];
   let context = { role: 'web/worker/migrate', stage: 'build' };
   let stderr = '';
   let failure;
@@ -48,16 +50,17 @@ export async function checkImage({ spawn = spawnSync, request = fetch, sleep = d
     throw new ImageCheckFailure(context, `timeout after ${waitMs / 1000}s`);
   }
   try {
-    if (ownImage) docker(['build', '-t', image, '.']);
+    if (ownImage) docker(['build', ...labels, '-t', image, '.']);
     at('migrate', 'start');
-    docker(['network', 'create', id]); network = true;
+    docker(['network', 'create', ...labels, id]); network = true;
     const password = randomBytes(24).toString('hex');
     const db = `${id}-db`; containers.push(db);
     at('migrate', 'start');
-    docker(['run', '-d', '--name', db, '--network', id, '--network-alias', 'database',
+    docker(['run', ...labels, '-d', '--name', db, '--network', id, '--network-alias', 'database',
       '--tmpfs', '/var/lib/postgresql/data', '-p', '127.0.0.1::5432',
       '-e', 'POSTGRES_PASSWORD', '-e', 'POSTGRES_DB=tool_test', 'postgres:17.6-alpine'], { POSTGRES_PASSWORD: password });
-    await until(() => { docker(['exec', db, 'pg_isready', '-U', 'postgres', '-d', 'tool_test']); return true; });
+    // The entrypoint's temporary server accepts sockets before TCP is available.
+    await until(() => { docker(['exec', db, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres', '-d', 'tool_test']); return true; });
     const port = docker(['port', db, '5432/tcp']).split(':').at(-1);
     const url = (role, host) => `postgresql://${role}:${password}@${host}/tool_test`;
     at('migrate', 'migrate');
@@ -66,9 +69,24 @@ export async function checkImage({ spawn = spawnSync, request = fetch, sleep = d
       AUTH_DATABASE_URL: url('tool_auth', `127.0.0.1:${port}`),
       MIGRATION_DATABASE_URL: url('tool_owner', `127.0.0.1:${port}`), DATABASE_URL: url('tool_app', `127.0.0.1:${port}`) });
     const migration = { MIGRATION_DATABASE_URL: url('tool_owner', 'database:5432') };
+    at('migrate', 'readiness');
+    await until(() => {
+      docker(['run', ...labels, '--rm', '--network', id, '-e', 'MIGRATION_DATABASE_URL',
+        '--entrypoint', 'node', image, '--input-type=module', '-e', `
+          import pg from 'pg';
+          const client = new pg.Client({ connectionString: process.env.MIGRATION_DATABASE_URL,
+            connectionTimeoutMillis: 1000, query_timeout: 1000 });
+          try {
+            await client.connect();
+            const result = await client.query('SELECT current_user AS name');
+            if (result.rows[0].name !== 'tool_owner') throw new Error('Unexpected migration role');
+          } finally { await client.end(); }
+        `], migration);
+      return true;
+    });
     for (let i = 0; i < 2; i++) {
       at('migrate', 'migrate');
-      docker(['run', '--rm', '--network', id, '-e', 'MIGRATION_DATABASE_URL', image, 'migrate'], migration);
+      docker(['run', ...labels, '--rm', '--network', id, '-e', 'MIGRATION_DATABASE_URL', image, 'migrate'], migration);
     }
     report('Passed: the image migrates and repeats migration');
     const secretPath = join(scratch, 'sign-in-secret');
@@ -85,7 +103,7 @@ export async function checkImage({ spawn = spawnSync, request = fetch, sleep = d
     const options = Object.keys(runtime).flatMap(name => ['-e', name]);
     const web = `${id}-web`; containers.push(web);
     at('web', 'start');
-    docker(['run', '-d', '--name', web, '--network', id, '-p', '127.0.0.1::3000', ...mounts, ...options, image, 'web'], runtime);
+    docker(['run', ...labels, '-d', '--name', web, '--network', id, '-p', '127.0.0.1::3000', ...mounts, ...options, image, 'web'], runtime);
     const webPort = docker(['port', web, '3000/tcp']).split(':').at(-1);
     const health = () => request(`http://127.0.0.1:${webPort}/api/health`, { signal: AbortSignal.timeout(10_000) });
     at('web', 'health');
@@ -93,7 +111,7 @@ export async function checkImage({ spawn = spawnSync, request = fetch, sleep = d
     assert.equal((await (await health()).json()).database, 'ok');
     const worker = `${id}-worker`; containers.push(worker);
     at('worker', 'start');
-    docker(['run', '-d', '--name', worker, '--network', id, ...options, image, 'worker'], runtime);
+    docker(['run', ...labels, '-d', '--name', worker, '--network', id, ...options, image, 'worker'], runtime);
     at('worker', 'heartbeat');
     await until(async () => (await health()).status === 200);
     assert.equal((await (await health()).json()).commit, 'a'.repeat(40));
