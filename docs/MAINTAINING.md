@@ -865,9 +865,8 @@ Before saving prose, load
 `.agents/maintainer-skills/writing-review/SKILL.md` and run its embedded mode. This
 covers documentation, skills, pull request titles and descriptions, issues,
 release notes, interface copy, error messages, and reader-facing comments. The
-framework replaces any Simplified Technical English instruction for this
-repository. The skill is the shared instruction for every supported coding
-agent, and the rules below remain the kit's house style. Release notes also follow
+skill is the shared instruction for every supported coding agent, and the rules
+below remain the kit's house style. Release notes also follow
 `.agents/maintainer-skills/release-notes/SKILL.md` for their format and review.
 
 Preserve the information and intended voice rather than the draft's sentence
