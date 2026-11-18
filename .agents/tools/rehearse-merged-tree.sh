@@ -18,7 +18,8 @@
 #   run-all.sh                  every rehearsal in .agents/tests/
 # It also checks the sign-in review, runs the full Postgres starter job when
 # that template differs from origin/main, and builds the site and checks its
-# built pages, as the site job does.
+# built pages, as the site job does. Each step runs under the Node.js version
+# its hosted job pins, fetched once into ~/.cache/ai-build-kit/node.
 #
 # This lives here rather than in .agents/tests/ on purpose. run-all.sh runs
 # every script in that folder, so a rehearsal that called run-all.sh would run
@@ -116,6 +117,47 @@ git -C "$TREE" \
 
 echo "Committed $(git -C "$TREE" ls-files | wc -l | tr -d ' ') files."
 
+# Each hosted job pins its Node.js version, and a newer or older local Node can
+# pass or fail where the job would not. job_node prints the version a job pins;
+# node_path prints a PATH with that exact version first, fetched once into a
+# cache and checked against the published checksums.
+job_node() {
+  awk -v job="$2" '$0 ~ "^  " job ":" {f=1; next} f && /^  [A-Za-z]/ {f=0}
+    f && /node-version:/ {print $2; exit}' "$TREE/.github/workflows/$1"
+}
+node_path() {
+  version=$1
+  if [ -z "$version" ]; then
+    echo "note: this job pins no Node.js version; using the local one" >&2
+    printf '%s' "$PATH"
+    return 0
+  fi
+  case "$(uname -s)-$(uname -m)" in
+    Darwin-arm64) platform=darwin-arm64 ;; Darwin-x86_64) platform=darwin-x64 ;;
+    Linux-x86_64) platform=linux-x64 ;; Linux-aarch64) platform=linux-arm64 ;;
+    *) echo "could not run: no Node.js build for $(uname -s) $(uname -m)" >&2; return 1 ;;
+  esac
+  cache=${XDG_CACHE_HOME:-$HOME/.cache}/ai-build-kit/node
+  dir="$cache/node-v$version-$platform"
+  if [ ! -x "$dir/bin/node" ]; then
+    mkdir -p "$cache"
+    download=$(mktemp -d "$cache/download.XXXXXX")
+    base="https://nodejs.org/dist/v$version"
+    if ! (cd "$download" &&
+          curl -fsSLO "$base/node-v$version-$platform.tar.gz" &&
+          curl -fsSL "$base/SHASUMS256.txt" | grep " node-v$version-$platform.tar.gz\$" | shasum -a 256 -c - >/dev/null &&
+          tar -xzf "node-v$version-$platform.tar.gz" &&
+          mv "node-v$version-$platform" "$dir"); then
+      rm -f "$download/node-v$version-$platform.tar.gz"
+      echo "could not run: Node.js $version could not be fetched and checked" >&2
+      return 1
+    fi
+    rm -f "$download/node-v$version-$platform.tar.gz"
+    rmdir "$download"
+  fi
+  printf '%s/bin:%s' "$dir" "$PATH"
+}
+
 # Each step is an independent opinion, so one failure must not hide another and
 # the run carries on to the end.
 failed=""
@@ -125,7 +167,11 @@ for step in \
   ".agents/tests/run-all.sh"; do
   name=${step%% *}
   printf '\n########## %s ##########\n' "$name"
-  if (cd "$TREE" && sh -c "$step"); then
+  case "$name" in
+    .agents/tests/run-all.sh) step_path=$(node_path "$(job_node source-checks.yml rehearsal)") || step_path= ;;
+    *) step_path=$PATH ;;
+  esac
+  if [ -n "$step_path" ] && (cd "$TREE" && PATH=$step_path sh -c "$step"); then
     printf '  passed: %s\n' "$name"
   else
     printf '  FAILED: %s\n' "$name"
@@ -135,7 +181,9 @@ done
 
 name="postgres-starter/sign-in-review"
 printf '\n########## %s ##########\n' "$name"
-if (cd "$TREE/templates/nextjs-postgres" && npm ci && npm run check:sign-in-review); then
+starter_path=$(node_path "$(job_node postgres-starter.yml build-check)") || starter_path=
+if [ -n "$starter_path" ] && (cd "$TREE/templates/nextjs-postgres" && PATH=$starter_path &&
+    npm ci && npm run check:sign-in-review); then
   printf '  passed: %s\n' "$name"
 else
   printf '  FAILED: %s\n' "$name"
@@ -148,8 +196,12 @@ if [ "$FULL_STARTER" -eq 1 ]; then
   if ! docker info >/dev/null 2>&1; then
     printf '  could not run: %s: Docker is unavailable or is not running\n' "$name"
     failed="$failed $name"
+  elif [ -z "$starter_path" ]; then
+    printf '  could not run: %s: its Node.js version could not be prepared\n' "$name"
+    failed="$failed $name"
   elif (
     cd "$TREE/templates/nextjs-postgres"
+    PATH=$starter_path
     export CI=true NEXT_TELEMETRY_DISABLED=1
     npx --no-install playwright install --with-deps chromium &&
     sh scripts/docker-run.sh -- node scripts/test-database.mjs sh -c '
@@ -171,7 +223,9 @@ fi
 # site-links.sh skips its built-page check, so run the job's own steps here.
 name="site-build"
 printf '\n########## %s ##########\n' "$name"
-if (cd "$TREE/site" && npm ci && npm run build) && (cd "$TREE" && sh .agents/tests/site-links.sh); then
+site_path=$(node_path "$(job_node source-checks.yml site-build)") || site_path=
+if [ -n "$site_path" ] && (cd "$TREE/site" && PATH=$site_path && npm ci && npm run build) &&
+   (cd "$TREE" && PATH=$site_path sh .agents/tests/site-links.sh); then
   printf '  passed: %s\n' "$name"
 else
   printf '  FAILED: %s\n' "$name"
