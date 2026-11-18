@@ -34,6 +34,69 @@ done
 cmp "$SCRATCH/clean/scripts/rls.sh" "$ROOT/.agents/skills/setup-hosting/recipes/parts/scripts/rls.sh" || fail "the copied row rules check differs from the recipe"
 cmp "$SCRATCH/clean/scripts/check-lib.sh" "$ROOT/.agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh" || fail "the copied row rules helper differs from the recipe"
 
+# Execute the shipped database step without an engine, observing the CLI boundary.
+python3 - "$ROOT" "$SCRATCH" <<'PY'
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+root, scratch = map(Path, sys.argv[1:])
+project = scratch / "clean"
+config = project / "supabase/config.toml"
+before = config.read_text()
+bin_dir = scratch / "bin"
+bin_dir.mkdir()
+(project / "scripts/docker-resources.py").write_text('''
+import subprocess, sys
+if sys.argv[1:] == ["project"]:
+    print("check-service-boundary")
+elif sys.argv[1:] == ["clean"]:
+    pass
+else:
+    assert sys.argv[1:5] == ["run", "--proxy", "--", "supabase"], sys.argv
+    sys.exit(subprocess.call(sys.argv[4:]))
+''')
+cli = bin_dir / "supabase"
+cli.write_text('''#!/usr/bin/env python3
+import json, os, sys
+names = ["SUPABASE_INTERNAL_IMAGE_REGISTRY", "SUPABASE_REALTIME_ENABLED", "SUPABASE_STORAGE_ENABLED"]
+with open(os.environ["CLI_CALLS"], "a") as log:
+    log.write(json.dumps({"args": sys.argv[1:], "env": {name: os.environ.get(name) for name in names}}) + "\\n")
+''')
+cli.chmod(0o755)
+calls = scratch / "cli-calls.jsonl"
+environment = dict(os.environ, PATH=str(bin_dir) + os.pathsep + os.environ["PATH"],
+                   CLI_CALLS=str(calls), CODEX_RUN_ID="service-boundary",
+                   ABK_DOCKER_SCOPE="service-boundary", COMPOSE_PROJECT_NAME="abk-service-boundary",
+                   SUPABASE_INTERNAL_IMAGE_REGISTRY="public.ecr.aws",
+                   SUPABASE_REALTIME_ENABLED="true", SUPABASE_STORAGE_ENABLED="true")
+subprocess.run(["ruby", str(root / ".agents/tests/lib/recipe-workflow.rb"),
+                str(project / ".github/workflows/check.yml"), str(project), "database"],
+               env=environment, check=True)
+# Type generation must share the registry setting, including outside the workflow.
+subprocess.run(["sh", "scripts/database-check.sh", "gen", "types", "typescript",
+                "--local", "--schema", "public"], cwd=project, env=environment, check=True)
+observed = [json.loads(line) for line in calls.read_text().splitlines()]
+assert len(observed) == 3, observed
+args = observed[0]["args"]
+assert args[0] == "start" and args[1] in ("-x", "--exclude") and len(args) == 3, args
+# Container names from the pinned CLI's start --help. Postgres is unconditional.
+catalog = set("gotrue realtime storage-api imgproxy kong mailpit postgrest postgres-meta studio edge-runtime logflare vector supavisor".split())
+excluded = set(args[2].split(","))
+assert excluded <= catalog, f"unknown exclusions: {excluded - catalog}"
+assert catalog - excluded == {"gotrue", "kong", "postgrest"}, f"unexpected running services: {catalog - excluded}"
+assert observed[1]["args"] == ["db", "reset", "--local", "--no-seed"], observed
+assert observed[2]["args"] == ["gen", "types", "typescript", "--local", "--schema", "public"], observed
+for call in observed:
+    assert call["env"] == {"SUPABASE_INTERNAL_IMAGE_REGISTRY": "docker.io",
+                           "SUPABASE_REALTIME_ENABLED": "false", "SUPABASE_STORAGE_ENABLED": "false"}, call
+after = config.read_text()
+assert after == before.replace('project_id = "nextjs-supabase"', 'project_id = "check-service-boundary"'), "the check changed development settings"
+print("ok: the copied database step keeps only Postgres, Auth, Kong and PostgREST, skips unused bootstrap jobs and uses Docker Hub")
+PY
+
 [ ! -e "$SCRATCH/clean/src/components/ui/form.tsx" ] || fail "copied starter still ships the legacy form component"
 
 python3 - "$COPY" "$SCRATCH" <<'PY'

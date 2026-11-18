@@ -48,7 +48,7 @@ jobs:
       - name: Install the browser
         id: browser
         run: npx --no-install playwright install --with-deps chromium
-      - name: Start the local database and apply migrations
+      - name: Start the services used by checks and apply migrations
         id: database
         run: |
           sh scripts/database-check.sh start > "$RUNNER_TEMP/supabase-start.log"
