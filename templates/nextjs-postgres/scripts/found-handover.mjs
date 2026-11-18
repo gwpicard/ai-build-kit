@@ -27,7 +27,7 @@ export function found(root, answers) {
   if (answers.name !== undefined) handover.tool.name = answers.name;
   validateRecord(handover, schemaFor(root));
   const masterplanPath = resolve(root, 'masterplan.md');
-  const host = hostRecordFor(root);
+  const host = hostRecordFor(root, handover.tool.name);
   if (!['valid', 'absent'].includes(host.status)) throw new Error(host.diagnostics.join('\n'));
   const masterplan = renderMasterplan(readFileSync(masterplanPath, 'utf8'), handover, host);
   writeFileSync(path, JSON.stringify(handover, null, 2) + '\n');

@@ -7,10 +7,10 @@ import { createRequire } from 'node:module';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
-export function hostRecordFor(root) {
+export function hostRecordFor(root, tool) {
   const local = resolve(root, 'hosting/host-record.cjs');
   const reader = require(existsSync(local) ? local : resolve(here, '../../../.agents/skills/merge/scripts/host-record.cjs'));
-  return reader.readHostRecord(root);
+  return reader.readHostRecord(root, undefined, tool);
 }
 export function schemaFor(root) {
   const local = resolve(root, 'hosting/handover.schema.json');
@@ -147,6 +147,7 @@ export function checkCode(root, handover) {
 export const startMarker = '<!-- hosting:generated:start -->';
 export const endMarker = '<!-- hosting:generated:end -->';
 export function hostingSection(h, host = { status: 'absent', diagnostics: ['hosting/host-record.json: absent'] }) {
+  if (host.status === 'valid' && host.record.tool !== h.tool.name) throw new Error('tool: does not match hosting/handover.json; the host record is not used');
   const staff = h.sign_in.staff?.provider ?? (h.sign_in.outsiders === 'email-link' ? 'email link' : 'not configured');
   const rows = [];
   const cell = value => String(value).replaceAll('\\', '\\\\').replaceAll('|', '\\|').replaceAll('\n', ' ').replaceAll('<', '&lt;');
@@ -182,7 +183,7 @@ export function run(mode, root) {
   checkCode(root, handover);
   const path = resolve(root, 'masterplan.md');
   const text = readFileSync(path, 'utf8');
-  const host = hostRecordFor(root);
+  const host = hostRecordFor(root, handover.tool.name);
   if (!['valid', 'absent'].includes(host.status)) throw new Error(host.diagnostics.join('\n'));
   const rendered = renderMasterplan(text, handover, host);
   if (mode === 'render') writeFileSync(path, rendered);

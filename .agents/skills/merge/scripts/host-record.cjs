@@ -1,6 +1,5 @@
 const { readFileSync } = require('node:fs');
 const { resolve, join } = require('node:path');
-const { createRequire } = require('node:module');
 
 // Report schema fields and array indices without exposing arbitrary input keys.
 function fieldPath(parts, schema) {
@@ -18,7 +17,7 @@ function fieldPath(parts, schema) {
   return result || '$';
 }
 function possibleSecret(value, path) {
-  if (path.length === 3 && path[0] === 'rollback_targets' && path[2] === 'image') value = value.replace(/@sha256:[0-9a-f]{64}$/, '');
+  if (path.length === 3 && path[0] === 'rollback_targets' && path[2] === 'image') value = value.replace(/(?:@sha256:[0-9a-f]{64}|:[0-9a-f]{40})$/, '');
   if (/(?:^|[^a-z0-9])(?:key|token|sig|password)\s*[:=]/i.test(value) || /-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----/.test(value)) return true;
   return (value.match(/[A-Za-z0-9+/_=-]{32,}/g) ?? []).some(run => {
     const counts = new Map();
@@ -71,7 +70,7 @@ function duplicatePaths(text) {
   walk([]);
   return duplicates;
 }
-function readHostRecord(root, text) {
+function readHostRecord(root, text, expectedTool) {
   if (text === undefined) {
     try { text = readFileSync(resolve(root, 'hosting/host-record.json'), 'utf8'); }
     catch (error) { return { status: error.code === 'ENOENT' ? 'absent' : 'invalid', diagnostics: ['hosting/host-record.json: ' + (error.code === 'ENOENT' ? 'absent' : 'could not read the record')] }; }
@@ -89,11 +88,8 @@ function readHostRecord(root, text) {
     return { status: 'unknown-version', diagnostics: ['schema_version: unsupported version; update AI Build Kit to a reader that supports this record'] };
   }
   try {
-    const Ajv2020 = createRequire(resolve(root, 'package.json'))('ajv/dist/2020.js');
-    const ajv = new Ajv2020({ strict: false, allErrors: true });
-    ajv.addFormat('date-time', timestamp);
-    validate = ajv.compile(schema);
-  } catch { return { status: 'could-not-read', diagnostics: ['hosting/host-record.json: could not validate; the project ajv dependency is required'] }; }
+    validate = require('./host-record-validator.cjs');
+  } catch { return { status: 'could-not-read', diagnostics: ['hosting/host-record.json: the bundled validator could not be read'] }; }
   const diagnostics = new Set();
   if (!validate(record)) for (const error of validate.errors) {
     const parts = error.instancePath.split('/').slice(1).map(p => p.replaceAll('~1', '/').replaceAll('~0', '~'));
@@ -108,20 +104,29 @@ function readHostRecord(root, text) {
   }
   scan(record);
   if (diagnostics.size) return { status: 'invalid', diagnostics: [...diagnostics].sort() };
+  if (expectedTool === undefined) {
+    try { expectedTool = JSON.parse(readFileSync(resolve(root, 'hosting/handover.json'), 'utf8')).tool?.name; }
+    catch { /* Report the missing identity without exposing handover content. */ }
+  }
+  if (typeof expectedTool !== 'string' || !expectedTool) return { status: 'invalid', diagnostics: ['tool: could not read the tool name from hosting/handover.json; the host record is not used'] };
+  if (record.tool !== expectedTool) return { status: 'invalid', diagnostics: ['tool: does not match hosting/handover.json; the host record is not used'] };
   return { status: 'valid', record, diagnostics: ['hosting/host-record.json: valid structure; live behaviour is not checked'] };
 }
 function mergeEffect(result) {
   if (result.status !== 'valid') return [...result.diagnostics, 'Use the existing recipe and masterplan merge setting.'].join('\n');
   return result.record.deploys_on_merge === true ? 'This will go live when the pull request merges.' : 'This merge will not deploy the tool. A separate release is needed.';
 }
-module.exports = { readHostRecord, mergeEffect };
+module.exports = { readHostRecord, mergeEffect, timestamp };
 if (require.main === module) {
-  const [mode, root = '.', input] = process.argv.slice(2);
-  if (!['check', 'merge'].includes(mode) || (input !== undefined && input !== '--stdin')) {
-    console.error('Use host-record.cjs check|merge [project] [--stdin]'); process.exitCode = 2;
+  const [mode, root = '.', ...options] = process.argv.slice(2);
+  const stdin = options[0] === '--stdin';
+  const rest = stdin ? options.slice(1) : options;
+  const tool = rest[0] === '--tool' && rest.length === 2 ? rest[1] : undefined;
+  if (!['check', 'merge'].includes(mode) || (rest.length && tool === undefined)) {
+    console.error('Use host-record.cjs check|merge [project] [--stdin] [--tool name]'); process.exitCode = 2;
   } else {
-    const result = readHostRecord(resolve(root), input === '--stdin' ? readFileSync(0, 'utf8') : undefined);
+    const result = readHostRecord(resolve(root), stdin ? readFileSync(0, 'utf8') : undefined, tool);
     console.log(mode === 'merge' ? mergeEffect(result) : result.diagnostics.join('\n'));
-    process.exitCode = result.status === 'valid' ? 0 : result.status === 'could-not-read' ? 2 : 1;
+    process.exitCode = ['valid', 'absent'].includes(result.status) ? 0 : result.status === 'could-not-read' ? 2 : 1;
   }
 }

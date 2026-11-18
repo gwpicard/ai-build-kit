@@ -168,3 +168,5 @@ The starter's SMTP function follows Nodemailer's
 [message controls](https://nodemailer.com/message). It requires TLS outside local
 tests, prevents attachment file and URL access, and omits message content from logs.
 Schema validation uses Ajv's [draft 2020-12 support](https://ajv.js.org/json-schema.html).
+The host-record reader ships an Ajv [standalone validator](https://ajv.js.org/standalone.html),
+bundled with its runtime helper so project dependencies cannot change validation.

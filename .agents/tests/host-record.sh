@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# host-record.sh: detect schema drift and incomplete upstream pins without network access.
+# host-record.sh: check schema pins, reader diagnostics and merge behaviour on current and older projects.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 python3 "$ROOT/.agents/tools/check-host-record-vendor.py"
@@ -43,3 +43,14 @@ with tempfile.TemporaryDirectory() as work:
     assert check() == 2, 'an incomplete pin is not a pass'
 print('ok: schema and pin mutations are detected')
 PY
+WORK=$(mktemp -d)
+trap 'rm -R "$WORK"' EXIT
+node - "$ROOT" "$WORK" <<'JS'
+const { readFileSync, writeFileSync } = require('node:fs');
+const [root, project] = process.argv.slice(2);
+const lock = JSON.parse(readFileSync(`${root}/.agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/package-lock.json`));
+const version = lock.packages['node_modules/ajv'].version;
+writeFileSync(`${project}/package.json`, JSON.stringify({ private: true, dependencies: { ajv: version } }));
+JS
+npm install --prefix "$WORK" --cache "${npm_config_cache:-$WORK/npm-cache}" --ignore-scripts --no-audit --no-fund > "$WORK/install.log" 2>&1 || { cat "$WORK/install.log"; exit 1; }
+HOST_RECORD_LEGACY_PROJECT="$WORK" node --test "$ROOT/.agents/tests/host-record.test.cjs"

@@ -21,9 +21,9 @@ The [handover schema](../../../../hosting/handover.schema.json) owns the
 contract and requests. A standalone project receives that release file at
 `hosting/handover.schema.json`; never maintain another schema in the template.
 
-Copy the merge skill's `scripts/host-record.cjs` and
+Copy the merge skill's `scripts/host-record.cjs`, `scripts/host-record-validator.cjs` and
 `contracts/ai-host-kit/host-record.schema.json` into `hosting/` too. The reader
-uses the project's existing `ajv` dependency. AI Host Kit owns
+includes its validator and needs no project dependency. AI Host Kit owns
 `hosting/host-record.json`; the renderer reads it without changing it. An
 absent record leaves the requirements visible, while an invalid record names
 the fields to correct and holds rendering and the project check.

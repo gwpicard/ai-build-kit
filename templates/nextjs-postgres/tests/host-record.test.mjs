@@ -5,15 +5,65 @@ import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
-import { run, hostRecordFor } from '../scripts/handover.mjs';
+import { run, hostRecordFor, hostingSection } from '../scripts/handover.mjs';
 
 const root = resolve('.');
 const require = createRequire(import.meta.url);
 const readerPath = existsSync('hosting/host-record.cjs') ? resolve('hosting/host-record.cjs') : resolve('../../.agents/skills/merge/scripts/host-record.cjs');
 const { readHostRecord, mergeEffect } = require(readerPath);
-const fixtures = existsSync('tests/fixtures/host-record') ? resolve('tests/fixtures/host-record') : resolve('../../.agents/tests/fixtures/host-record');
-const fixture = name => readFileSync(resolve(fixtures, name), 'utf8');
-const valid = JSON.parse(fixture('valid.json'));
+const valid = {
+  "schema_version": "1.0",
+  "tool": JSON.parse(readFileSync("hosting/handover.json", "utf8")).tool.name,
+  "recipe": "example-recipe",
+  "place": "example-place",
+  "address": "https://tool.example.invalid",
+  "health_address": "https://tool.example.invalid/api/health",
+  "deploys_on_merge": false,
+  "services": [
+    {
+      "name": "database",
+      "kind": "postgres",
+      "version": "17.0",
+      "region": "eu-example"
+    }
+  ],
+  "rollback_targets": [
+    {
+      "release": "previous-release",
+      "image": "registry.example.invalid/tool:previous",
+      "database_compatibility": "Compatible with the previous release."
+    }
+  ],
+  "last_backup_check": {
+    "at": "2026-11-04T10:00:00Z",
+    "result": "passed",
+    "evidence": "checks/backup.txt"
+  },
+  "last_restore_drill": {
+    "at": "2026-11-04T11:00:00Z",
+    "result": "passed",
+    "evidence": "checks/restore.txt",
+    "duration_hours": 0.5
+  },
+  "fit": "gaps",
+  "gaps": [
+    {
+      "field": "residency",
+      "reason": "The selected place does not meet the requested region.",
+      "status": "accepted",
+      "acceptance": {
+        "words": "I accept this region for the example.",
+        "by": "Example owner",
+        "at": "2026-11-04T12:00:00Z"
+      }
+    }
+  ]
+};
+const adopted = {
+  ...valid, address: null, health_address: null, rollback_targets: [],
+  last_backup_check: null, last_restore_drill: null, fit: 'unassessed',
+  gaps: [{ field: 'last_restore_drill', reason: 'No restore evidence was found.', status: 'open' }],
+};
 const copies = [];
 after(() => copies.forEach(path => rmSync(path, { recursive: true })));
 function copy() {
@@ -26,27 +76,19 @@ function copy() {
 }
 function save(dir, value) { writeFileSync(resolve(dir, 'hosting/host-record.json'), JSON.stringify(value)); }
 test('a valid record reports structure without printing values', () => {
-  const result = readHostRecord(root, fixture('valid.json'));
+  const result = readHostRecord(root, JSON.stringify(valid));
   assert.equal(result.status, 'valid');
   assert.ok(!result.diagnostics.join('\n').includes(valid.tool));
-  const cli = spawnSync('node', [readerPath, 'check', root, '--stdin'], { input: fixture('valid.json'), encoding: 'utf8' });
+  const cli = spawnSync('node', [readerPath, 'check', root, '--stdin'], { input: JSON.stringify(valid), encoding: 'utf8' });
   assert.equal(cli.status, 0); assert.ok(!cli.stdout.includes(valid.address));
 });
 test('an adopted record preserves missing evidence', () => {
-  const result = readHostRecord(root, fixture('found.json'));
+  const result = readHostRecord(root, JSON.stringify(adopted));
   assert.equal(result.status, 'valid');
   assert.equal(result.record.last_restore_drill, null);
   assert.deepEqual(result.record.rollback_targets, []);
   assert.equal(result.record.gaps[0].status, 'open');
 });
-for (const probe of JSON.parse(fixture('invalid-cases.json'))) {
-  test(`upstream invalid fixture names ${probe.field} and withholds values`, () => {
-    const result = readHostRecord(root, fixture(probe.file.split('/').at(-1)));
-    assert.equal(result.status, 'invalid');
-    assert.ok(result.diagnostics.some(line => line.startsWith(probe.field + ':')), result.diagnostics.join('\n'));
-    if (probe.withheld) assert.ok(!result.diagnostics.join('\n').includes(probe.withheld));
-  });
-}
 test('absent, invalid JSON, unknown versions and unsafe names remain value-free', () => {
   assert.equal(readHostRecord(copy()).status, 'absent');
   for (const version of ['1.1', '2.0', 'synthetic-marker']) {
@@ -61,13 +103,74 @@ test('absent, invalid JSON, unknown versions and unsafe names remain value-free'
     assert.ok(!result.diagnostics.join('\n').includes('withheld-marker'));
   }
 });
-test('missing reader dependencies cannot turn a true setting into a release claim', () => {
+test('the bundled validator works without project dependencies', () => {
   const dir = mkdtempSync(resolve(tmpdir(), 'host-record-no-deps-'));
   copies.push(dir);
-  const result = readHostRecord(dir, JSON.stringify({ ...valid, deploys_on_merge: true }));
-  assert.equal(result.status, 'could-not-read');
-  assert.ok(!mergeEffect(result).includes('This will go live'));
+  const result = readHostRecord(dir, JSON.stringify({ ...valid, deploys_on_merge: true }), valid.tool);
+  assert.equal(result.status, 'valid');
+  assert.ok(mergeEffect(result).includes('This will go live'));
   assert.equal(readHostRecord(dir, JSON.stringify({ ...valid, schema_version: '9.0' })).status, 'unknown-version');
+});
+test('both reader modes report absence successfully and retain the fallback', () => {
+  const dir = copy();
+  for (const mode of ['check', 'merge']) {
+    const result = spawnSync('node', [readerPath, mode, dir], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /host-record.json: absent/);
+    if (mode === 'merge') assert.match(result.stdout, /existing recipe and masterplan/);
+  }
+  run('render', dir); run('check', dir);
+  assert.match(readFileSync(resolve(dir, 'masterplan.md'), 'utf8'), /host-record.json: absent/);
+});
+test('a mismatched tool cannot render or replace the masterplan', () => {
+  const dir = copy(), path = resolve(dir, 'masterplan.md'), before = readFileSync(path, 'utf8');
+  const record = { ...valid, tool: 'unrelated-tool', deploys_on_merge: true };
+  save(dir, record);
+  const result = hostRecordFor(dir);
+  assert.equal(result.status, 'invalid');
+  assert.match(result.diagnostics.join('\n'), /tool: does not match/);
+  assert.ok(!mergeEffect(result).includes('This will go live'));
+  for (const mode of ['render', 'check']) assert.throws(() => run(mode, dir), /tool: does not match/);
+  assert.equal(readFileSync(path, 'utf8'), before);
+  const handover = JSON.parse(readFileSync(resolve(dir, 'hosting/handover.json'), 'utf8'));
+  assert.throws(() => hostingSection(handover, { status: 'valid', record }), /tool: does not match/);
+});
+test('numeric overflow names its field and never renders Infinity', () => {
+  const dir = copy(), path = resolve(dir, 'masterplan.md'), before = readFileSync(path, 'utf8');
+  for (const number of ['1e400', '-1e400']) {
+    const text = JSON.stringify(valid).replace('"duration_hours":0.5', `"duration_hours":${number}`);
+    writeFileSync(resolve(dir, 'hosting/host-record.json'), text);
+    const result = hostRecordFor(dir);
+    assert.equal(result.status, 'invalid');
+    assert.ok(result.diagnostics.some(line => line.startsWith('last_restore_drill.duration_hours:')));
+    assert.throws(() => run('render', dir), /duration_hours/);
+    assert.equal(readFileSync(path, 'utf8'), before);
+    assert.ok(!readFileSync(path, 'utf8').includes('Infinity'));
+  }
+});
+test('image digests and full commit tags pass while credential scans remain active', () => {
+  const dir = copy();
+  const commit = '621011b0cbe38ec046f26a9b9f6334f1b5549fa9';
+  for (const suffix of [`:${commit}`, `@sha256:${'0123456789abcdef'.repeat(4)}`]) {
+    const record = structuredClone(valid);
+    record.rollback_targets[0].image = 'registry.example.invalid/tool' + suffix;
+    save(dir, record);
+    assert.equal(hostRecordFor(dir).status, 'valid');
+    run('render', dir); run('check', dir);
+    assert.ok(readFileSync(resolve(dir, 'masterplan.md'), 'utf8').includes(suffix));
+  }
+  for (const edit of [
+    r => { r.recipe = commit; },
+    r => { r.gaps[0].acceptance.words = commit; },
+    r => { r.rollback_targets[0].image = `registry.example.invalid/${commit}:previous`; },
+    r => { r.rollback_targets[0].image = `user:password@registry.example.invalid/tool:${commit}`; },
+    r => { r.rollback_targets[0].image = `registry.example.invalid/tool:${commit}?token=synthetic-marker`; },
+  ]) {
+    const record = structuredClone(valid); edit(record);
+    const result = readHostRecord(root, JSON.stringify(record));
+    assert.equal(result.status, 'invalid');
+    assert.ok(!result.diagnostics.join('\n').includes(commit));
+  }
 });
 test('only a validated true merge setting produces the live wording', () => {
   for (const value of [true, false, 'true', 1, null]) {
@@ -75,37 +178,9 @@ test('only a validated true merge setting produces the live wording', () => {
     assert.equal(mergeEffect(result).includes('This will go live'), value === true);
   }
   assert.ok(!mergeEffect(readHostRecord(root, JSON.stringify({ ...valid, deploys_on_merge: true, fit: 'done' }))).includes('This will go live'));
-  const duplicate = fixture('valid.json').replace('"deploys_on_merge": false', '"deploys_on_merge": false, "deploys_on_merge": true');
+  const duplicate = JSON.stringify(valid).replace('"deploys_on_merge":false', '"deploys_on_merge":false,"deploys_on_merge":true');
   assert.ok(readHostRecord(root, duplicate).diagnostics.includes('deploys_on_merge: duplicate field'));
   assert.ok(!mergeEffect(readHostRecord(root, duplicate)).includes('This will go live'));
-});
-test('a merge reads the proposed commit and ignores an uncommitted record', () => {
-  const script = process.env.MERGE_SCRIPT ?? resolve('../../.agents/skills/merge/scripts/merge.py');
-  const dir = copy();
-  function git(...args) {
-    const result = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8' });
-    assert.equal(result.status, 0, result.stderr); return result.stdout.trim();
-  }
-  git('init', '-q', '-b', 'main');
-  git('config', 'user.name', 'Guillaume Picard'); git('config', 'user.email', 'fixture@example.invalid');
-  function commit(record) {
-    save(dir, record); git('add', 'hosting/host-record.json');
-    git('-c', 'user.name=Guillaume Picard', 'commit', '-q', '-m', 'Record host setting');
-    return git('rev-parse', 'HEAD');
-  }
-  function effect(head) {
-    const result = spawnSync('python3', [script, '--effect', head], { cwd: dir, encoding: 'utf8' });
-    assert.equal(result.status, 0, result.stderr); return result.stdout;
-  }
-  const manual = commit(valid);
-  save(dir, { ...valid, deploys_on_merge: true });
-  assert.ok(!effect(manual).includes('This will go live'));
-  const automatic = commit({ ...valid, deploys_on_merge: true });
-  save(dir, valid);
-  assert.ok(effect(automatic).includes('This will go live'));
-  const invalid = commit({ ...valid, deploys_on_merge: true, fit: 'done' });
-  assert.ok(!effect(invalid).includes('This will go live'));
-  assert.ok(effect(invalid).includes('existing recipe'));
 });
 test('both records render, drift fails, and a hand edit still fails', () => {
   const dir = copy(), path = resolve(dir, 'masterplan.md');
@@ -135,7 +210,7 @@ test('invalid records cannot overwrite the masterplan or claim a live setup', ()
 });
 test('missing evidence and accepted gaps keep their recorded meaning', () => {
   const dir = copy(), path = resolve(dir, 'masterplan.md');
-  save(dir, JSON.parse(fixture('found.json')));
+  save(dir, JSON.parse(JSON.stringify(adopted)));
   run('render', dir); run('check', dir);
   const text = readFileSync(path, 'utf8');
   assert.ok(text.includes('| last backup check | Not recorded |'));

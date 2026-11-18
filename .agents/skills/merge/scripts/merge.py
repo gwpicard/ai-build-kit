@@ -396,9 +396,18 @@ def merge_effect(head):
     if record.returncode:
         print('hosting/host-record.json: could not read; use the existing recipe and masterplan merge setting')
         return
+    handover = git('show', head + ':hosting/handover.json')
+    try:
+        tool = json.loads(handover.stdout)['tool']['name'] if not handover.returncode else None
+    except (ValueError, KeyError, TypeError):
+        tool = None
+    if not isinstance(tool, str) or not re.fullmatch(r'[a-z][a-z0-9]*(?:-[a-z0-9]+)*', tool):
+        print('tool: could not read the tool name from the proposed hosting/handover.json; the host record is not used')
+        print('Use the existing recipe and masterplan merge setting.')
+        return
     reader = Path(__file__).with_name('host-record.cjs')
     try:
-        result = subprocess.run(['node', str(reader), 'merge', str(Path.cwd()), '--stdin'],
+        result = subprocess.run(['node', str(reader), 'merge', str(Path.cwd()), '--stdin', '--tool', tool],
                                 input=record.stdout, capture_output=True, text=True)
     except OSError:
         result = None
