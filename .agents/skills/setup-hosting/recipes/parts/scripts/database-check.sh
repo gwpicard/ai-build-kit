@@ -17,8 +17,9 @@ import re, sys
 p = Path("supabase/config.toml")
 p.write_text(re.sub(r'^project_id = .*$', 'project_id = "' + sys.argv[1] + '"', p.read_text(), flags=re.M))
 PYTHON
-    # Auth still migrates auth.users; type generation runs its own postgres-meta job.
-    set -- "$@" -x gotrue,realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+    # Auth stays running: without it, supabase status prints no API keys and the
+    # app cannot reach the REST API. Type generation runs its own postgres-meta job.
+    set -- "$@" -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
     ;;
 esac
 # On failure or cancellation, clean even a partly started stack.

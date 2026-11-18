@@ -55,14 +55,12 @@ project's schemas, which may include services the starter checks do not use.
 | Postgres | The workflow applies migrations, reads the PostgreSQL version, compares generated types and runs `scripts/rls.sh --local` against `pg_tables`. |
 | Kong | `e2e/health.spec.ts` requests `/api/health`; that route uses the CLI's `API_URL`, whose `/rest/v1` route goes through Kong. |
 | PostgREST | `src/app/api/health/route.ts` selects `user_id` from `roles` through the REST API. The health browser test requires a successful response. |
-| Auth migration job only | The migration `20261015000000_roles_and_access_token_hook.sql` references `auth.users`. Auth stays enabled for database bootstrap, but `-x gotrue` excludes its server. |
+| Auth | The migration `20261015000000_roles_and_access_token_hook.sql` references `auth.users`. The workflow reads `ANON_KEY` from `supabase status -o env` for `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `supabase status` prints no API keys when Auth is excluded, so the health route's REST request is refused and the browser test times out. |
 | postgres-meta type generation job only | The workflow's `database-types` step runs `gen types typescript --local --schema public`. The CLI starts its own temporary postgres-meta container. |
 
-The running stack excludes `gotrue`, `realtime`, `storage-api`, `imgproxy`,
-`mailpit`, `postgres-meta`, `studio`, `edge-runtime`, `logflare`, `vector` and
-`supavisor`. The browser accessibility test reads and focuses the sign-in form
-without submitting it; unit tests use callbacks or a mocked client. They need
-no Auth server or email delivery. No check uses subscriptions, files, image
+The running stack excludes `realtime`, `storage-api`, `imgproxy`, `mailpit`,
+`postgres-meta`, `studio`, `edge-runtime`, `logflare`, `vector` and `supavisor`.
+The checks need no email delivery. No check uses subscriptions, files, image
 transformation, Studio, edge functions, analytics, log forwarding or connection
 pooling. The wrapper also sets `SUPABASE_REALTIME_ENABLED=false` and
 `SUPABASE_STORAGE_ENABLED=false`: exclusions alone leave their bootstrap
