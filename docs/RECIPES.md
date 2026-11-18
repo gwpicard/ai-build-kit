@@ -14,7 +14,7 @@ stack and host pair is its own recipe.
 The pinned menu has two recipes and no optional parts. A recipe must fit the
 tools the kit can check and use a stack the team can prove on every run. Both
 recipes use strict TypeScript, Next.js 16 and hosted Supabase, on Vercel or
-Coolify. The shared starter pins `next` and `eslint-config-next` to 16.4.2.
+Coolify. The shared starter pins `next` and `eslint-config-next` to 16.4.6.
 Two drafts wait in `.agents/tests/recipes-awaiting-run/parts/` until a real run
 is recorded: Python document work, for Coolify, and a read-only link to an
 existing database, for both recipes. Neither is offered until then.
