@@ -53,13 +53,23 @@ def inventory(scope=None):
                 age = None
             items.append({"kind": kind, "id": data.get("Id", data.get("Name", identity)),
                           "run": labels[LABEL], "scope": labels.get(SCOPE),
-                          "created": created, "age": age})
+                          "created": created, "age": age, "parent": data.get("Parent")})
     return items
 
 
 def remove(items):
     failed = False
-    for item in items:
+    # Remove child images before their parents, without pruning unlabelled ancestors.
+    ordered = [item for item in items if item["kind"] != "image"]
+    pending = [item for item in items if item["kind"] == "image"]
+    while pending:
+        parents = {item.get("parent") for item in pending}
+        leaves = [item for item in pending if item["id"] not in parents]
+        if not leaves:
+            raise RuntimeError("Docker image ancestry could not be ordered")
+        ordered.extend(leaves)
+        pending = [item for item in pending if item not in leaves]
+    for item in ordered:
         try:
             current = json.loads(docker(item["kind"], "inspect", item["id"]))[0]
             labels = (current.get("Config", {}).get("Labels") if item["kind"] in ("container", "image")
@@ -70,8 +80,18 @@ def remove(items):
             args = [item["kind"], "rm"]
             if item["kind"] == "container":
                 args.append("--force")
+            elif item["kind"] == "image":
+                args.append("--no-prune")
             docker(*args, item["id"])
-        except RuntimeError:
+        except RuntimeError as error:
+            # A cancelled build may remove its own intermediate container first.
+            try:
+                if str(error) != "Resource ownership changed" and not any(
+                           current["kind"] == item["kind"] and current["id"] == item["id"]
+                           for current in inventory(item["scope"])):
+                    continue
+            except RuntimeError:
+                pass
             print("Could not remove " + item["kind"] + ":" + item["id"], file=sys.stderr)
             failed = True
     return failed

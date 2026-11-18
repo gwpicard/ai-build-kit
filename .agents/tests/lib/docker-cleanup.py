@@ -89,6 +89,36 @@ def stack_skip():
     print("ok: local stack skip reports could not run; GitHub still enters the stack rehearsal")
 
 
+def image_ancestry():
+    state = {name: {"kind": "image", "id": name, "parent": parent,
+                    "run": "build-run", "scope": "build-scope"}
+             for name, parent in (("parent", "unlabelled-base"), ("child", "parent"))}
+    removed = []
+    def daemon(kind, action, *args):
+        identity = args[-1]
+        if action == "inspect":
+            assert identity in state
+            return json.dumps([{"Config": {"Labels": {
+                resources.LABEL: "build-run", resources.SCOPE: "build-scope"}}}])
+        assert action == "rm" and "--no-prune" in args
+        assert not any(item["parent"] == identity for item in state.values()), "parent removed before child"
+        removed.append(identity)
+        del state[identity]
+        return ""
+    with mock.patch.object(resources, "docker", daemon):
+        assert not resources.remove(list(state.values()))
+    assert removed == ["child", "parent"]
+    vanished = {"kind": "container", "id": "cancelled-build", "run": "build-run", "scope": "build-scope"}
+    with mock.patch.object(resources, "docker", side_effect=RuntimeError("already removed")), \
+         mock.patch.object(resources, "inventory", return_value=[]):
+        assert not resources.remove([vanished])
+    with mock.patch.object(resources, "docker", return_value='[{"Config":{"Labels":{}}}]') as daemon, \
+         mock.patch.object(resources, "inventory", return_value=[]):
+        assert resources.remove([vanished])
+        assert daemon.call_count == 1, "resource with changed ownership was removed"
+    print("ok: build images leave in child-first order without pruning, and concurrent removal is harmless")
+
+
 def real_paths():
     if subprocess.run(["docker", "info"], capture_output=True).returncode:
         print("could-not-run: Docker cleanup integration requires a running Docker engine")
@@ -194,4 +224,5 @@ docker volume create "$COMPOSE_PROJECT_NAME-sdk" >/dev/null
 short_projects()
 sweep_boundary()
 stack_skip()
+image_ancestry()
 sys.exit(real_paths())
