@@ -192,7 +192,7 @@ run_steps database-types || fail "restored database types did not pass"
 printf 'create table public.unprotected_notes (id bigint primary key);\n' > "$PROJECT/supabase/migrations/20261023000000_unprotected_notes.sql"
 run_steps database || fail "the planted migration did not apply"
 # Keep the new table's types current, so row rules are the only planted fault.
-(cd "$PROJECT" && supabase gen types typescript --local --schema public > types/database.ts) || fail "could not generate types for the planted table"
+(cd "$PROJECT" && sh scripts/database-check.sh gen types typescript --local --schema public > types/database.ts) || fail "could not generate types for the planted table"
 if run_steps connection,database-types,row-rules > "$WORK/row-fault.log" 2>&1; then
   fail "planted table without row-level security passed"
 fi
