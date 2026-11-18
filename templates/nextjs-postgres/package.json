@@ -25,7 +25,7 @@
     "handover:check": "node scripts/handover.mjs check",
     "hosting:render": "node scripts/handover.mjs render",
     "handover:found": "node scripts/found-handover.mjs",
-    "test:handover": "node --test tests/handover.test.mjs tests/host-record.test.mjs",
+    "test:handover": "node --test tests/handover.test.mjs",
     "test:image": "sh scripts/docker-run.sh -- node scripts/test-image.mjs"
   },
   "dependencies": {

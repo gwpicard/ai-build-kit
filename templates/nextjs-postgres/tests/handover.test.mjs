@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
 import { schemaFor, validateRecord, checkCode, run } from '../scripts/handover.mjs';
 import { found, questions } from '../scripts/found-handover.mjs';
+import './host-record.test.mjs';
 const root = resolve('.');
 const schema = schemaFor(root);
 const original = JSON.parse(readFileSync('hosting/handover.json', 'utf8'));

@@ -5,7 +5,7 @@ import betterTailwindcss from "eslint-plugin-better-tailwindcss";
 const config = [
   ...nextVitals,
   ...nextTypescript,
-  { ignores: [".next/**", "node_modules/**", "next-env.d.ts", ".agents/**", ".claude/**"] },
+  { ignores: [".next/**", "node_modules/**", "next-env.d.ts", ".agents/**", ".claude/**", "agent-plugin/**"] },
   {
     files: ["src/**/*.{js,jsx,ts,tsx}"],
     plugins: { "better-tailwindcss": betterTailwindcss },
