@@ -74,7 +74,7 @@ fi
 if [ -n "$(git -C "$ROOT" status --porcelain)" ]; then
   if [ "$ALLOW_DIRTY" -eq 0 ]; then
     echo "error: this working tree has unsaved changes." >&2
-    echo "       The rehearsal copies what is on disk while a cutover reads the" >&2
+    echo "       The rehearsal copies what is on disk while the hosted checks read the" >&2
     echo "       commit, so a green result here would not be about the tree that" >&2
     echo "       gets pushed. Save the work, or pass --allow-dirty on purpose." >&2
     echo >&2
@@ -82,7 +82,7 @@ if [ -n "$(git -C "$ROOT" status --porcelain)" ]; then
     exit 1
   fi
   echo "note: rehearsing unsaved work, because --allow-dirty was passed. This is"
-  echo "      not the tree a cutover would push."
+  echo "      not the tree a push would send."
   echo
 fi
 
