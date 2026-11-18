@@ -5,7 +5,7 @@ The owner, sign-in method and recovery targets must be settled at founding.
 <!-- hosting:generated:start -->
 ## How it stays running
 
-This section comes from hosting/handover.json. Update that file and run npm run hosting:render.
+This section comes from hosting/handover.json and, when valid, hosting/host-record.json. Update the owning record and run npm run hosting:render.
 
 Sign-in: email link. Data region: any. Recovery allows up to 24 hours of recent work to be lost and 8 hours to restore the tool.
 
@@ -255,4 +255,8 @@ The requirements below describe what the tool needs. They do not confirm that a 
 | limits / outbound internet | true |
 | previews / wanted | false |
 | previews / data | separate-database |
+
+hosting/host-record.json: absent
+
+No live setup is confirmed by this section.
 <!-- hosting:generated:end -->

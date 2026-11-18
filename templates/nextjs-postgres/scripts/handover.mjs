@@ -3,8 +3,15 @@ import { resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import ts from 'typescript';
+import { createRequire } from 'node:module';
 
 const here = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
+export function hostRecordFor(root, tool) {
+  const local = resolve(root, 'hosting/host-record.cjs');
+  const reader = require(existsSync(local) ? local : resolve(here, '../../../.agents/skills/merge/scripts/host-record.cjs'));
+  return reader.readHostRecord(root, undefined, tool);
+}
 export function schemaFor(root) {
   const local = resolve(root, 'hosting/handover.schema.json');
   return JSON.parse(readFileSync(existsSync(local) ? local : resolve(here, '../../../hosting/handover.schema.json'), 'utf8'));
@@ -139,28 +146,36 @@ export function checkCode(root, handover) {
 }
 export const startMarker = '<!-- hosting:generated:start -->';
 export const endMarker = '<!-- hosting:generated:end -->';
-export function hostingSection(h) {
+export function hostingSection(h, host = { status: 'absent', diagnostics: ['hosting/host-record.json: absent'] }) {
+  if (host.status === 'valid' && host.record.tool !== h.tool.name) throw new Error('tool: does not match hosting/handover.json; the host record is not used');
   const staff = h.sign_in.staff?.provider ?? (h.sign_in.outsiders === 'email-link' ? 'email link' : 'not configured');
   const rows = [];
   const cell = value => String(value).replaceAll('\\', '\\\\').replaceAll('|', '\\|').replaceAll('\n', ' ').replaceAll('<', '&lt;');
-  function collect(value, path = []) {
+  function collect(value, path = [], fromHost = false) {
     if (value && typeof value === 'object' && Object.keys(value).length) {
-      for (const [key, child] of Object.entries(value)) collect(child, [...path, key.replaceAll('_', ' ')]);
-    } else rows.push(`| ${cell(path.join(' / '))} | ${cell(value === null ? 'Not configured' : Array.isArray(value) ? 'None' : value)} |`);
+      for (const [key, child] of Object.entries(value)) collect(child, [...path, key.replaceAll('_', ' ')], fromHost);
+    } else rows.push(`| ${cell(path.join(' / '))} | ${cell(value === null ? (fromHost ? 'Not recorded' : 'Not configured') : Array.isArray(value) ? (fromHost ? 'None recorded' : 'None') : value)} |`);
   }
   collect(h);
-  // Include every requirement, so any record change changes the render.
+  // Include every requirement and validated host field so changes cause drift.
+  const requirements = rows.join('\n');
+  rows.length = 0;
+  if (host.status === 'valid') collect(host.record, [], true);
+  const running = host.status === 'valid'
+    ? `The host record describes the setup; it does not prove that the live tool is safe. ${host.record.deploys_on_merge ? 'This will go live when the pull request merges.' : 'A merge does not deploy the tool; a separate release is needed.'}\n\n` +
+      '| Recorded setup | Value |\n| --- | --- |\n' + rows.join('\n') + '\n'
+    : host.diagnostics.map(line => cell(line)).join('\n\n') + '\n\nNo live setup is confirmed by this section.\n';
   return `${startMarker}\n## How it stays running\n\n` +
-    `This section comes from hosting/handover.json. Update that file and run npm run hosting:render.\n\n` +
+    `This section comes from hosting/handover.json and, when valid, hosting/host-record.json. Update the owning record and run npm run hosting:render.\n\n` +
     `Sign-in: ${staff}. Data region: ${h.residency}. Recovery allows up to ${h.recovery.max_data_loss_hours} hours of recent work to be lost and ${h.recovery.max_restore_hours} hours to restore the tool.\n\n` +
     `The requirements below describe what the tool needs. They do not confirm that a live copy exists.\n\n` +
-    '| Requirement | Value |\n| --- | --- |\n' + rows.join('\n') + '\n' + endMarker;
+    '| Requirement | Value |\n| --- | --- |\n' + requirements + '\n\n' + running + endMarker;
 }
-export function renderMasterplan(text, handover) {
+export function renderMasterplan(text, handover, host) {
   const first = text.indexOf(startMarker), last = text.indexOf(endMarker);
-  if (first === -1 && last === -1) return `${text.trimEnd()}\n\n${hostingSection(handover)}\n`;
+  if (first === -1 && last === -1) return `${text.trimEnd()}\n\n${hostingSection(handover, host)}\n`;
   if (first === -1 || last < first || text.indexOf(startMarker, first + 1) !== -1 || text.indexOf(endMarker, last + 1) !== -1) throw new Error('masterplan: invalid hosting markers');
-  return text.slice(0, first) + hostingSection(handover) + text.slice(last + endMarker.length);
+  return text.slice(0, first) + hostingSection(handover, host) + text.slice(last + endMarker.length);
 }
 export function run(mode, root) {
   const handover = JSON.parse(readFileSync(resolve(root, 'hosting/handover.json'), 'utf8'));
@@ -168,7 +183,9 @@ export function run(mode, root) {
   checkCode(root, handover);
   const path = resolve(root, 'masterplan.md');
   const text = readFileSync(path, 'utf8');
-  const rendered = renderMasterplan(text, handover);
+  const host = hostRecordFor(root, handover.tool.name);
+  if (!['valid', 'absent'].includes(host.status)) throw new Error(host.diagnostics.join('\n'));
+  const rendered = renderMasterplan(text, handover, host);
   if (mode === 'render') writeFileSync(path, rendered);
   else if (mode === 'check') same(text, rendered, 'masterplan hosting section');
   else throw new Error('Use check or render');

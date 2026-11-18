@@ -10,7 +10,7 @@ export default defineConfig({
     testTimeout: 15000,
     include: ["tests/**/*.test.{ts,mjs}"],
     fileParallelism: false,
-    exclude: ["tests/handover.test.mjs"],
+    exclude: ["tests/handover.test.mjs", "tests/host-record.test.mjs"],
     coverage: { include: ["src/lib/db/**/*.ts"] },
   },
 });
