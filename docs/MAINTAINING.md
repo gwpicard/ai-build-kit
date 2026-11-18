@@ -835,6 +835,16 @@ build up: one evening of test-bed runs and mutation checks left about 17 GB.
 `.agents/maintainer-skills/housekeeping/SKILL.md` lists them, labels each one,
 and clears what is safe after one approval, into the Bin.
 
+For maintainer agent briefs, run `.agents/tools/agent-run-queue.py BRIEF FOLDER`.
+It uses Codex by default; `--agent` and repeated `--agent-arg` options select
+another executable and its arguments. `--limit-gib` sets the Docker disk-use
+limit. Each invocation queues one brief, and cooperating invocations share two
+places. The runner reports newly observed unlabelled resources for inspection;
+other work running at the same time can appear in that report. It removes only
+resources carrying its own run label. If Docker becomes unreachable,
+check for labelled leftovers after it returns. The agent must stop if a labelled
+build cannot run; it must not fall back to a legacy build.
+
 | What writes it | Where | When it can go |
 |---|---|---|
 | `.agents/tests/mutate.sh` | `$TMPDIR/abk-mutate-<pid>`, or `MUTATE_WORK` | Once its report is read. The script prints the path and never removes it |

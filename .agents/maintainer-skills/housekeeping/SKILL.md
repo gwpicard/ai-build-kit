@@ -11,6 +11,10 @@ leave package caches. `docs/MAINTAINING.md` lists where each tool writes, under
 "Local leftovers". This skill clears them without losing evidence, unsaved work
 or a key that still opens something online.
 
+For new maintainer agent briefs, use `.agents/tools/agent-run-queue.py` as
+described under "Local leftovers" in `docs/MAINTAINING.md`. Review its report
+of unlabelled resources before considering any removal.
+
 ## Steps
 
 1. Ask the maintainer for the scope, unless they already gave it: this

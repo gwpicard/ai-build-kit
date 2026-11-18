@@ -79,6 +79,11 @@ with tempfile.TemporaryDirectory() as tmp:
         (source / '.agents/tools' / name).chmod(0o755)
     (source / '.agents/tests/run-all.sh').write_text('#!/bin/sh\nexit 0\n')
     (source / 'templates/nextjs-postgres/package.json').write_text('{}\n')
+    # The rehearsal also builds the site; npm is stubbed below, so a manifest and a stub link check suffice.
+    (source / 'site').mkdir(exist_ok=True)
+    (source / 'site/package.json').write_text('{}\n')
+    (source / '.agents/tests/site-links.sh').write_text('#!/bin/sh\nexit 0\n')
+    (source / '.agents/tests/site-links.sh').chmod(0o755)
     git(source, 'init', '-q')
     git(source, 'add', '.')
     git(source, 'commit', '-qm', 'fixture')
