@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# merged-tree-rehearsal.sh: prove starter changes and stale reviews cannot escape the clean-copy rehearsal.
+# merged-tree-rehearsal.sh: prove starter changes, stale reviews and bad built-site links cannot escape the clean-copy rehearsal.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 WORK=$(mktemp -d)
@@ -29,6 +29,8 @@ write(script, (root / script).read_text())
 for name in ('build-adapters.sh', 'validate-kit.sh'):
     write('.agents/tools/' + name, '#!/bin/sh\necho source-check >> "$CALLS"\n')
 write('.agents/tests/run-all.sh', '#!/bin/sh\necho suite >> "$CALLS"\n')
+write('.agents/tests/site-links.sh', '#!/bin/sh\necho site-links >> "$CALLS"\n[ ! -f site/bad-link ]\n')
+write('site/package.json', '{}\n')
 write('templates/nextjs-postgres/package.json', '{}\n')
 write('templates/nextjs-postgres/reviews/sign-in.json', 'pass\n')
 write('templates/nextjs-postgres/scripts/test-database.mjs', '// fixture\n')
@@ -76,6 +78,8 @@ def run(name, expected, down=False):
     assert 'npm run check:sign-in-review ' in log
     assert 'source-check' in log and 'suite' in log
     assert str(source / 'templates/nextjs-postgres') not in log
+    assert 'npm ci ' + str(tree / 'site') in log and 'npm run build ' + str(tree / 'site') in log
+    assert 'site-links' in log
     return result.stdout, log
 
 out, calls = run('unchanged', 0)
@@ -106,8 +110,9 @@ for step in steps:
     subprocess.run(['sh', '-eu', '-c', command],
                    cwd=work / 'changed-tree/templates/nextjs-postgres', env=env, check=True)
 actual = '\n'.join(line for line in calls.splitlines()
-                   if line not in ('source-check', 'suite', 'docker info')
-                   and not line.startswith('npm run check:sign-in-review ')) + '\n'
+                   if line not in ('source-check', 'suite', 'docker info', 'site-links')
+                   and not line.startswith('npm run check:sign-in-review ')
+                   and not line.endswith('-tree/site')) + '\n'
 assert actual == expected_calls.read_text(), actual
 assert 'Skipped the full' not in out
 print('ok: a changed starter runs the workflow commands with identical arguments and order')
@@ -116,6 +121,14 @@ out, calls = run('docker-down', 1, down=True)
 assert 'could not run: postgres-starter/build-check: Docker' in out
 assert 'npx ' not in calls
 print('ok: unavailable Docker makes a required full job exit non-zero')
+
+write('site/bad-link', 'x\n')
+git('add', 'site/bad-link')
+out, calls = run('site-link', 1)
+assert 'FAILED: site-build' in out
+print('ok: a built page with a bad link fails the rehearsal')
+git('rm', '--cached', '--quiet', 'site/bad-link')
+(source / 'site/bad-link').unlink()
 
 git('update-ref', '-d', 'refs/remotes/origin/main')
 out, calls = run('no-upstream', 0)

@@ -16,8 +16,9 @@
 #   build-adapters.sh --check   the committed adapters match their source
 #   validate-kit.sh             the source and the generated adapters
 #   run-all.sh                  every rehearsal in .agents/tests/
-# It also checks the sign-in review, and runs the full Postgres starter job when
-# that template differs from origin/main.
+# It also checks the sign-in review, runs the full Postgres starter job when
+# that template differs from origin/main, and builds the site and checks its
+# built pages, as the site job does.
 #
 # This lives here rather than in .agents/tests/ on purpose. run-all.sh runs
 # every script in that folder, so a rehearsal that called run-all.sh would run
@@ -164,6 +165,17 @@ if [ "$FULL_STARTER" -eq 1 ]; then
   fi
 else
   echo "Skipped the full Postgres starter job: templates/nextjs-postgres/ matches origin/main."
+fi
+
+# The site job builds the site and checks the built pages. Without a build,
+# site-links.sh skips its built-page check, so run the job's own steps here.
+name="site-build"
+printf '\n########## %s ##########\n' "$name"
+if (cd "$TREE/site" && npm ci && npm run build) && (cd "$TREE" && sh .agents/tests/site-links.sh); then
+  printf '  passed: %s\n' "$name"
+else
+  printf '  FAILED: %s\n' "$name"
+  failed="$failed $name"
 fi
 
 printf '\n===================================\n'

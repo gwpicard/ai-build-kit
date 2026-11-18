@@ -145,8 +145,9 @@ Copyright © 2023 W3C®. This software or document includes material copied from
 
 The database check's service exclusions, bootstrap settings and registry choice
 follow the [pinned CLI's implementation](https://github.com/supabase/cli/tree/v2.117.0/apps/cli/src/commands/start).
-The [shared stack evidence](../.agents/skills/setup-hosting/recipes/parts/nextjs-supabase-stack.md#project-check)
-links the individual sources and records why each service or job is needed.
+The shared stack evidence in
+`.agents/skills/setup-hosting/recipes/parts/nextjs-supabase-stack.md` links the
+individual sources and records why each service or job is needed.
 
 [GitHub's branch protection guide](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
 warns that job names must be unique across workflows. The starter reports
