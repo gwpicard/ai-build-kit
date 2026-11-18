@@ -2772,6 +2772,31 @@ check_claim "informal approval renewal wording" "fresh yes"
 [ "$FAIL" -eq 0 ] && echo "ok: no stale claims found"
 
 # ---------------------------------------------------------------------------
+echo "== Lockfile platform fields =="
+
+# A lockfile regenerated from packages installed on another system can lose the
+# libc field of a native package. npm then cannot tell the musl build from the
+# glibc build, and a starter image on Alpine may install the wrong one. Every
+# Linux package named for its C library must keep that field.
+lock_hits=$(git -C "$ROOT" ls-files '*package-lock.json' | python3 -c '
+import json, re, sys
+for path in sys.stdin.read().split():
+    try:
+        packages = json.load(open(path)).get("packages", {})
+    except (OSError, ValueError):
+        print(path + ": cannot be read"); continue
+    for name, entry in packages.items():
+        if re.search(r"-(gnu|musl)$", name) and "linux" in entry.get("os", []) and not entry.get("libc"):
+            print("%s: %s has no libc field" % (path, name))
+')
+if [ -n "$lock_hits" ]; then
+  fail "a lockfile lost a native package's libc field; regenerate it in a folder with no installed packages:"
+  echo "$lock_hits" | sed 's/^/    /' >&2
+else
+  pass "every Linux native package in a tracked lockfile keeps its libc field"
+fi
+
+# ---------------------------------------------------------------------------
 echo "== Maintainer writing contract =="
 
 if grep -qF '.agents/maintainer-skills/writing-review/SKILL.md' "$ROOT/AGENTS.md" && \
