@@ -20,7 +20,8 @@ s = json.loads(p.read_text())
 a = sys.argv[1:]
 with open(os.environ['FAKE_LOG'], 'a') as log: log.write(' '.join(a) + '\n')
 if a == ['info']:
-    sys.exit(1 if s.get('down') else 0)
+    calls = Path(os.environ['FAKE_LOG']).read_text().splitlines().count('info')
+    sys.exit(1 if s.get('down') or (os.environ.get('FAKE_DOWN_FINAL') and calls == 3) else 0)
 if s.get('down'): sys.exit(1)
 if a[:2] == ['system', 'df']:
     print(json.dumps({'Type':'Images', 'Size':s.get('size', '1 GB')})); sys.exit()
@@ -93,12 +94,20 @@ def main():
         assert ' rm ' not in log.read_text()
         init(); result=run(FAKE_DOWN_END='1'); assert result.returncode and 'not reachable' in result.stderr
         assert ' rm ' not in log.read_text()
+        init(); result=run(FAKE_DOWN_FINAL='1'); assert result.returncode and 'nothing removed' in result.stderr, (result.stdout, result.stderr)
+        assert ' rm ' not in log.read_text(), log.read_text()
+        assert 'container-labelled' in json.loads(state.read_text())['items']
         print('ok: Docker unreachable at either boundary removes nothing')
         init(size='100 GB'); result=run(); assert result.returncode and '100 GB' in result.stdout and 'above the limit' in result.stderr
         assert 'Started ' not in result.stdout
         print('ok: storage guard reports use and refuses to start')
         init(); result=run(FAKE_CONTEXT_FAIL='1')
         assert result.returncode and 'Started ' not in result.stdout, (result.stdout, result.stderr)
+        invalid = work / 'invalid'; invalid.write_text('invalid executable format'); invalid.chmod(0o755)
+        init(); bad_cmd = cmd.copy(); bad_cmd[bad_cmd.index(str(work/'agent'))] = str(invalid)
+        result = subprocess.run(bad_cmd, env=env, capture_output=True, text=True, timeout=20)
+        assert result.returncode and 'Started ' not in result.stdout and 'Could not start agent' in result.stderr, (result.stdout, result.stderr)
+        print('ok: executable format failure is not reported as a start')
         manifest=(ROOT / 'release-manifest.txt').read_text()
         assert '.agents/tools/agent-run-queue.py|' not in manifest
         print('ok: proxy failure is not reported as a start; the runner is outside the release')
@@ -116,6 +125,9 @@ def main():
         result=run(FAKE_PS=shell+'\n'+shell.replace('123 1 sh', '124 1 sh', 1)); assert result.returncode == 0, (result.stdout,result.stderr)
         init(); wrapper='123 1 node /usr/local/bin/node /long/path/codex --no-daemon --disable shell_snapshot exec ' + ('x'*1000) + " don't"
         result=run(FAKE_PS=wrapper); assert result.returncode == 0, (result.stdout,result.stderr)
+        init(); descendant='124 123 codex /usr/local/bin/codex exec ' + ('x'*1000)
+        result=run(FAKE_PS=wrapper+'\n'+descendant); assert result.returncode == 0 and 'Started ' in result.stdout, (result.stdout, result.stderr)
+        print('ok: wrapper and descendant count as one agent run')
         init(); second=wrapper.replace('123 1 node','124 1 node',1)
         proc=subprocess.Popen(cmd, env={**env,'FAKE_PS':wrapper+'\n'+second}, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         time.sleep(3); proc.send_signal(signal.SIGTERM); out,err=proc.communicate(timeout=10)

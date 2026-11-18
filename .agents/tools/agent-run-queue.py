@@ -16,7 +16,7 @@ import time
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
-WRAPPER = ROOT / '.agents/skills/maintain/scripts/docker-run.sh'
+RESOURCE_SCRIPT = ROOT / '.agents/skills/maintain/scripts/docker-resources.py'
 KINDS = ('container', 'image', 'volume', 'network')
 LABEL = 'ai-build-kit.run'
 children = []
@@ -143,6 +143,8 @@ def main():
     run = 'maintainer-' + uuid.uuid4().hex
     env = os.environ.copy()
     env['CODEX_RUN_ID'] = run
+    env['ABK_DOCKER_SCOPE'] = uuid.uuid4().hex
+    env['COMPOSE_PROJECT_NAME'] = 'abk-' + run + '-' + env['ABK_DOCKER_SCOPE']
     prompt = ('Docker rules for this run: label every container, image, volume and network with '
               'ai-build-kit.run=$CODEX_RUN_ID and ai-build-kit.scope=$ABK_DOCKER_SCOPE. '
               'Use the supplied COMPOSE_PROJECT_NAME. Use BuildKit with labels for every build. '
@@ -177,7 +179,8 @@ def main():
                     raise RuntimeError('run reservation file is invalid; no brief started')
                 parents, agents = processes()
                 reservations = [p for p in reservations if isinstance(p, int) and alive(p, parents)]
-                external = sum(not managed(pid, set(reservations), parents) for pid in agents)
+                external = sum(not managed(pid, set(reservations) | (agents - {pid}), parents)
+                               for pid in agents)
                 if len(reservations) + external < 2:
                     if not reachable():
                         raise RuntimeError('Docker is not reachable before launch; nothing removed and no brief started')
@@ -187,13 +190,32 @@ def main():
                     before = inventory()
                     reservations.append(os.getpid())
                     lock.seek(0); lock.truncate(); json.dump(reservations, lock); lock.flush()
-                    launch = ('import os, shutil, sys; '
-                              'program = shutil.which(sys.argv[3]); '
-                              'program or sys.exit(127); '
-                              'print("Started " + sys.argv[1] + " (run " + sys.argv[2] + ")", flush=True); '
-                              'os.execv(program, sys.argv[3:])')
-                    child = subprocess.Popen([str(WRAPPER), '--proxy', '--', sys.executable, '-c', launch,
-                                              str(brief), run, *agent], cwd=folder,
+                    launch = r"""
+import os, shutil, sys
+read_fd, write_fd = os.pipe()
+pid = os.fork()
+if pid == 0:
+    os.close(read_fd)
+    try:
+        program = shutil.which(sys.argv[3])
+        if program is None:
+            raise FileNotFoundError(sys.argv[3])
+        os.execv(program, sys.argv[3:])
+    except OSError as error:
+        os.write(write_fd, str(error).encode())
+        os._exit(127)
+os.close(write_fd)
+error = os.read(read_fd, 4096)
+os.close(read_fd)
+if error:
+    print('Could not start agent: ' + error.decode(errors='replace'), file=sys.stderr, flush=True)
+else:
+    print('Started ' + sys.argv[1] + ' (run ' + sys.argv[2] + ')', flush=True)
+_, status = os.waitpid(pid, 0)
+sys.exit(os.waitstatus_to_exitcode(status) if os.WIFEXITED(status) else 128 + os.WTERMSIG(status))
+"""
+                    child = subprocess.Popen([sys.executable, str(RESOURCE_SCRIPT), 'run', '--proxy', '--',
+                                              sys.executable, '-c', launch, str(brief), run, *agent], cwd=folder,
                                              env=env, stdin=subprocess.PIPE, text=True)
                     children.append(child)
                     break
@@ -217,11 +239,10 @@ def main():
             finally:
                 fcntl.flock(lock, fcntl.LOCK_UN)
     if not reachable():
-        print('Docker is not reachable at the end; nothing removed by the final report. Check labelled leftovers later.', file=sys.stderr)
+        print('Docker is not reachable at the end; nothing removed. Check labelled leftovers later.', file=sys.stderr)
         return 1
     try:
-        resource_file = ROOT / '.agents/skills/maintain/scripts/docker-resources.py'
-        spec = importlib.util.spec_from_file_location('docker_resources', resource_file)
+        spec = importlib.util.spec_from_file_location('docker_resources', RESOURCE_SCRIPT)
         resources = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(resources)
         if resources.remove([item for item in resources.inventory() if item['run'] == run]):
