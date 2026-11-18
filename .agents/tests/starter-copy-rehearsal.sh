@@ -86,7 +86,7 @@ assert args[0] == "start" and args[1] in ("-x", "--exclude") and len(args) == 3,
 catalog = set("gotrue realtime storage-api imgproxy kong mailpit postgrest postgres-meta studio edge-runtime logflare vector supavisor".split())
 excluded = set(args[2].split(","))
 assert excluded <= catalog, f"unknown exclusions: {excluded - catalog}"
-assert catalog - excluded == {"kong", "postgrest"}, f"unexpected running services: {catalog - excluded}"
+assert catalog - excluded == {"gotrue", "kong", "postgrest"}, f"unexpected running services: {catalog - excluded}"
 assert observed[1]["args"] == ["db", "reset", "--local", "--no-seed"], observed
 assert observed[2]["args"] == ["gen", "types", "typescript", "--local", "--schema", "public"], observed
 for call in observed:
@@ -94,7 +94,7 @@ for call in observed:
                            "SUPABASE_REALTIME_ENABLED": "false", "SUPABASE_STORAGE_ENABLED": "false"}, call
 after = config.read_text()
 assert after == before.replace('project_id = "nextjs-supabase"', 'project_id = "check-service-boundary"'), "the check changed development settings"
-print("ok: the copied database step keeps only Postgres, Kong and PostgREST, skips unused bootstrap jobs and uses Docker Hub")
+print("ok: the copied database step keeps only Postgres, Auth, Kong and PostgREST, skips unused bootstrap jobs and uses Docker Hub")
 PY
 
 [ ! -e "$SCRATCH/clean/src/components/ui/form.tsx" ] || fail "copied starter still ships the legacy form component"
