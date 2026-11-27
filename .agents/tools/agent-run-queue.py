@@ -24,7 +24,8 @@ stopping = None
 
 
 def command(*args):
-    result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+    # Another program's arguments need not be UTF-8; one stray byte must not end the queue.
+    result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, errors='replace')
     if result.returncode:
         raise RuntimeError('could not run ' + ' '.join(args[:2]))
     return result.stdout

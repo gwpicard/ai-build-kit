@@ -128,6 +128,9 @@ def main():
         init(); descendant='124 123 codex /usr/local/bin/codex exec ' + ('x'*1000)
         result=run(FAKE_PS=wrapper+'\n'+descendant); assert result.returncode == 0 and 'Started ' in result.stdout, (result.stdout, result.stderr)
         print('ok: wrapper and descendant count as one agent run')
+        init(); stray='125 1 other other \udcff not utf-8'
+        result=run(FAKE_PS=stray+'\n'+descendant); assert result.returncode == 0 and 'Started ' in result.stdout, (result.stdout, result.stderr)
+        print('ok: a process list with bytes that are not UTF-8 does not stop the queue')
         init(); second=wrapper.replace('123 1 node','124 1 node',1)
         proc=subprocess.Popen(cmd, env={**env,'FAKE_PS':wrapper+'\n'+second}, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         time.sleep(3); proc.send_signal(signal.SIGTERM); out,err=proc.communicate(timeout=10)
