@@ -37,7 +37,7 @@ ref=${1:-$linked}
 [ -n "$ref" ] || cl_cannot "The kit does not know which database project this is, so the migrations could not be read."
 
 command -v supabase >/dev/null 2>&1 ||
-  cl_cannot "The Supabase CLI version is unreadable, so migrations could not run. Install Supabase CLI 2.x or 3.x."
+  cl_cannot "The Supabase CLI is not installed, so migrations could not run. Install Supabase CLI 2.x or 3.x."
 version=$(supabase --version 2>/dev/null) || version=
 [ -n "$version" ] || version=unreadable
 printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$' ||
