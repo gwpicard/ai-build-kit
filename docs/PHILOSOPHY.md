@@ -306,7 +306,9 @@ work, and moves into the sections above once a check or a real run backs it.
 - A separate host kit that reads a checked handover file from the project and
   puts the tool on the infrastructure the person chooses, including the major
   clouds and a rented server. The masterplan's hosting section is generated from
-  that file.
+  that file. AI Host Kit is published as a beta for supervised runs; until it
+  has a proven host, this kit's `/setup-hosting` remains the supported way to
+  put a tool live.
 - A short guided choice of host, based on the person's IT constraints and the
   work the tool does, in place of one default.
 - A readiness check that confirms everything the person needs is installed,
