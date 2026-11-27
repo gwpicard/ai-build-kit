@@ -156,8 +156,8 @@ protection script requires both for a recipe project.
 
 ## Portable hosting handover
 
-AI Host Kit's host record schema and contract fixtures are vendored unchanged
-from its [contracts](https://github.com/gwpicard/ai-host-kit/tree/1b30443bd80e3540d4ee266e9e3ae3dc4f641929/contracts).
+AI Host Kit's host record schema is vendored unchanged
+from its [contracts](https://github.com/gwpicard/ai-host-kit/tree/621011b0cbe38ec046f26a9b9f6334f1b5549fa9/contracts).
 The merge reader follows its value-free diagnostics, timestamp validation and
 obvious-secret scan. The [pin](../.agents/skills/merge/contracts/ai-host-kit/upstream.json)
 records the schema's origin and byte fingerprints. The local suite checks
@@ -169,7 +169,7 @@ AI Build Kit owns the adopted contract. The adoption closes descriptive secret
 entries, constrains references and defines the four requests beside the schema.
 It also permits a null staff directory for email-only or unfinished sign-in.
 
-The starter's SMTP function follows Nodemailer's
+The unreleased plain Postgres template's SMTP function follows Nodemailer's
 [SMTP transport](https://nodemailer.com/smtp) and
 [message controls](https://nodemailer.com/message). It requires TLS outside local
 tests, prevents attachment file and URL access, and omits message content from logs.

@@ -254,7 +254,7 @@ shared skills, confirm they work, then remove the other installation.
 
 ## Update the installed skills
 
-If v1.2.5 is installed, complete the [first-upgrade comparison](#first-upgrade-from-v125)
+If a version older than v1.2.6 is installed, complete the [first-upgrade comparison](#first-upgrade-from-a-version-older-than-v126)
 before running any update command below.
 
 During `maintain`, the agent names the version this project records and the
@@ -316,14 +316,14 @@ Projects created before this installation model may not have
 `skills-lock.json`. The same command registers the installed skills on the
 next `maintain` visit, and later visits use it again.
 
-### First upgrade from v1.2.5
+### First upgrade from a version older than v1.2.6
 
-The automatic local-edit comparison arrives in v1.2.6, so it cannot protect
-that first update. Before running any update command, save a project checkpoint
-and copy the installed skills to a separate backup folder. Include plugin
+The automatic local-edit comparison arrived in v1.2.6, so it cannot protect
+the update that first installs it. Before running any update command, save a
+project checkpoint and copy the installed skills to a separate backup folder. Include plugin
 files outside the project and the targets of any skill-folder links.
 
-Download and extract the kit archive from the [v1.2.5 release](https://github.com/gwpicard/ai-build-kit/releases/tag/v1.2.5)
+Download and extract the kit archive for your installed version from the [releases page](https://github.com/gwpicard/ai-build-kit/releases)
 into a separate folder. From that extracted release folder, run this read-only
 comparison, replacing the last path with your installed skills folder:
 
@@ -346,7 +346,7 @@ The v1.2.6 backup, restore and container checks also require a local Docker
 engine reached through a Unix socket. With a TCP or SSH context, use a local
 Docker context for these checks or run them on another computer with a local
 engine. Restore leaves the project's local database running and still needs
-the default local ports, including 54322; see [live data and recovery](https://gwpicard.github.io/ai-build-kit/live-data/)
+the default local ports, including 54322; see [live data and recovery](/ai-build-kit/live-data/)
 if a port is occupied.
 
 ## Coding agent map

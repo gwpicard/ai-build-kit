@@ -136,7 +136,7 @@ Some promises apply in every project, so they do not depend on what the person
 asks for. They are what make it safe to maintain a tool you cannot read. Each
 needs an enforcement mechanism and a check that fails if the mechanism is
 removed. The
-[source repository's mechanism list](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/MAINTAINING.md#the-backbone-and-its-mechanisms)
+[source repository's mechanism list](https://github.com/gwpicard/ai-build-kit/blob/main/docs/MAINTAINING.md#the-backbone-and-its-mechanisms)
 names each promise's mechanism, or marks it "none yet".
 
 1. A person approves each merge, unless they chose auto-merge with its limits.
@@ -289,7 +289,7 @@ check names it as a caution.
 `/maintain` checks the project's setup and records, and offers the upkeep that
 is due. It cannot repair badly written code.
 
-For the rule on service names, see [Keep it generic](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/MAINTAINING.md#keep-it-generic).
+For the rule on service names, see [Keep it generic](https://github.com/gwpicard/ai-build-kit/blob/main/docs/MAINTAINING.md#keep-it-generic).
 
 ## Where the kit is heading
 
@@ -306,7 +306,9 @@ work, and moves into the sections above once a check or a real run backs it.
 - A separate host kit that reads a checked handover file from the project and
   puts the tool on the infrastructure the person chooses, including the major
   clouds and a rented server. The masterplan's hosting section is generated from
-  that file.
+  that file. AI Host Kit is published as a beta for supervised runs; until it
+  has a proven host, this kit's `/setup-hosting` remains the supported way to
+  put a tool live.
 - A short guided choice of host, based on the person's IT constraints and the
   work the tool does, in place of one default.
 - A readiness check that confirms everything the person needs is installed,

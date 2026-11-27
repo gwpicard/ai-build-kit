@@ -25,6 +25,8 @@ Last proven: 2026-10-23
 Proven on: Next.js 16; Supabase CLI 2.117; Coolify 4.3.23; coolify-devops 0.4.0
 Superseded settings: NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
 
+The starter pins Next.js 16.4.6; no recorded run has used that version.
+
 Shared stack: [Next.js, TypeScript and Supabase](../parts/nextjs-supabase-stack.md)
 Database types check: `if [ ! -f types/database.ts ] || ! git ls-files --error-unmatch types/database.ts >/dev/null 2>&1; then echo 'could not run: types/database.ts is missing or untracked'; exit 2; fi; if ! supabase status >/dev/null 2>&1; then echo 'could not run: local Supabase is not running'; exit 2; fi; tmp=$(mktemp) || exit 2; trap 'rm -f "$tmp"' EXIT; supabase gen types typescript --local > "$tmp" || { echo 'could not run: database types could not be generated'; exit 2; }; diff -u types/database.ts "$tmp"`
 Plan terms: Supabase Free pauses projects after 7 days of low activity and has no backups, so a work team should use Pro (read 2026-10-14 at https://supabase.com/docs/guides/platform/free-project-pausing and https://supabase.com/docs/guides/platform/backups)

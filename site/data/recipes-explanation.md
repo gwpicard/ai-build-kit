@@ -17,4 +17,4 @@ If no recipe matches your stack or host, the kit explains once that it provides 
 
 ## Keeping recipes current
 
-Services change their settings and plan terms. During [maintenance](https://gwpicard.github.io/ai-build-kit/how-it-works/#maintain-the-project), a script flags recipes whose documentation review is more than 90 days old, recipes no longer offered, and projects still using superseded setting names. The script reports these findings without changing your project or service settings.
+Services change their settings and plan terms. During [maintenance](/ai-build-kit/how-it-works/#maintain-the-project), a script flags recipes whose documentation review is more than 90 days old, recipes no longer offered, and projects still using superseded setting names. The script reports these findings without changing your project or service settings.
