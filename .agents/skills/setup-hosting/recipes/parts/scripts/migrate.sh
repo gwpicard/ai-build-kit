@@ -4,8 +4,8 @@
 # Usage: migrate.sh [--apply] [<project ref>]
 #
 # It links the folder to the project with `supabase link --project-ref`, then
-# lists what `supabase db push --dry-run` would change. With --apply it then
-# runs `supabase db push`, once. Without a reference it uses the project the
+# lists what a hosted dry run would change. With --apply it then runs the
+# hosted push once. Without a reference it uses the project the
 # folder is linked to. The database password comes from the file
 # DB_PASSWORD_FILE names, read here and never printed.
 #
@@ -36,7 +36,17 @@ live=${LIVE_REF:-$linked}
 ref=${1:-$linked}
 [ -n "$ref" ] || cl_cannot "The kit does not know which database project this is, so the migrations could not be read."
 
-cl_need supabase
+command -v supabase >/dev/null 2>&1 ||
+  cl_cannot "The Supabase CLI is not installed, so migrations could not run. Install Supabase CLI 2.x or 3.x."
+version=$(supabase --version 2>/dev/null) || version=
+[ -n "$version" ] || version=unreadable
+printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$' ||
+  cl_cannot "The Supabase CLI version is $version, so migrations could not run. Install Supabase CLI 2.x or 3.x."
+case "$version" in
+  2.[0-9]*.[0-9]*) target=--linked ;;
+  3.[0-9]*.[0-9]*) target=--remote ;;
+  *) cl_cannot "The Supabase CLI version is $version, so migrations could not run. Install Supabase CLI 2.x or 3.x." ;;
+esac
 out=$(mktemp)
 saved=$(mktemp -d)
 trap 'rm -f "$out"; rm -rf "$saved"' EXIT
@@ -58,9 +68,12 @@ esac
 supabase link --project-ref "$ref" >"$out" 2>&1 ||
   { cat "$out" >&2; cl_cannot "The folder could not be linked to the database project, so the migrations could not be read."; }
 
-supabase db push --dry-run >"$out" 2>&1 ||
+supabase db push "$target" --dry-run >"$out" 2>&1 ||
   { cat "$out" >&2; cl_cannot "The database could not be reached, so the kit cannot tell whether a migration is waiting."; }
 cat "$out" >&2
+if grep -qi 'local database is up to date' "$out"; then
+  cl_cannot "The dry run reported the local database, so migrations could not run on the hosted project."
+fi
 # The names after "Would push", read without the colour codes a terminal adds.
 esc=$(printf '\033')
 waiting=$(sed "s/$esc\[[0-9;]*m//g" "$out" | awk '/[Ww]ould push/ { on = 1; next } on' |
@@ -76,7 +89,7 @@ fi
 
 [ -n "$waiting" ] || cl_pass "The database already had every migration main holds, so nothing was applied."
 cl_approved
-supabase db push >"$out" 2>&1 ||
+supabase db push "$target" --yes >"$out" 2>&1 ||
   { cat "$out" >&2; cl_fail "The migrations could not be applied: $waiting. The database is as it was before."; }
 cat "$out" >&2
 cl_pass "Applied these migrations to the database, once: $waiting."

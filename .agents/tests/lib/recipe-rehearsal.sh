@@ -333,6 +333,8 @@ password() {
   esac
 }
 case "$*" in
+  "--version")
+    case "${RR_CLI_VERSION:-2.117.0}" in unreadable) exit 1 ;; *) echo "${RR_CLI_VERSION:-2.117.0}" ;; esac ;;
   "projects api-keys --project-ref "*" -o json")
     down
     cat <<'JSON'
@@ -377,11 +379,13 @@ JSON
     echo "Finished supabase config push." ;;
   "init") down; mkdir -p supabase; printf 'project_id = "restore"\n' > supabase/config.toml ;;
   "start"|"stop"|"stop --no-backup") down; mkdir -p supabase ;;
-  "db push --dry-run")
+  "db push --linked --dry-run"|"db push --remote --dry-run")
+    case "${RR_CLI_VERSION:-2.117.0}:$3" in 2.*:--linked|3.*:--remote) ;; *) refuse "$@" ;; esac
     down
     password
     # RR_DRY=colour answers as a terminal does, in colour; RR_DRY=nameless
     # says a push would happen in words no script can read names from.
+    [ "${RR_IGNORE_TARGET:-0}" != 1 ] || { echo "Local database is up to date."; exit 0; }
     esc=$(printf '\033')
     case "${RR_DRY:-}" in
       colour) printf '%s[1mWould push these migrations:%s[0m\n %s[32m•%s[0m %s[1m20260101000000_pinned.sql%s[0m\n' \
@@ -390,7 +394,8 @@ JSON
       *) if bad; then printf 'Would push these migrations:\n • 20260101000000_pinned.sql\n'
          else echo "Remote database is up to date."; fi ;;
     esac ;;
-  "db push")
+  "db push --linked --yes"|"db push --remote --yes")
+    case "${RR_CLI_VERSION:-2.117.0}:$3" in 2.*:--linked|3.*:--remote) ;; *) refuse "$@" ;; esac
     down
     password
     bad && { echo "ERROR: column already exists" >&2; exit 1; }

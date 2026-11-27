@@ -67,7 +67,7 @@ for rr_gated in "good promote.sh dpl_live $rr_main" "good roll-back-to.sh dpl_ea
   rr_gated=${rr_gated#* }
   grep -q 'No approval is recorded for' "$RR_TMP/out" ||
     rr_fail "${rr_gated%% *} without a recorded yes did not say what it waits for"
-  if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -Eq '^vercel (promote|rollback|project|link|git|api)|^supabase db push$'; then
+  if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -Eq '^vercel (promote|rollback|project|link|git|api)|^supabase db push .* --yes$'; then
     rr_fail "${rr_gated%% *} changed something online with no recorded yes"
   fi
 done
@@ -240,6 +240,26 @@ rr_case 2 good settings.sh
 cp "$RR_TMP/env-publishable" "$RR_TMP/fixture/.env.local"
 
 # The shared parts this recipe names.
+# Both CLI versions must target the linked project for reads and applies.
+for rr_version in 2.117.0 3.4.0; do
+  case "$rr_version" in 2.*) rr_target=--linked ;; 3.*) rr_target=--remote ;; esac
+  rr_case 1 bad RR_CLI_VERSION="$rr_version" migrate.sh
+  rr_called "supabase db push $rr_target --dry-run"
+  rr_case 0 good RR_CLI_VERSION="$rr_version" RR_DRY=colour migrate.sh --apply liveref
+  rr_called "supabase db push $rr_target --yes"
+  rr_case 2 good RR_CLI_VERSION="$rr_version" RR_IGNORE_TARGET=1 migrate.sh --apply liveref
+  rr_said yes "could not run"
+  if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -q '^supabase db push .* --yes$'; then
+    rr_fail "migrate.sh applied after the CLI reported the local database"
+  fi
+done
+for rr_version in unreadable 4.0.0; do
+  rr_case 2 good RR_CLI_VERSION="$rr_version" migrate.sh --apply liveref
+  rr_said yes "could not run"
+  if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -q '^supabase db push'; then
+    rr_fail "migrate.sh pushed with an unsupported CLI version"
+  fi
+done
 rr_case 0 good migrate.sh
 rr_case 1 bad migrate.sh
 rr_case 2 down migrate.sh
