@@ -707,9 +707,21 @@ while IFS= read -r mdfile; do
     path="${inside%)}"
     case "$path" in
       http://*|https://*|mailto:*|"#"*|"") continue ;;
-      # A site page links to another site page by its address; site-links.sh
-      # checks those against the built pages.
-      /ai-build-kit/*) case "$mdfile" in "$ROOT"/site/src/content/docs/*) continue ;; esac ;;
+      # Site addresses in source pages and their inputs resolve to a site page.
+      /ai-build-kit/*)
+        case "$mdfile" in
+          "$ROOT"/site/src/content/docs/*) continue ;;
+          "$ROOT"/site/data/*|"$ROOT"/docs/COMPATIBILITY.md)
+            route=${path%%#*}
+            route=${route#/ai-build-kit/}
+            route=${route%/}
+            if [ -f "$ROOT/site/src/content/docs/$route.md" ] ||
+               [ -f "$ROOT/site/src/content/docs/$route.mdx" ]; then
+              continue
+            fi
+            ;;
+        esac
+        ;;
     esac
     path_noanchor="${path%%#*}"
     [ -n "$path_noanchor" ] || continue
