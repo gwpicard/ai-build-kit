@@ -227,7 +227,8 @@ all share. The parts folder holds no `recipe.md`, so nothing reads it as a
 menu entry.
 
 When it copies a starter with a project workflow, `use-starter.sh` also copies
-the shared `rls.sh` and `check-lib.sh` into the project's `scripts/` folder.
+the shared `rls.sh`, `check-lib.sh`, `database-check.sh`, `docker-run.sh`,
+`docker-resources.py` and `docker_proxy.py` into the project's `scripts/` folder.
 It refuses existing files before copying anything. The workflow can then run
 the same row rules query whichever coding agent installed the kit, including
 a plugin whose files stay outside the project. Its `--local` option reads the

@@ -10,7 +10,7 @@ Use `/shape` to turn an idea or a fault into a ready piece of work. Use `/implem
 
 ## Repairs
 
-The kit reproduces a fault before changing code. `/shape` records a repeatable failing case, and `/implement` fixes one likely cause at a time. After three failed attempts, another attempt needs a risk notice and your decision.
+The kit reproduces a fault before changing code. `/shape` records a repeatable failing case, and `/implement` fixes one likely cause at a time. Before its first code change, the agent tells you what it thinks is wrong and what result would prove or disprove it. After three failed attempts, another attempt needs a risk notice and your decision. For a piece that keeps failing, `/what-now` advises saving the work and starting a fresh chat.
 
 ## Evidence
 

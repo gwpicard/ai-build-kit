@@ -136,7 +136,7 @@ Some promises apply in every project, so they do not depend on what the person
 asks for. They are what make it safe to maintain a tool you cannot read. Each
 needs an enforcement mechanism and a check that fails if the mechanism is
 removed. The
-[source repository's mechanism list](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/MAINTAINING.md#the-backbone-and-its-mechanisms)
+[source repository's mechanism list](https://github.com/gwpicard/ai-build-kit/blob/main/docs/MAINTAINING.md#the-backbone-and-its-mechanisms)
 names each promise's mechanism, or marks it "none yet".
 
 1. A person approves each merge, unless they chose auto-merge with its limits.
@@ -289,7 +289,7 @@ check names it as a caution.
 `/maintain` checks the project's setup and records, and offers the upkeep that
 is due. It cannot repair badly written code.
 
-For the rule on service names, see [Keep it generic](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/MAINTAINING.md#keep-it-generic).
+For the rule on service names, see [Keep it generic](https://github.com/gwpicard/ai-build-kit/blob/main/docs/MAINTAINING.md#keep-it-generic).
 
 ## Where the kit is heading
 
